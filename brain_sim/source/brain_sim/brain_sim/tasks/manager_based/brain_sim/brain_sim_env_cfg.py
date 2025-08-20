@@ -4,10 +4,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import math
+import os
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
+from isaaclab.sim.spawners.from_files import UsdFileCfg
+from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -23,6 +26,8 @@ import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
 from isaaclab_assets.robots.spot import SPOT_CFG  
 from isaaclab.sensors import ContactSensorCfg
+
+from .props.maze import BrainSimMaze
 
 ##
 # Scene definition
@@ -276,7 +281,7 @@ class TerminationsCfg:
 @configclass
 class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
-    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=4, env_spacing=4.0)
+    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=4, env_spacing=20.0)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -300,3 +305,19 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physics_material.friction_combine_mode = "multiply"
         self.sim.physics_material.restitution_combine_mode = "multiply"
         self.scene.contact_forces.update_period = self.sim.dt
+
+        maze = BrainSimMaze()
+        maze.set_maze_txt_path(f"{os.path.dirname(__file__)}/props/config/example_maze.txt")
+        maze.set_maze_config(f"{os.path.dirname(__file__)}/props/config/example_config.json")
+        maze.setup()
+
+        maze.create_maze(maze._maze)
+        
+        start_goal = maze.get_start_goal()
+        if start_goal:
+            start_pos = start_goal[0]
+            self.scene.robot.init_state.pos = (start_pos[0], start_pos[1], 0.5)
+        
+        wall_configs = maze.get_wall_configs_dict()
+        for wall_name, wall_cfg in wall_configs.items():
+            setattr(self.scene, wall_name, wall_cfg)
