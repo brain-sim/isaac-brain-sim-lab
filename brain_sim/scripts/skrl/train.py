@@ -100,7 +100,7 @@ from isaaclab_rl.skrl import SkrlVecEnvWrapper
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils.hydra import hydra_task_config
 
-import brain_sim.tasks  # noqa: F401
+import brain_sim_tasks.maze_tasks  # noqa: F401
 
 # config shortcuts
 algorithm = args_cli.algorithm.lower()
