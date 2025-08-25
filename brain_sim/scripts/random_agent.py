@@ -35,7 +35,7 @@ import torch
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import parse_env_cfg
 
-import brain_sim.tasks  # noqa: F401
+import brain_sim_tasks.maze_tasks  # noqa: F401
 
 
 def main():

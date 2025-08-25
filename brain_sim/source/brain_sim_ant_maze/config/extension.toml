@@ -1,0 +1,27 @@
+[package]
+
+# Semantic Versioning is used: https://semver.org/
+version = "0.1.0"
+
+# Description
+category = "isaaclab"
+readme  = "README.md"
+
+title = "Brain Sim Ant Maze Extension"
+author = "Isaac Lab Project Developers"
+maintainer = "Isaac Lab Project Developers"
+description="Brain Sim Ant Maze Extension for Isaac Lab"
+repository = "https://github.com/isaac-sim/IsaacLab.git"
+keywords = ["extension", "maze", "ant", "isaaclab", "brain_sim"]
+
+[dependencies]
+"isaaclab" = {}
+"isaaclab_assets" = {}
+"isaaclab_mimic" = {}
+"isaaclab_rl" = {}
+"isaaclab_tasks" = {}
+
+[[python.module]]
+name = "brain_sim_ant_maze"
+
+[isaaclab_settings]
