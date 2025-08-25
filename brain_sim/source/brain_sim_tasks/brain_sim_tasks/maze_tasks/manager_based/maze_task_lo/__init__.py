@@ -13,11 +13,11 @@ from . import agents
 
 
 gym.register(
-    id="Brain-Sim-Maze-v0",
+    id="Brain-Sim-Maze-Low-Level-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.brain_sim_env_cfg:BrainSimEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.maze_task_lo_env_cfg:BrainSimEnvCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
     },
 )
