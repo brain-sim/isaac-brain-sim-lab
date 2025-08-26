@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 from brain_sim_ant_maze import bsAntMaze, bsAntMazeConfig
 from isaaclab.assets import RigidObjectCfg
 
-from brain_sim_assets import BRAIN_SIM_ASSETS_CONFIG_DIR
+from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
 from .brick import BrainSimBrick
 
 
