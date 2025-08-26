@@ -6,7 +6,7 @@ from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
 from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_DATA_DIR
 
 
-class BrainSimBrick:
+class bsBrickGenerator:
     
     @staticmethod
     def get_brick_object(prim_path: str = "{ENV_REGEX_NS}/Brick", 
@@ -28,32 +28,4 @@ class BrainSimBrick:
                     disable_gravity=False,
                 ),
             ),
-        )
-    
-    @classmethod
-    def create_multiple_objects(cls, object_configs: list) -> dict:
-        objects = {}
-        
-        for config in object_configs:
-            obj_type = config['type']
-            obj_name = config['name']
-            params = config.get('params', {})
-            
-            if obj_type == 'brick':
-                objects[obj_name] = cls.get_brick_object(**params)
-            else:
-                raise ValueError(f"Unknown object type: {obj_type}")
-                
-        return objects
-    
-    @staticmethod
-    def get_default_rigid_props(gravity_enabled: bool = False, 
-                                max_velocity: int = 200) -> RigidBodyPropertiesCfg:
-        return RigidBodyPropertiesCfg(
-            solver_position_iteration_count=16,
-            solver_velocity_iteration_count=8,
-            max_angular_velocity=max_velocity,
-            max_linear_velocity=max_velocity,
-            max_depenetration_velocity=1.0,
-            disable_gravity=not gravity_enabled,
         )

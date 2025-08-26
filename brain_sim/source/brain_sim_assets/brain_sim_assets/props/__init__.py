@@ -1,4 +1,4 @@
-from .brick import BrainSimBrick
-from .maze import BrainSimMaze
+from .brick import bsBrickGenerator
+from .maze import bsMazeGenerator
 
-__all__ = ["BrainSimBrick", "BrainSimMaze"]
+__all__ = ["bsBrickGenerator", "bsMazeGenerator"]
