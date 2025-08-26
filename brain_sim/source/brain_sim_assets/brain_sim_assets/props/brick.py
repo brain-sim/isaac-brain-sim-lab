@@ -3,7 +3,7 @@ from isaaclab.assets import RigidObjectCfg
 from isaaclab.sim.spawners.from_files import UsdFileCfg
 from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
 
-from brain_sim_assets import BRAIN_SIM_ASSETS_DATA_DIR
+from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_DATA_DIR
 
 
 class BrainSimBrick:
@@ -17,7 +17,7 @@ class BrainSimBrick:
             prim_path=prim_path,
             init_state=RigidObjectCfg.InitialStateCfg(pos=pos, rot=rot),
             spawn=UsdFileCfg(
-                usd_path=f"{BRAIN_SIM_ASSETS_DATA_DIR}/brick.usd",
+                usd_path=f"{BRAIN_SIM_ASSETS_PROPS_DATA_DIR}/brick.usd",
                 scale=scale,
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
