@@ -4,12 +4,12 @@ from brain_sim_ant_maze import bsAntMaze, bsAntMazeConfig
 from isaaclab.assets import RigidObjectCfg
 
 from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
-from .brick import BrainSimBrick
+from .brick import bsBrickGenerator
 
 
-class BrainSimMaze:
+class bsMazeGenerator:
     
-    def __init__(self):
+    def __init__(self, maze_config_path: Optional[str] = None, maze_txt_path: Optional[str] = None):
         self._walls = []
         self._maze_config = None
         self._maze_txt_path = None
@@ -18,6 +18,22 @@ class BrainSimMaze:
         
         self._wall_height = 2.0
         self._cell_size = 1.0
+        
+        if maze_config_path:
+            self.set_maze_config(maze_config_path)
+        if maze_txt_path:
+            self.set_maze_txt_path(maze_txt_path)
+        
+        if maze_config_path and maze_txt_path:
+            self.setup()
+            self.create_maze(self._maze)
+
+    @classmethod
+    def create_example_maze(cls):
+        """Create a maze using the default example configuration and txt files."""
+        maze_config_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_config.json"
+        maze_txt_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze.txt"
+        return cls(maze_config_path, maze_txt_path)
 
     def setup(self):
         if self._maze_config:
@@ -64,7 +80,7 @@ class BrainSimMaze:
                     world_y = i * self._cell_size
                     world_z = self._wall_height / 2
                     
-                    wall_cfg = BrainSimBrick.get_brick_object(
+                    wall_cfg = bsBrickGenerator.get_brick_object(
                         prim_path=f"{{ENV_REGEX_NS}}/wall_{len(self._walls)}",
                         pos=(world_x, world_y, world_z),
                         rot=(1, 0, 0, 0),

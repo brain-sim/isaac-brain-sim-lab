@@ -27,7 +27,7 @@ import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 from isaaclab_assets.robots.spot import SPOT_CFG  
 from isaaclab.sensors import ContactSensorCfg
 
-from brain_sim_assets.props.maze import BrainSimMaze
+from brain_sim_assets.props.maze import bsMazeGenerator
 from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
 
 ##
@@ -53,6 +53,19 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
         prim_path="/World/DomeLight",
         spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
     )
+
+    def __post_init__(self):
+
+        maze = bsMazeGenerator.create_example_maze()
+        
+        start_goal = maze.get_start_goal()
+        if start_goal:
+            start_pos = start_goal[0]
+            self.robot.init_state.pos = (start_pos[0], start_pos[1], 0.5)
+        
+        wall_configs = maze.get_wall_configs_dict()
+        for wall_name, wall_cfg in wall_configs.items():
+            setattr(self, wall_name, wall_cfg)
 
 @configclass
 class CommandsCfg:
@@ -306,19 +319,3 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physics_material.friction_combine_mode = "multiply"
         self.sim.physics_material.restitution_combine_mode = "multiply"
         self.scene.contact_forces.update_period = self.sim.dt
-
-        maze = BrainSimMaze()
-        maze.set_maze_txt_path(f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze.txt")
-        maze.set_maze_config(f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_config.json")
-        maze.setup()
-
-        maze.create_maze(maze._maze)
-        
-        start_goal = maze.get_start_goal()
-        if start_goal:
-            start_pos = start_goal[0]
-            self.scene.robot.init_state.pos = (start_pos[0], start_pos[1], 0.5)
-        
-        wall_configs = maze.get_wall_configs_dict()
-        for wall_name, wall_cfg in wall_configs.items():
-            setattr(self.scene, wall_name, wall_cfg)
