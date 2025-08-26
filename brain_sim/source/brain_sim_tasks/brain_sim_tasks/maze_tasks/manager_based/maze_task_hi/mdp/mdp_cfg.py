@@ -15,6 +15,9 @@ from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 import isaaclab_tasks.manager_based.locomotion.velocity.config.spot.mdp as spot_mdp
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
+from .action_cfg import HierarchicalSpotActionCfg
+from brain_sim_assets import BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR
+
 ##
 # MDP settings
 ##
@@ -40,7 +43,21 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_pos = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*"], scale=0.2, use_default_offset=True)
+    hierarchical_control = HierarchicalSpotActionCfg(
+        asset_name="robot",
+        policy_file_path=f"{BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR}/spot_policy.pt",
+        action_scale=0.2,
+        throttle_scale=1.0,
+        lateral_scale=1.0,
+        steering_scale=0.5,
+        max_lin_vel_x=3.0,
+        min_lin_vel_x=-2.0,
+        max_lin_vel_y=1.5,
+        min_lin_vel_y=-1.5,
+        max_ang_vel_z=2.0,
+        min_ang_vel_z=-2.0,
+        smoothing_factor=[0.7, 0.7, 0.5]
+    )
 
 
 @configclass
@@ -64,12 +81,7 @@ class ObservationsCfg:
             noise=Unoise(n_min=-0.05, n_max=0.05),
         )
         velocity_commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
-        joint_pos = ObsTerm(
-            func=mdp.joint_pos_rel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.05, n_max=0.05)
-        )
-        joint_vel = ObsTerm(
-            func=mdp.joint_vel_rel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.5, n_max=0.5)
-        )
+
         actions = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
@@ -122,109 +134,39 @@ class EventCfg:
         },
     )
 
-    # interval
-    push_robot = EventTerm(
-        func=mdp.push_by_setting_velocity,
-        mode="interval",
-        interval_range_s=(10.0, 15.0),
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "velocity_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5)},
-        },
-    )
-
 @configclass
 class RewardsCfg:
-    # -- task
-    air_time = RewTerm(
-        func=spot_mdp.air_time_reward,
-        weight=5.0,
-        params={
-            "mode_time": 0.3,
-            "velocity_threshold": 0.5,
-            "asset_cfg": SceneEntityCfg("robot"),
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
-        },
+    
+    # Task-specific rewards for navigation
+    track_lin_vel_xy_exp = RewTerm(
+        func=mdp.track_lin_vel_xy_exp, 
+        weight=2.0,
+        params={"command_name": "base_velocity", "std": 0.5}
     )
-    base_angular_velocity = RewTerm(
-        func=spot_mdp.base_angular_velocity_reward,
-        weight=5.0,
-        params={"std": 2.0, "asset_cfg": SceneEntityCfg("robot")},
+    track_ang_vel_z_exp = RewTerm(
+        func=mdp.track_ang_vel_z_exp,
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": 0.5}
     )
-    base_linear_velocity = RewTerm(
-        func=spot_mdp.base_linear_velocity_reward,
-        weight=5.0,
-        params={"std": 1.0, "ramp_rate": 0.5, "ramp_at_vel": 1.0, "asset_cfg": SceneEntityCfg("robot")},
+    
+    # Penalize excessive commands
+    action_rate = RewTerm(
+        func=mdp.action_rate_l2, 
+        weight=-0.01
     )
-    foot_clearance = RewTerm(
-        func=spot_mdp.foot_clearance_reward,
-        weight=0.5,
-        params={
-            "std": 0.05,
-            "tanh_mult": 2.0,
-            "target_height": 0.1,
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot"),
-        },
-    )
-    gait = RewTerm(
-        func=spot_mdp.GaitReward,
-        weight=10.0,
-        params={
-            "std": 0.1,
-            "max_err": 0.2,
-            "velocity_threshold": 0.5,
-            "synced_feet_pair_names": (("fl_foot", "hr_foot"), ("fr_foot", "hl_foot")),
-            "asset_cfg": SceneEntityCfg("robot"),
-            "sensor_cfg": SceneEntityCfg("contact_forces"),
-        },
-    )
-
-    # -- penalties
-    action_smoothness = RewTerm(func=spot_mdp.action_smoothness_penalty, weight=-1.0)
-    air_time_variance = RewTerm(
-        func=spot_mdp.air_time_variance_penalty,
-        weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot")},
-    )
+    
+    # Penalize undesired states
     base_motion = RewTerm(
-        func=spot_mdp.base_motion_penalty, weight=-2.0, params={"asset_cfg": SceneEntityCfg("robot")}
+        func=spot_mdp.base_motion_penalty, 
+        weight=-0.5, 
+        params={"asset_cfg": SceneEntityCfg("robot")}
     )
     base_orientation = RewTerm(
-        func=spot_mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")}
+        func=spot_mdp.base_orientation_penalty, 
+        weight=-1.0, 
+        params={"asset_cfg": SceneEntityCfg("robot")}
     )
-    foot_slip = RewTerm(
-        func=spot_mdp.foot_slip_penalty,
-        weight=-0.5,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot"),
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
-            "threshold": 1.0,
-        },
-    )
-    joint_acc = RewTerm(
-        func=spot_mdp.joint_acceleration_penalty,
-        weight=-1.0e-4,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
-    )
-    joint_pos = RewTerm(
-        func=spot_mdp.joint_position_penalty,
-        weight=-0.7,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-            "stand_still_scale": 5.0,
-            "velocity_threshold": 0.5,
-        },
-    )
-    joint_torques = RewTerm(
-        func=spot_mdp.joint_torques_penalty,
-        weight=-5.0e-4,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*")},
-    )
-    joint_vel = RewTerm(
-        func=spot_mdp.joint_velocity_penalty,
-        weight=-1.0e-2,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
-    )
+    
 
 @configclass
 class TerminationsCfg:

@@ -3,7 +3,7 @@ import io
 import torch
 from isaaclab.utils.math import matrix_from_quat
 
-class SpotLowLevelPolicy:
+class bsSpotLowLevelPolicy:
 
     def __init__(self, policy_file_path: str):
         with open(policy_file_path, "rb") as f:
@@ -70,7 +70,7 @@ class SpotLowLevelPolicy:
 Derived classes below
 """
 
-class SpotLowLevelPolicyVanilla(SpotLowLevelPolicy):
+class bsSpotLowLevelPolicyVanilla(bsSpotLowLevelPolicy):
 
     def compute_observation(
         self,
@@ -124,7 +124,7 @@ class SpotLowLevelPolicyVanilla(SpotLowLevelPolicy):
         obs[:, 36:48] = previous_action
         return obs
 
-class SpotLowLevelPolicyRough(SpotLowLevelPolicy):
+class bsSpotLowLevelPolicyRough(bsSpotLowLevelPolicy):
 
     def compute_observation(
         self,
@@ -163,7 +163,7 @@ class SpotLowLevelPolicyRough(SpotLowLevelPolicy):
         obs[:, 36:48] = previous_action
         return obs
 
-class SpotLowLevelPolicyRoughHeight(SpotLowLevelPolicy):
+class bsSpotLowLevelPolicyRoughHeight(bsSpotLowLevelPolicy):
 
     def compute_observation(
         self,

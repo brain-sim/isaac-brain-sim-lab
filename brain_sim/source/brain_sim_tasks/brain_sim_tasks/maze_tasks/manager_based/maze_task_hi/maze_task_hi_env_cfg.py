@@ -3,9 +3,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import math
-import os
-
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
@@ -28,7 +25,6 @@ from isaaclab_assets.robots.spot import SPOT_CFG
 from isaaclab.sensors import ContactSensorCfg
 
 from brain_sim_assets.props.maze import bsMazeGenerator
-from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
 
 # Import MDP configurations
 from .mdp.mdp_cfg import (
@@ -96,7 +92,6 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
 
-    # Post initialization
     def __post_init__(self) -> None:
         """Post initialization."""
         # general settings
