@@ -43,21 +43,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    hierarchical_control = HierarchicalSpotActionCfg(
-        asset_name="robot",
-        policy_file_path=f"{BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR}/spot_policy.pt",
-        action_scale=0.2,
-        throttle_scale=1.0,
-        lateral_scale=1.0,
-        steering_scale=0.5,
-        max_lin_vel_x=3.0,
-        min_lin_vel_x=-2.0,
-        max_lin_vel_y=1.5,
-        min_lin_vel_y=-1.5,
-        max_ang_vel_z=2.0,
-        min_ang_vel_z=-2.0,
-        smoothing_factor=[0.7, 0.7, 0.5]
-    )
+    hierarchical_spot = HierarchicalSpotActionCfg()
 
 
 @configclass
