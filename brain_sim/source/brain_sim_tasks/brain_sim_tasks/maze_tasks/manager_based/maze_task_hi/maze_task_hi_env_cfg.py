@@ -47,7 +47,7 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
     # ground plane
     ground = AssetBaseCfg(
         prim_path="/World/ground",
-        spawn=sim_utils.GroundPlaneCfg(size=(100.0, 100.0)),
+        spawn=sim_utils.GroundPlaneCfg(size=(1000.0, 1000.0)),
     )
 
     # robot
@@ -82,7 +82,7 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
 @configclass
 class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
-    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=4, env_spacing=20.0)
+    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=512, env_spacing=20.0)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -98,7 +98,7 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = 10  # 50 Hz
         self.episode_length_s = 20.0
         # simulation settings
-        self.sim.dt = 0.002  # 500 Hz
+        self.sim.dt = 1.0/200  
         self.sim.render_interval = self.decimation
         self.sim.physics_material.static_friction = 1.0
         self.sim.physics_material.dynamic_friction = 1.0
