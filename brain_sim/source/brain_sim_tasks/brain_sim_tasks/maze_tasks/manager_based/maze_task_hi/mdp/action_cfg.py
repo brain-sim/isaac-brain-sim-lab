@@ -34,6 +34,18 @@ class HierarchicalSpotActionTerm(ActionTerm):
         self._previous_command = torch.zeros(
             (self._num_envs, 3), device=self._device, dtype=torch.float32
         )
+
+    def action_dim(self) -> int:
+        """Dimension of the action term."""
+        return 12
+
+    def raw_actions(self) -> torch.Tensor:
+        """The input/raw actions sent to the term."""
+        raise NotImplementedError
+
+    def processed_actions(self) -> torch.Tensor:
+        """The actions computed by the term after applying any processing."""
+        raise NotImplementedError
     
     def process_actions(self, actions: torch.Tensor):
         """Convert high-level commands to joint positions using low-level policy.

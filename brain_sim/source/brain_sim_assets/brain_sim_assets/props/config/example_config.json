@@ -1,6 +1,6 @@
 {
     "dimensions": {
-        "wall_height": 1.7,
+        "wall_height": 3.0,
         "cell_size": 2.0,
         "ant_scale": 0.5
     },
