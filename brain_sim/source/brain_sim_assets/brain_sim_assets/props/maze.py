@@ -29,10 +29,13 @@ class bsMazeGenerator:
             self.create_maze(self._maze)
 
     @classmethod
-    def create_example_maze(cls):
-        """Create a maze using the default example configuration and txt files."""
+    def create_example_maze(cls, maze_txt_path_in: Optional[str] = None):
+        if maze_txt_path_in is None:        
+            maze_txt_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze.txt"
+        else:
+            maze_txt_path = maze_txt_path_in
+        
         maze_config_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_config.json"
-        maze_txt_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze.txt"
         return cls(maze_config_path, maze_txt_path)
 
     def setup(self):
