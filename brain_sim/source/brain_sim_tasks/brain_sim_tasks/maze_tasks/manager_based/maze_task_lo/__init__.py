@@ -14,7 +14,7 @@ from . import agents
 
 gym.register(
     id="Brain-Sim-Maze-Low-Level-Test-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="brain_sim_tasks.maze_tasks.manager_based:bsMazeManagerRLEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.maze_task_lo_env_cfg:BrainSimEnvCfg",
