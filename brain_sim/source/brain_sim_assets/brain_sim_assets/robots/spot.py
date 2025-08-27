@@ -38,20 +38,6 @@ class bsSpotLowLevelPolicy:
             "Subclasses must implement compute_observation method."
         )
 
-    def compute_command(self, goal, state=None) -> torch.Tensor:
-        """
-        Compute the command vector (e.g., navigation command) for the policy.
-        Args:
-            goal: The target or goal (type as needed).
-            state: Optionally, the current state (type as needed).
-        Returns:
-            torch.Tensor: The command vector for the policy.
-        """
-        # TODO: Implement this method for your environment
-        raise NotImplementedError(
-            "Implement compute_command for your Spot environment."
-        )
-
     def get_action(self, *args, **kwargs) -> torch.Tensor:
         """
         Generic method to compute action from robot state.
