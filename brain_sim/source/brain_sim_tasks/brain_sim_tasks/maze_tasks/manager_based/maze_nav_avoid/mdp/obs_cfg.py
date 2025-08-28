@@ -28,6 +28,7 @@ class PolicyCfg(ObsGroup):
     projected_gravity = ObsTerm(
         func=mdp.projected_gravity, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.05, n_max=0.05)
     )
+    velocity_commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
     image_obs = ObsTerm(
         func=get_image_obs, params={"asset_cfg": SceneEntityCfg("camera")}
     )

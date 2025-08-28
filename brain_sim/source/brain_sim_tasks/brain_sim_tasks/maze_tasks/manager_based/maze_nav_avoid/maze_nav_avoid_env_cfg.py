@@ -75,7 +75,7 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
         for wall_name, wall_cfg in wall_configs.items():
             setattr(self, wall_name, wall_cfg)
 
-        markers = bsMarkersGenerator(num_goals=2, num_obstacles=10)
+        markers = bsMarkersGenerator(num_goals=5, num_obstacles=50)
         marker_configs = markers.get_marker_configs_dict()
         for marker_name, marker_cfg in marker_configs.items():
             setattr(self, marker_name, marker_cfg)
@@ -83,7 +83,7 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
 @configclass
 class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
-    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=9, env_spacing=41.0)
+    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=441, env_spacing=41.0)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -92,11 +92,12 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
     # MDP settings
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
+    img_size: list[int] = [3, 128, 128]
 
     def __post_init__(self) -> None:
         # general settings
         self.decimation = 10  # 50 Hz
-        self.episode_length_s = 60.0
+        self.episode_length_s = 300.0
         # simulation settings
         self.sim.dt = 1.0/200.0
         self.sim.render_interval = self.decimation
@@ -105,3 +106,5 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physics_material.friction_combine_mode = "multiply"
         self.sim.physics_material.restitution_combine_mode = "multiply"
         self.scene.contact_forces.update_period = self.sim.dt
+        self.scene.camera.width = self.img_size[2]
+        self.scene.camera.height = self.img_size[1]
