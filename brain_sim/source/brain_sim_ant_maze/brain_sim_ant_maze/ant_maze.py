@@ -91,6 +91,14 @@ class bsAntMaze:
             for j, char in enumerate(line):
                 if char == '1':
                     maze[i, j] = 1
+                elif char == '2':
+                    maze[i, j] = 2
+                elif char == '3':
+                    maze[i, j] = 3
+                elif char == '4':
+                    maze[i, j] = 4
+                elif char == '5':
+                    maze[i, j] = 5
                 elif char == '0':
                     maze[i, j] = 0
                 elif char == 'S':

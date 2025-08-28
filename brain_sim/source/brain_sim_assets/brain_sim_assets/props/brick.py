@@ -11,12 +11,13 @@ class bsBrickGenerator:
     def get_brick_object(prim_path: str = "{ENV_REGEX_NS}/Brick", 
                          pos: tuple = (1.0, 0.0, 0.5), 
                          rot: tuple = (1, 0, 0, 0),
-                         scale: tuple = (0.3, 0.3, 0.3)) -> RigidObjectCfg:
+                         scale: tuple = (0.3, 0.3, 0.3),
+                         type: str = "A") -> RigidObjectCfg:
         return RigidObjectCfg(
             prim_path=prim_path,
             init_state=RigidObjectCfg.InitialStateCfg(pos=pos, rot=rot),
             spawn=UsdFileCfg(
-                usd_path=f"{BRAIN_SIM_ASSETS_PROPS_DATA_DIR}/brick.usd",
+                usd_path=f"{BRAIN_SIM_ASSETS_PROPS_DATA_DIR}/brick_{type}.usd",
                 scale=scale,
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,

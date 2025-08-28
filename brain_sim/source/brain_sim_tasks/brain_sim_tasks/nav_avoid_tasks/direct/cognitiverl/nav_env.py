@@ -137,11 +137,8 @@ class NavEnv(DirectRLEnv):
         wall_configs = maze.get_wall_configs_dict()
         
         for env_idx in range(self.num_envs):
-            env_name = f"env_{env_idx}"
-            env_origin = self.scene.env_origins[env_idx]
-            
+            env_name = f"env_{env_idx}"            
             for wall_name, wall_cfg in wall_configs.items():
-                # Create a deep copy of the wall config for this environment
                 
                 # Set the prim path to be environment-specific
                 wall_cfg.prim_path = f"/World/envs/{env_name}/walls/{wall_name}"
