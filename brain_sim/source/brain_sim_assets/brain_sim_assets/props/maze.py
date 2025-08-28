@@ -78,7 +78,7 @@ class bsMazeGenerator:
 
         for i in range(height):
             for j in range(width):
-                if maze_grid[i, j] == 1:
+                if maze_grid[i, j] > 0 :
                     world_x = j * self._cell_size
                     world_y = i * self._cell_size
                     world_z = self._wall_height / 2
@@ -91,7 +91,8 @@ class bsMazeGenerator:
                             self._cell_size, 
                             self._cell_size, 
                             self._wall_height
-                        )
+                        ),
+                        type=f"{maze_grid[i, j]}"
                     )
                     
                     self._walls.append(wall_cfg)

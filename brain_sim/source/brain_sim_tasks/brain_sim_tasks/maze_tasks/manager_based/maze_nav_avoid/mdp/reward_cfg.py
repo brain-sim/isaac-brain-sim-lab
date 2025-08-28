@@ -62,18 +62,6 @@ def obstacle_reach(env: ManagerBasedRLEnv, robot_cfg: SceneEntityCfg, threshold:
 @configclass
 class BaseRewardsCfg:
     
-    # Task-specific rewards for navigation command tracking
-    track_lin_vel_xy_exp = RewTerm(
-        func=mdp.track_lin_vel_xy_exp, 
-        weight=2.0,
-        params={"command_name": "base_velocity", "std": 0.5}
-    )
-    track_ang_vel_z_exp = RewTerm(
-        func=mdp.track_ang_vel_z_exp,
-        weight=1.0,
-        params={"command_name": "base_velocity", "std": 0.5}
-    )
-    
     # Penalize excessive commands
     action_rate = RewTerm(
         func=mdp.action_rate_l2, 
