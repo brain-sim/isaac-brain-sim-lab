@@ -46,19 +46,6 @@ class HierarchicalSpotActionTerm(ActionTerm):
 
     @property
     def action_dim(self) -> int:
-        """
-        Dimension of the action term: 3D high-level commands.
-        Based on Direct RL environment analysis:
-        - action_space = 3 
-        - actions[:, 0] scaled by throttle_scale and clamped [0, throttle_max]
-        - actions[:, 1:] scaled by steering_scale and clamped [-steering_max, steering_max]
-        
-        This suggests the 3D action space represents some form of:
-        - Dimension 0: throttle/forward command (non-negative)
-        - Dimensions 1-2: steering/lateral commands (bipolar)
-        
-        The exact semantic meaning depends on the pre-trained low-level policy.
-        """
         return 3
 
     @property
@@ -114,9 +101,6 @@ class HierarchicalSpotActionTerm(ActionTerm):
         return joint_positions
     
     def apply_actions(self):
-        """Apply the processed actions to the robot."""
-        # The joint positions are already computed in process_actions
-        # and stored in self._processed_actions by the base class
         self._robot.set_joint_position_target(self._processed_actions)
 
 
