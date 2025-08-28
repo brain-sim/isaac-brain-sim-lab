@@ -26,7 +26,10 @@ def goal_reach(env: ManagerBasedRLEnv, robot_cfg: SceneEntityCfg, threshold: flo
         dim=-1
     )
     
-    rewards = (distances < threshold).any(dim=0).float()
+    goal_reached = (distances < threshold).any(dim=0).float()
+    
+    # Reward for reaching goal, minor penalty for not reaching goal
+    rewards = goal_reached + (1.0 - goal_reached) * (-0.001)
     
     return rewards
 
@@ -49,12 +52,27 @@ def obstacle_reach(env: ManagerBasedRLEnv, robot_cfg: SceneEntityCfg, threshold:
         dim=-1
     )
     
-    penalties = (distances < threshold).any(dim=0).float()
+    obstacle_reached = (distances < threshold).any(dim=0).float()
+    
+    # Penalty for reaching obstacle, minor reward for not reaching obstacle
+    penalties = obstacle_reached + (1.0 - obstacle_reached) * (-0.00000000) # disable
     
     return penalties
 
 @configclass
 class BaseRewardsCfg:
+    
+    # Task-specific rewards for navigation command tracking
+    track_lin_vel_xy_exp = RewTerm(
+        func=mdp.track_lin_vel_xy_exp, 
+        weight=2.0,
+        params={"command_name": "base_velocity", "std": 0.5}
+    )
+    track_ang_vel_z_exp = RewTerm(
+        func=mdp.track_ang_vel_z_exp,
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": 0.5}
+    )
     
     # Penalize excessive commands
     action_rate = RewTerm(
@@ -76,14 +94,14 @@ class BaseRewardsCfg:
         params={"asset_cfg": SceneEntityCfg("robot")}
     )
 
-    # Goal reach reward - Efficient multi-goal version
+    # Goal reach reward
     goal_reach = RewTerm(
         func=goal_reach, 
-        weight=125.0, 
+        weight=300.0, 
         params={"robot_cfg": SceneEntityCfg("robot"), "threshold": 1.4}
     )
 
-    # Obstacle avoidance penalty - Efficient multi-obstacle version
+    # Obstacle avoidance penalty
     obstacle_penalty = RewTerm(
         func=obstacle_reach, 
         weight=-50.0, 

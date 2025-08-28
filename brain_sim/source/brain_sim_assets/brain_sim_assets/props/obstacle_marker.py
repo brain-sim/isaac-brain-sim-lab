@@ -14,8 +14,8 @@ class bsObstacleMarkerGenerator:
                                radius: float = 0.2,
                                height: float = 1.0,
                                color: tuple = (1.0, 0.0, 0.0),
-                               x_range: tuple = (13.0, 27.0),
-                               y_range: tuple = (3.0, 27.0),
+                               x_range: tuple = (11.2, 27.0),
+                               y_range: tuple = (0.2, 27.0),
                                z_height: float = 0.5) -> RigidObjectCfg:
         
         # Generate random position if not provided

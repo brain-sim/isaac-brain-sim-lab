@@ -26,7 +26,7 @@ class EnvArgs:
     """the id of the environment"""
     env_cfg_entry_point: str = "env_cfg_entry_point"
     """the entry point of the environment configuration"""
-    num_envs: int = 4096
+    num_envs: int = 4
     """the number of parallel environments to simulate"""
     seed: int = 1
     """seed of the environment"""
@@ -327,10 +327,23 @@ def main(args):
         use_torch=True,
         torch_deterministic=True,
     )
-    n_obs = int(np.prod(envs.observation_space.shape[1:]))
-    n_act = int(np.prod(envs.action_space.shape[1:]))
+
+    # Check if the environment configuration is ManagerBasedRLEnvCfg
+    from isaaclab.envs import ManagerBasedRLEnvCfg
+
+    if isinstance(envs.unwrapped.cfg, ManagerBasedRLEnvCfg):
+        print("Using ManagerBasedRLEnvCfg")
+        n_obs = envs.unwrapped.observation_manager.group_obs_dim["policy"][0]
+        n_act = envs.unwrapped.action_manager.total_action_dim
+    else:
+        print("Using other environment configuration")
+        # Handle other configuration types (DirectRLEnv)
+        n_obs = int(np.prod(envs.observation_space.shape[1:]))
+        n_act = int(np.prod(envs.action_space.shape[1:]))
+    
     print("n_obs:", n_obs)
     print("n_act:", n_act)
+
     assert isinstance(envs.action_space, gym.spaces.Box), (
         "only continuous action space is supported"
     )
@@ -375,8 +388,8 @@ def main(args):
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
 
     # ALGO Logic: Storage setup
-    obs = torch.zeros((args.num_steps,) + envs.observation_space.shape).to(device)
-    actions = torch.zeros((args.num_steps,) + envs.action_space.shape).to(device)
+    obs = torch.zeros((args.num_steps, args.num_envs, n_obs)).to(device)
+    actions = torch.zeros((args.num_steps, args.num_envs, n_act)).to(device)
     logprobs = torch.zeros((args.num_steps, args.num_envs, 1)).to(device)
     rewards = torch.zeros((args.num_steps, args.num_envs, 1)).to(device)
     dones = torch.zeros((args.num_steps, args.num_envs, 1)).to(device).byte()

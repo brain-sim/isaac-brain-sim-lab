@@ -58,6 +58,6 @@ def obstacle_reach(env: ManagerBasedRLEnv, robot_cfg: SceneEntityCfg, threshold:
 @configclass
 class BaseTerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
-    bad_orientation = DoneTerm(func=mdp.bad_orientation, params={"limit_angle": 0.7})
+    bad_orientation = DoneTerm(func=mdp.bad_orientation, params={"limit_angle": torch.pi / 3})
     goal_reach = DoneTerm(func=goal_reach, params={"robot_cfg": SceneEntityCfg("robot"), "threshold": 1.4})
     obstacle_reach = DoneTerm(func=obstacle_reach, params={"robot_cfg": SceneEntityCfg("robot"), "threshold": 0.6})
