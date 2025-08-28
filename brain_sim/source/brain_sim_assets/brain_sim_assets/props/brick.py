@@ -1,4 +1,3 @@
-import os
 from isaaclab.assets import RigidObjectCfg
 from isaaclab.sim.spawners.from_files import UsdFileCfg
 from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg

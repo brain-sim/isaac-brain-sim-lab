@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.sim.spawners.sensors.sensors_cfg import PinholeCameraCfg
 from isaaclab.scene import InteractiveSceneCfg
@@ -14,6 +14,7 @@ from isaaclab.utils import configclass
 from isaaclab_assets.robots.spot import SPOT_CFG  
 
 from brain_sim_assets.props.maze import bsMazeGenerator
+from brain_sim_assets.props.markers import bsMarkersGenerator
 
 # Import MDP configurations
 from .mdp.mdp_cfg import (
@@ -25,31 +26,22 @@ from .mdp.mdp_cfg import (
     TerminationsCfg,
 )
 
-##
-# Scene definition
-##
-
-
 @configclass
 class BrainSimSceneCfg(InteractiveSceneCfg):
 
-    # ground plane
     ground = AssetBaseCfg(
         prim_path="/World/ground",
         spawn=sim_utils.GroundPlaneCfg(size=(1000.0, 1000.0)),
     )
 
-    # robot
     robot: ArticulationCfg = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
     contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True)
 
-    # lights
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
         spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
     )
 
-    # camera
     camera = TiledCameraCfg(
         prim_path="{ENV_REGEX_NS}/Robot/body/Camera",
         update_period=1.0 / 50.0,
@@ -74,7 +66,6 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
     def __post_init__(self):
 
         maze = bsMazeGenerator.create_example_maze()
-        
         start_goal = maze.get_start_goal()
         if start_goal:
             start_pos = start_goal[0]
@@ -84,16 +75,15 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
         for wall_name, wall_cfg in wall_configs.items():
             setattr(self, wall_name, wall_cfg)
 
-
-##
-# Environment configuration
-##
-
+        markers = bsMarkersGenerator(num_goals=2, num_obstacles=10)
+        marker_configs = markers.get_marker_configs_dict()
+        for marker_name, marker_cfg in marker_configs.items():
+            setattr(self, marker_name, marker_cfg)
 
 @configclass
 class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
-    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=4, env_spacing=40.0)
+    scene: BrainSimSceneCfg = BrainSimSceneCfg(num_envs=9, env_spacing=41.0)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -104,10 +94,9 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
     terminations: TerminationsCfg = TerminationsCfg()
 
     def __post_init__(self) -> None:
-        """Post initialization."""
         # general settings
         self.decimation = 10  # 50 Hz
-        self.episode_length_s = 20.0
+        self.episode_length_s = 60.0
         # simulation settings
         self.sim.dt = 1.0/200.0
         self.sim.render_interval = self.decimation
