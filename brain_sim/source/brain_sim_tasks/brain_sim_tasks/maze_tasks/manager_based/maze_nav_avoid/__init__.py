@@ -13,7 +13,7 @@ from . import agents
 
 
 gym.register(
-    id="Brain-Sim-Maze-Nav-Avoid-v0",
+    id="Train-Maze-Nav-Avoid-v0",
     entry_point="brain_sim_tasks.maze_tasks.manager_based:bsMazeManagerRLEnv",
     disable_env_checker=True,
     kwargs={
