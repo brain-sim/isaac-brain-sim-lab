@@ -15,8 +15,6 @@ from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
 from isaaclab.utils import math
 
 from .nav_env_cfg import NavEnvCfg
-from brain_sim_assets.props.maze import bsMazeGenerator
-from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
 
 class NavEnv(DirectRLEnv):
     cfg: NavEnvCfg

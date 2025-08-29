@@ -13,10 +13,6 @@ from .waypoint import WAYPOINT_CFG
 from brain_sim_assets.props.maze import bsMazeGenerator
 from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
 
-# Private variables - only for use within this file
-_room_size = 40.0
-_wall_thickness = 2.0
-
 @configclass
 class NavEnvCfg(DirectRLEnvCfg):
     """
@@ -30,14 +26,7 @@ class NavEnvCfg(DirectRLEnvCfg):
     class NavSceneCfg(InteractiveSceneCfg):
         num_envs=4096 
         env_spacing = 40.0
-        replicate_physics=True
-        
-        def __post_init__(self):
-            wall_position = (_room_size - _wall_thickness) / 2
-            offset = (-wall_position, -wall_position, 0.0)
-            maze = bsMazeGenerator.create_example_maze(f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze_sq.txt", position_offset=offset)
-            walls_config = maze.get_wall_collection()
-            setattr(self, "wall_collection", walls_config)
+        replicate_physics=True            
 
     # env
     decimation = 4
@@ -54,20 +43,27 @@ class NavEnvCfg(DirectRLEnvCfg):
     # scene
     scene: NavSceneCfg = NavSceneCfg()
     env_spacing = scene.env_spacing
-
     waypoint_cfg = WAYPOINT_CFG
     static_friction = 1.0
     dynamic_friction = 1.0
 
     # Wall parameters
-    room_size = _room_size
+    room_size = 40.0
     num_goals = 10
-    wall_thickness = _wall_thickness
+    wall_thickness = 2.0
     wall_height = 3.0
     position_tolerance = waypoint_cfg.markers["marker1"].radius
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
-
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
+
+    wall_position = (room_size - wall_thickness) / 2
+    offset = (-wall_position, -wall_position, 0.0)
+    maze = bsMazeGenerator.create_example_maze(
+        f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze_sq.txt", 
+        position_offset=offset
+    )
+    walls_config = maze.get_wall_collection()
+    setattr(scene, "wall_collection", walls_config)
 
     # Terminations
     termination_on_goal_reached = True
