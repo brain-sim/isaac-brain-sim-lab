@@ -19,6 +19,10 @@ from isaaclab.utils import configclass
 from models import CNNPPOAgent, MLPPPOAgent
 from utils import load_args, print_dict, seed_everything, update_learning_rate_adaptive
 
+TASKS_BRAIN_SIM = {
+    "task1": "",
+    "task2": "",
+}
 
 @configclass
 class EnvArgs:

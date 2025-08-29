@@ -16,7 +16,7 @@ from .waypoint import WAYPOINT_CFG
 class SpotNavAvoidEnvCfg(NavEnvCfg):
     decimation = 16  # 2
     render_interval = 16
-    episode_length_s = 60.0
+    episode_length_s = 120.0
     action_space = 3
     img_size = [3, 128, 128]
     observation_space = (
@@ -55,7 +55,8 @@ class SpotNavAvoidEnvCfg(NavEnvCfg):
     wall_penalty_weight = -1.0  # -0.2
     linear_speed_weight = 0.0  # 0.05
     laziness_penalty_weight = 0.0  # -0.3
-    avoid_penalty_weight = 0.0  # 0.0
+    avoid_penalty_weight = -250.0  # 0.0
+
     fast_goal_reached_weight = 125.0
     heading_coefficient = 0.25
     heading_progress_weight = 0.0  # 0.05

@@ -22,13 +22,13 @@ from utils import load_args, print_dict, seed_everything, update_learning_rate_a
 
 @configclass
 class EnvArgs:
-    task: str = "Spot-Nav-v0"
+    task: str = "Brain-Sim-Spot-Nav-Avoid-v0"
     """the id of the environment"""
     env_cfg_entry_point: str = "env_cfg_entry_point"
     """the entry point of the environment configuration"""
-    num_envs: int = 4
+    num_envs: int = 512
     """the number of parallel environments to simulate"""
-    seed: int = 1
+    seed: int = 4
     """seed of the environment"""
     capture_video: bool = True
     """whether to capture videos of the agent performances (check out `videos` folder)"""
@@ -91,7 +91,7 @@ class ExperimentArgs:
     """Toggles whether or not to use a clipped loss for the value function, as per the paper."""
     ent_coef: float = 0.0  # 0.0
     """coefficient of the entropy"""
-    vf_coef: float = 0.5  # 0.5
+    vf_coef: float = 0.001  # 0.5
     """coefficient of the value function"""
     max_grad_norm: float = 1.0
     """the maximum norm for the gradient clipping"""
@@ -127,7 +127,7 @@ class ExperimentArgs:
     """number of environments to run for evaluation/play."""
     num_eval_env_steps: int = 200
     """number of steps to run for evaluation/play."""
-    log_interval: int = 10
+    log_interval: int = 1
     """number of iterations between logging."""
     log: bool = False
     """whether to log the training process."""
@@ -142,7 +142,7 @@ class ExperimentArgs:
     lr_multiplier: float = 1.5
     """Factor to multiply/divide learning rate by"""
 
-    img_size: list[int] = [3, 32, 32]
+    img_size: list[int] = [3, 128, 128]
     """the size of the image"""
     resume_from_checkpoint: str = ""
     """the path to the checkpoint to resume from"""
@@ -350,6 +350,7 @@ def main(args):
 
     if args.agent_type == "CNNPPOAgent":
         agent = CNNPPOAgent(n_obs, n_act, img_size=args.img_size)
+        print(colored(f"CNNPPOAgent, n_obs:{n_obs} n_act:{n_act}, img_size:{args.img_size}", "green", attrs=["bold"]))
         if args.resume_from_checkpoint:
             agent.load_from_checkpoint(args.resume_from_checkpoint)
             print(
