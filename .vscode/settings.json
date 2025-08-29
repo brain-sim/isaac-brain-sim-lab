@@ -1,0 +1,9 @@
+{
+    "python.analysis.extraPaths": [
+        "/home/yihao/Downloads/software/IsaacLab/source/isaaclab_rl",
+        "/home/yihao/Downloads/software/IsaacLab/source/isaaclab_mimic",
+        "/home/yihao/Downloads/software/IsaacLab/source/isaaclab",
+        "/home/yihao/Downloads/software/IsaacLab/source/isaaclab_assets",
+        "/home/yihao/Downloads/software/IsaacLab/source/isaaclab_tasks"
+    ]
+}
