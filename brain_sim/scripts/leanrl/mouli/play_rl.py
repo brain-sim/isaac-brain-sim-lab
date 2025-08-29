@@ -68,7 +68,7 @@ class ExperimentArgs:
     """path to the checkpoint to load"""
     num_eval_envs: int = 32
     """number of environments to run for evaluation/play."""
-    num_eval_env_steps: int = 1000
+    num_eval_env_steps: int = 10000
     """number of steps to run for evaluation/play."""
     agent: str = "CNNPPOAgent"
 
@@ -111,12 +111,14 @@ def make_isaaclab_env(
     **kwargs,
 ):
     import isaaclab_tasks  # noqa: F401
-    from isaaclab_rl.torchrl import (
-        IsaacLabVecEnvWrapper,
-    )
+    # from isaaclab_rl.torchrl import (
+    #     IsaacLabVecEnvWrapper,
+    # )
+    from wrappers import IsaacLabVecEnvWrapper
     from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
-    import brain_sim_tasks    # noqa: F401
+    import cognitiverl.tasks  # noqa: F401
+    # import brain_sim_tasks
 
     def thunk():
         cfg = parse_env_cfg(
@@ -190,7 +192,9 @@ def main(args):
     checkpoint = torch.load(
         args.checkpoint_path, map_location="cpu", weights_only=False
     )
-    agent.load_state_dict(checkpoint["ema_model_state_dict"])
+    # agent.load_state_dict(checkpoint["ema_model_state_dict"])
+    agent.load_state_dict(checkpoint["model_state_dict"])
+    print(colored("[INFO] : Agent loaded.", "green", attrs=["bold"]))
     device = (
         torch.device(args.device) if torch.cuda.is_available() else torch.device("cpu")
     )
@@ -282,10 +286,17 @@ def main(args):
 
 
 if __name__ == "__main__":
+    import traceback
     try:
         os.environ["WANDB_MODE"] = "dryrun"
         main(args)
     except Exception as e:
-        print("Exception:", e)
+        print(colored("❌ Exception occurred:", "red", attrs=["bold"]))
+        print(colored(f"Error: {e}", "red"))
+        print(colored("\n📍 Full traceback:", "yellow", attrs=["bold"]))
+        traceback.print_exc()  # This will show the exact line number
     finally:
         simulation_app.close()
+
+
+# python ./scripts/torchrl/play.py --task Spot-Nav-Avoid-v0 --num_eval_envs 16 --enable_cameras --checkpoint_path ./wandb/run-20250826_211204-2508f2oz/files/checkpoints/ckpt_4915200.pt
