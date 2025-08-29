@@ -34,16 +34,10 @@ class NavEnvCfg(DirectRLEnvCfg):
         
         def __post_init__(self):
             wall_position = (_room_size - _wall_thickness) / 2
-            maze = bsMazeGenerator.create_example_maze(f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze_sq.txt")
-            wall_configs = maze.get_wall_configs_dict()
-            for wall_name, wall_cfg in wall_configs.items():
-                original_pos = wall_cfg.init_state.pos
-                wall_cfg.init_state.pos = (
-                    original_pos[0] - wall_position,
-                    original_pos[1] - wall_position,
-                    original_pos[2]
-                )
-                setattr(self, wall_name, wall_cfg)
+            offset = (-wall_position, -wall_position, 0.0)
+            maze = bsMazeGenerator.create_example_maze(f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze_sq.txt", position_offset=offset)
+            walls_config = maze.get_wall_collection()
+            setattr(self, "wall_collection", walls_config)
 
     # env
     decimation = 4

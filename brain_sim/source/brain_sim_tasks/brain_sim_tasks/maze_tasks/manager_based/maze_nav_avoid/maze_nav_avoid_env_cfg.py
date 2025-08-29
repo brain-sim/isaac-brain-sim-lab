@@ -71,7 +71,7 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
             start_pos = start_goal[0]
             self.robot.init_state.pos = (start_pos[0], start_pos[1], 0.5)
         
-        wall_configs = maze.get_wall_configs_dict()
+        wall_configs = maze.get_wall_collection()
         for wall_name, wall_cfg in wall_configs.items():
             setattr(self, wall_name, wall_cfg)
 

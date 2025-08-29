@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional, Dict
 from brain_sim_ant_maze import bsAntMaze, bsAntMazeConfig
-from isaaclab.assets import RigidObjectCfg
+from isaaclab.assets import RigidObjectCfg, RigidObjectCollectionCfg
 
 from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
 from .brick import bsBrickGenerator
@@ -9,12 +9,13 @@ from .brick import bsBrickGenerator
 
 class bsMazeGenerator:
     
-    def __init__(self, maze_config_path: Optional[str] = None, maze_txt_path: Optional[str] = None):
+    def __init__(self, maze_config_path: Optional[str] = None, maze_txt_path: Optional[str] = None, position_offset: tuple = (0.0, 0.0, 0.0)):
         self._walls = []
         self._maze_config = None
         self._maze_txt_path = None
         self._maze = None
         self._start_goal = None
+        self._position_offset = position_offset
         
         self._wall_height = 2.0
         self._cell_size = 1.0
@@ -29,14 +30,14 @@ class bsMazeGenerator:
             self.create_maze(self._maze)
 
     @classmethod
-    def create_example_maze(cls, maze_txt_path_in: Optional[str] = None):
+    def create_example_maze(cls, maze_txt_path_in: Optional[str] = None, position_offset: tuple = (0.0, 0.0, 0.0)):
         if maze_txt_path_in is None:        
             maze_txt_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze.txt"
         else:
             maze_txt_path = maze_txt_path_in
         
         maze_config_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_config.json"
-        return cls(maze_config_path, maze_txt_path)
+        return cls(maze_config_path, maze_txt_path, position_offset)
 
     def setup(self):
         if self._maze_config:
@@ -60,10 +61,10 @@ class bsMazeGenerator:
         start_pos = maze.get_start_position()
         goal_pos = maze.get_goal_position()
         
-        world_start_x = start_pos[1] * self._cell_size
-        world_start_y = start_pos[0] * self._cell_size
-        world_goal_x = goal_pos[1] * self._cell_size
-        world_goal_y = goal_pos[0] * self._cell_size
+        world_start_x = start_pos[1] * self._cell_size + self._position_offset[0]
+        world_start_y = start_pos[0] * self._cell_size + self._position_offset[1]
+        world_goal_x = goal_pos[1] * self._cell_size + self._position_offset[0]
+        world_goal_y = goal_pos[0] * self._cell_size + self._position_offset[1]
 
         self._start_goal = [
             [world_start_x, world_start_y], 
@@ -79,9 +80,9 @@ class bsMazeGenerator:
         for i in range(height):
             for j in range(width):
                 if maze_grid[i, j] > 0 :
-                    world_x = j * self._cell_size
-                    world_y = i * self._cell_size
-                    world_z = self._wall_height / 2
+                    world_x = j * self._cell_size + self._position_offset[0]
+                    world_y = i * self._cell_size + self._position_offset[1]
+                    world_z = self._wall_height / 2 + self._position_offset[2]
                     
                     wall_cfg = bsBrickGenerator.get_brick_object(
                         prim_path=f"{{ENV_REGEX_NS}}/wall_{len(self._walls)}",
@@ -103,8 +104,10 @@ class bsMazeGenerator:
     def get_start_goal(self) -> Optional[List[List[float]]]:
         return self._start_goal if self._start_goal else None
 
-    def get_wall_configs_dict(self) -> Dict[str, RigidObjectCfg]:
+    def get_wall_collection(self) -> RigidObjectCollectionCfg:
         wall_dict = {}
         for i, wall_cfg in enumerate(self._walls):
             wall_dict[f"wall_{i}"] = wall_cfg
-        return wall_dict
+        return RigidObjectCollectionCfg(
+            rigid_objects=wall_dict
+        )
