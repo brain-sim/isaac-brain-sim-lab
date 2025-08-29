@@ -13,7 +13,7 @@ from . import agents
 
 
 gym.register(
-    id="Brain-Sim-Maze-Low-Level-Test-v0",
+    id="Train-Maze-Low-Level-v0",
     entry_point="brain_sim_tasks.maze_tasks.manager_based:bsMazeManagerRLEnv",
     disable_env_checker=True,
     kwargs={

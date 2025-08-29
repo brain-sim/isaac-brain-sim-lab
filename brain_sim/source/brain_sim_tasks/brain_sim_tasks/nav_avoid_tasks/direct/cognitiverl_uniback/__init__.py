@@ -16,7 +16,7 @@ from . import agents
 ##
 
 gym.register(
-    id="Test-Leatherback-Nav-v0",
+    id="Test-Uniback-Leatherback-Nav-v0",
     entry_point=f"{__name__}.leatherback_nav_env:LeatherbackNavEnv",
     disable_env_checker=True,
     kwargs={
@@ -25,7 +25,7 @@ gym.register(
 )
 
 gym.register(
-    id="Test-Spot-Nav-v0",
+    id="Test-Uniback-Spot-Nav-v0",
     entry_point=f"{__name__}.spot_nav_env:SpotNavEnv",
     disable_env_checker=True,
     kwargs={
@@ -34,7 +34,7 @@ gym.register(
 )
 
 gym.register(
-    id="Test-Spot-Nav-Rough-v0",
+    id="Test-Uniback-Spot-Nav-Rough-v0",
     entry_point=f"{__name__}.spot_nav_rough_height_env:SpotNavRoughHeightEnv",
     disable_env_checker=True,
     kwargs={
@@ -43,7 +43,7 @@ gym.register(
 )
 
 gym.register(
-    id="Test-Spot-Nav-Rough-v1",
+    id="Test-Uniback-Spot-Nav-Rough-v1",
     entry_point=f"{__name__}.spot_nav_rough_env:SpotNavRoughEnv",
     disable_env_checker=True,
     kwargs={
@@ -52,7 +52,7 @@ gym.register(
 )
 
 gym.register(
-    id="Test-Spot-Nav-Avoid-v0",
+    id="Test-Uniback-Spot-Nav-Avoid-v0",
     entry_point=f"{__name__}.spot_nav_avoid_env:SpotNavAvoidEnv",
     disable_env_checker=True,
     kwargs={
@@ -61,7 +61,7 @@ gym.register(
 )
 
 gym.register(
-    id="Test-Spot-Nav-Grid-v0",
+    id="Test-Uniback-Spot-Nav-Grid-v0",
     entry_point=f"{__name__}.spot_nav_rough_grid_height_env:SpotNavRoughGridHeightEnv",
     disable_env_checker=True,
     kwargs={
@@ -74,7 +74,7 @@ Trains
 """
 
 gym.register(
-    id="Train-Leatherback-Nav-v0",
+    id="Train-Uniback-Leatherback-Nav-v0",
     entry_point=f"{__name__}.leatherback_nav_env:LeatherbackNavEnv",
     disable_env_checker=True,
     kwargs={
@@ -83,7 +83,7 @@ gym.register(
 )
 
 gym.register(
-    id="Train-Spot-Nav-v0",
+    id="Train-Uniback-Spot-Nav-v0",
     entry_point=f"{__name__}.spot_nav_env:SpotNavEnv",
     disable_env_checker=True,
     kwargs={
@@ -92,7 +92,7 @@ gym.register(
 )
 
 gym.register(
-    id="Train-Spot-Nav-Rough-v0",
+    id="Train-Uniback-Spot-Nav-Rough-v0",
     entry_point=f"{__name__}.spot_nav_rough_height_env:SpotNavRoughHeightEnv",
     disable_env_checker=True,
     kwargs={
@@ -101,7 +101,7 @@ gym.register(
 )
 
 gym.register(
-    id="Train-Spot-Nav-Rough-v1",
+    id="Train-Uniback-Spot-Nav-Rough-v1",
     entry_point=f"{__name__}.spot_nav_rough_env:SpotNavRoughEnv",
     disable_env_checker=True,
     kwargs={
@@ -110,7 +110,7 @@ gym.register(
 )
 
 gym.register(
-    id="Train-Spot-Nav-Avoid-v0",
+    id="Train-Uniback-Spot-Nav-Avoid-v0",
     entry_point=f"{__name__}.spot_nav_avoid_env:SpotNavAvoidEnv",
     disable_env_checker=True,
     kwargs={
@@ -119,7 +119,7 @@ gym.register(
 )
 
 gym.register(
-    id="Train-Spot-Nav-Grid-v0",
+    id="Train-Uniback-Spot-Nav-Grid-v0",
     entry_point=f"{__name__}.spot_nav_rough_grid_height_env:SpotNavRoughGridHeightEnv",
     disable_env_checker=True,
     kwargs={
