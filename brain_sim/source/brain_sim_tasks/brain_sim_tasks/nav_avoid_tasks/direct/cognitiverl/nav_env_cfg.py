@@ -32,6 +32,7 @@ class NavEnvCfg(DirectRLEnvCfg):
 
     # simulation
     sim: SimulationCfg = SimulationCfg(dt=1 / 60, render_interval=decimation)
+    sim.create_stage_in_memory = True
 
     img_size = [3, 128, 128]
     observation_space = (
