@@ -9,9 +9,7 @@ from isaaclab.sim import SimulationCfg
 from isaaclab.utils import configclass
 
 from .waypoint import WAYPOINT_CFG
-
-from brain_sim_assets.props.maze import bsMazeGenerator
-from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR
+from .walls import WallConfiguration
 
 @configclass
 class NavEnvCfg(DirectRLEnvCfg):
@@ -56,14 +54,9 @@ class NavEnvCfg(DirectRLEnvCfg):
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 
-    wall_position = (room_size - wall_thickness) / 2
-    offset = (-wall_position, -wall_position, 0.0)
-    maze = bsMazeGenerator.create_example_maze(
-        f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze_sq.txt", 
-        position_offset=offset
-    )
-    walls_config = maze.get_wall_collection()
-    setattr(scene, "wall_collection", walls_config)
+    # Initialize wall configuration (not a CFG but an interface to bsMaze) and apply to scene
+    wall_config = WallConfiguration(room_size, wall_thickness, wall_height)
+    wall_config.apply_to_scene_cfg(scene)
 
     # Terminations
     termination_on_goal_reached = True

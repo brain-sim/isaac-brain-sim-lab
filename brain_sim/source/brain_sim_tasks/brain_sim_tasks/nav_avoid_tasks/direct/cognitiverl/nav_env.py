@@ -635,21 +635,10 @@ class NavEnv(DirectRLEnv):
 
         robot_pose[:, :3] += self.scene.env_origins[env_ids]
 
-        # CHANGE: Set car position to be randomly inside the room rather than outside of it
-        # Use smaller margins to keep car away from walls
-        safe_room_size = self.room_size // 2
-
-        # Random position inside the room with margin
-        robot_pose[:, 0] += (
-            torch.rand(num_reset, dtype=torch.float32, device=self.device)
-            * safe_room_size
-            - safe_room_size / 2
+        random_positions = self.cfg.wall_config.get_random_valid_positions(
+            num_reset, device=self.device
         )
-        robot_pose[:, 1] += (
-            torch.rand(num_reset, dtype=torch.float32, device=self.device)
-            * safe_room_size
-            - safe_room_size / 2
-        )
+        robot_pose[:, :2] = random_positions[:, :2] + self.scene.env_origins[env_ids, :2]
 
         # Keep random rotation for variety
         angles = (
