@@ -34,6 +34,9 @@ class NavEnv(DirectRLEnv):
         self.env_spacing = getattr(cfg, "env_spacing", 40.0)
 
         super().__init__(cfg, render_mode, **kwargs)
+
+        self.cfg.wall_config.update_device(self.device)
+
         self._setup_robot_dof_idx()
         self._goal_reached = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.int32
@@ -695,42 +698,14 @@ class NavEnv(DirectRLEnv):
         self._previous_heading_error = self._heading_error.clone()
 
     def _get_distance_to_walls(self):
-        """Calculate the minimum distance from the robot to the nearest wall.
+        """Calculate the distance from the robot to the nearest wall using precomputed distance field.
         Returns:
-            torch.Tensor: Minimum distance to nearest wall for each environment (num_envs,)
+            torch.Tensor: Distance to nearest wall edge for each environment (num_envs,)
+                         All values are positive since robots are guaranteed to spawn in open spaces.
         """
-        # Get robot positions and environment origins
-        robot_positions = self.robot.data.root_pos_w[
-            :, :2
-        ]  # Shape: (num_envs, 2) - XY positions
-        env_origins = self.scene.env_origins[
-            :, :2
-        ]  # Get XY origins for each environment
-
-        # Calculate relative positions within each environment
-        relative_positions = (
-            robot_positions - env_origins
-        )  # Subtract environment origin
-        # Distance to walls (positive means inside the room)
-        north_dist = (
-            self.wall_position - relative_positions[:, 1]
-        )  # Distance to north wall (y+)
-        south_dist = (
-            self.wall_position + relative_positions[:, 1]
-        )  # Distance to south wall (y-)
-        east_dist = (
-            self.wall_position - relative_positions[:, 0]
-        )  # Distance to east wall (x+)
-        west_dist = (
-            self.wall_position + relative_positions[:, 0]
-        )  # Distance to west wall (x-)
-
-        # Stack all distances and get the minimum
-        wall_distances = torch.stack(
-            [north_dist, south_dist, east_dist, west_dist], dim=1
-        )
-        min_wall_distance = torch.min(wall_distances, dim=1)[
-            0
-        ]  # Get minimum distance for each environment
-
-        return min_wall_distance
+        robot_positions = self.robot.data.root_pos_w[:, :2]
+        env_origins = self.scene.env_origins[:, :2]
+        
+        relative_positions = robot_positions - env_origins
+        
+        return self.cfg.wall_config.get_wall_distances_raycast(relative_positions)

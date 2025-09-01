@@ -356,7 +356,7 @@ class SpotNavAvoidEnv(NavEnv):
         # Add wall distance penalty
         min_wall_dist = self._get_distance_to_walls()
         danger_distance = (
-            self.wall_thickness / 2 + 5.0
+            self.wall_thickness / 2 + 0.5
         )  # Distance at which to start penalizing
         wall_penalty = torch.nan_to_num(
             torch.where(
