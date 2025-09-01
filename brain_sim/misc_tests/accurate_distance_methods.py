@@ -20,7 +20,7 @@ from typing import Tuple, List
 
 
 class AccurateDistanceCalculator:
-    def __init__(self, maze_grid, cell_size=1.0):
+    def __init__(self, maze_grid, cell_size=2.0):
         """
         Args:
             maze_grid: 2D numpy array where 0=open, 1=wall
@@ -471,12 +471,21 @@ def create_test_maze():
 
 
 def main():
+    
     print("Creating distance calculation comparison...")
     maze = create_test_maze()
-    calc = AccurateDistanceCalculator(maze, cell_size=1.0)
     
-    # Test at a challenging position (near corner)
-    test_x, test_y = 2.8, 2.2  # Near corner
+    # Test with different cell sizes to see the effect
+    cell_size = 2.0
+    
+    print(f"\n{'='*50}")
+    print(f"Testing with cell_size = {cell_size}")
+    print(f"{'='*50}")
+    
+    calc = AccurateDistanceCalculator(maze, cell_size=cell_size)
+    
+    # Test at a challenging position (near corner) - scale with cell size
+    test_x, test_y = 2.8 * cell_size, 2.2 * cell_size  # Near corner
     
     print(f"\nTesting at position ({test_x}, {test_y}):")
     results = calc.compare_methods(test_x, test_y)
@@ -487,23 +496,23 @@ def main():
     for method, data in results.items():
         print(f"{method:<10} {data['distance']:<10.4f} {data['time']:<10.4f}")
     
-    print("\nGenerating comparison visualization...")
+    print(f"\nGenerating comparison visualization for cell_size = {cell_size}...")
     fig, heatmaps = calc.visualize_method_comparison(resolution=60)
-    fig.suptitle("Distance Calculation Method Comparison", fontsize=16)
+    fig.suptitle(f"Distance Calculation Method Comparison (cell_size = {cell_size})", fontsize=16)
     plt.show()
     
-    print("\nGenerating contour comparison...")
+    print(f"\nGenerating contour comparison for cell_size = {cell_size}...")
     fig_contour, distance_fields = calc.visualize_contour_comparison(resolution=80)
-    fig_contour.suptitle("Distance Field Contour Analysis", fontsize=16)
+    fig_contour.suptitle(f"Distance Field Contour Analysis (cell_size = {cell_size})", fontsize=16)
     plt.show()
     
-    print("\nAnalyzing gradient smoothness...")
+    print(f"\nAnalyzing gradient smoothness for cell_size = {cell_size}...")
     fig_gradient = calc.analyze_gradient_smoothness(resolution=60)
-    fig_gradient.suptitle("Distance Field Gradient Analysis", fontsize=16)
+    fig_gradient.suptitle(f"Distance Field Gradient Analysis (cell_size = {cell_size})", fontsize=16)
     plt.show()
     
     # Performance comparison with multiple points
-    print("\nPerformance test (100 random points):")
+    print(f"\nPerformance test (100 random points) for cell_size = {cell_size}:")
     np.random.seed(42)
     test_points = []
     for _ in range(100):
