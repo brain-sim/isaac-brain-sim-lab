@@ -22,7 +22,7 @@ class CNNPPOAgent(BaseAgent):
         critic_hidden_dims: List[int] = [512, 256, 128],
         activation: type[nn.Module] = nn.ELU,
         noise_std_type: str = "scalar",
-        init_noise_std: float = 1.0,
+        init_noise_std: float = 1.5,
         device: str = "cuda:0",
         dtype: torch.dtype = torch.float32,
     ):
@@ -45,6 +45,7 @@ class CNNPPOAgent(BaseAgent):
             output_dim=n_act,
             hidden_dims=actor_hidden_dims,
             activation=activation,
+            # output_activation=nn.Tanh,  # Add tanh as output activation
         )
 
         self.critic = self.build_networks(
@@ -63,6 +64,16 @@ class CNNPPOAgent(BaseAgent):
             raise ValueError(f"Invalid noise_std_type: {noise_std_type}")
 
         Normal.set_default_validate_args(False)
+
+        # Add ImageNet normalization constants as buffers
+        self.register_buffer(
+            "imagenet_mean", 
+            torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+        )
+        self.register_buffer(
+            "imagenet_std", 
+            torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+        )
 
         # Move to device and set precision
         self.to(self.device, self.dtype)
@@ -92,20 +103,25 @@ class CNNPPOAgent(BaseAgent):
         """Extract features from image input."""
         batch_size = x.size(0)
         c, h, w = self.img_size
-
+        
         # Reshape to image format
         imgs = x[:, : c * h * w].view(batch_size, c, h, w)
-
+        
+        # Images are already in [0, 1] from environment
+        # Apply ImageNet normalization for MobileNetV3
+        imgs = (imgs - self.imagenet_mean) / self.imagenet_std
+        
         # Extract features
         with torch.no_grad():
             features = self.backbone(imgs)
-
+        
         return features.view(batch_size, -1)
 
     def get_action(self, x: torch.Tensor) -> torch.Tensor:
         """Compute action from input."""
         features = self.extract_features(x)
-        return self.actor(features)
+        action = self.actor(features)
+        return action
 
     def get_value(self, x: torch.Tensor) -> torch.Tensor:
         """Compute state-value from input."""
@@ -151,7 +167,8 @@ class CNNPPOAgent(BaseAgent):
             load_ema (bool): Whether to load EMA weights instead of regular weights
         """
         # Load the checkpoint
-        checkpoint = torch.load(checkpoint_path, map_location="cpu")
+        # weights_only=False is safe here since we're loading our own checkpoints
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
 
         # Handle different checkpoint formats
         if load_ema and "ema_model_state_dict" in checkpoint:
@@ -168,13 +185,14 @@ class CNNPPOAgent(BaseAgent):
         current_state_dict = self.state_dict()
 
         # Define layers to skip (these depend on image size)
-        skip_keys = {
-            "backbone.0.0.weight",  # First conv layer
-            "actor.0.weight",  # First actor layer
-            "actor.0.bias",  # First actor layer bias
-            "critic.0.weight",  # First critic layer
-            "critic.0.bias",  # First critic layer bias
-        }
+        # skip_keys = {
+        #     "backbone.0.0.weight",  # First conv layer
+        #     "actor.0.weight",  # First actor layer
+        #     "actor.0.bias",  # First actor layer bias
+        #     "critic.0.weight",  # First critic layer
+        #     "critic.0.bias",  # First critic layer bias
+        # }
+        skip_keys = set()
 
         # Create new state dict, skipping size-dependent layers
         new_state_dict = {}
@@ -185,7 +203,7 @@ class CNNPPOAgent(BaseAgent):
             if key in skip_keys:
                 skipped_layers.append(key)
                 print(f"Skipping size-dependent layer: {key}")
-                continue
+                continue # ← THIS SKIPS ADDING TO new_state_dict!
 
             # All other layers must match exactly
             if key not in current_state_dict:
