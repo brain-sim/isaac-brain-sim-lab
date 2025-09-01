@@ -23,6 +23,8 @@ class SpotNavAvoidEnv(NavEnv):
         **kwargs,
     ):
         super().__init__(cfg, render_mode, **kwargs)
+        # Counter for low-level decimation
+        self._physics_step_counter = 0
         # Add room size as a class attribute
         self._goal_reached = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.int32
@@ -132,6 +134,9 @@ class SpotNavAvoidEnv(NavEnv):
         self.termination_on_goal_reached = self.cfg.termination_on_goal_reached
         self.termination_on_vehicle_flip = self.cfg.termination_on_vehicle_flip
         self.termination_on_stuck = self.cfg.termination_on_stuck
+        
+        # Initialize current joint targets
+        self._current_joint_targets = self._default_pos.clone()
 
     def _setup_camera(self):
         camera_prim_path = "/World/envs/env_.*/Robot/body/Camera"
@@ -174,35 +179,41 @@ class SpotNavAvoidEnv(NavEnv):
         self._actions[:, 1:] = torch.clamp(
             self._actions[:, 1:], min=-self.steering_max, max=self.steering_max
         )
+        # Reset physics step counter for new env step
+        self._physics_step_counter = 0
 
     def _apply_action(self) -> None:
-        # --- Vectorized low-level Spot policy call for all environments ---
-        # Gather all required robot state as torch tensors
-        # TODO: Replace the following with actual command logic per environment
-        default_pos = self._default_pos.clone()  # [num_envs, 12]
-        # The following assumes your robot exposes these as torch tensors of shape [num_envs, ...]
-        lin_vel_I = self.robot.data.root_lin_vel_w  # [num_envs, 3]
-        ang_vel_I = self.robot.data.root_ang_vel_w  # [num_envs, 3]
-        q_IB = self.robot.data.root_quat_w  # [num_envs, 4]
-        joint_pos = self.robot.data.joint_pos  # [num_envs, 12]
-        joint_vel = self.robot.data.joint_vel  # [num_envs, 12]
-        # Compute actions for all environments
-        actions = self.policy.get_action(
-            lin_vel_I,
-            ang_vel_I,
-            q_IB,
-            self._actions,
-            self._low_level_previous_action,
-            default_pos,
-            joint_pos,
-            joint_vel,
-        )
-        # Update previous action buffer
-        self._low_level_previous_action = actions.detach()
-        # Scale and offset actions as in Spot reference policy
-        joint_positions = self._default_pos + actions * self.ACTION_SCALE
-        # Apply joint position targets directly
-        self.robot.set_joint_position_target(joint_positions)
+        # Only compute new low-level actions every low_level_decimation steps
+        if self._physics_step_counter % self.cfg.low_level_decimation == 0:
+            # --- Vectorized low-level Spot policy call for all environments ---
+            # Gather all required robot state as torch tensors
+            default_pos = self._default_pos.clone()  # [num_envs, 12]
+            # The following assumes your robot exposes these as torch tensors of shape [num_envs, ...]
+            lin_vel_I = self.robot.data.root_lin_vel_w  # [num_envs, 3]
+            ang_vel_I = self.robot.data.root_ang_vel_w  # [num_envs, 3]
+            q_IB = self.robot.data.root_quat_w  # [num_envs, 4]
+            joint_pos = self.robot.data.joint_pos  # [num_envs, 12]
+            joint_vel = self.robot.data.joint_vel  # [num_envs, 12]
+            # Compute actions for all environments
+            actions = self.policy.get_action(
+                lin_vel_I,
+                ang_vel_I,
+                q_IB,
+                self._actions,
+                self._low_level_previous_action,
+                default_pos,
+                joint_pos,
+                joint_vel,
+            )
+            # Update previous action buffer
+            self._low_level_previous_action = actions.detach()
+            # Scale and offset actions as in Spot reference policy
+            self._current_joint_targets = self._default_pos + actions * self.ACTION_SCALE
+        
+        # Apply the current joint position targets (reuse from previous calculation if within decimation)
+        self.robot.set_joint_position_target(self._current_joint_targets)
+        # Increment physics step counter
+        self._physics_step_counter += 1
 
     def _get_image_obs(self) -> torch.Tensor:
         image_obs = self.camera.data.output["rgb"].float().permute(0, 3, 1, 2) / 255.0
