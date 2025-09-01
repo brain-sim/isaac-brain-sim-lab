@@ -708,4 +708,4 @@ class NavEnv(DirectRLEnv):
         
         relative_positions = robot_positions - env_origins
         
-        return self.cfg.wall_config.get_wall_distances_raycast(relative_positions)
+        return self.cfg.wall_config.get_wall_distances(relative_positions)

@@ -9,7 +9,7 @@ from isaaclab.sim import SimulationCfg
 from isaaclab.utils import configclass
 
 from .waypoint import WAYPOINT_CFG
-from .walls import WallConfiguration
+from .walls_raycast import WallConfiguration
 
 @configclass
 class NavEnvCfg(DirectRLEnvCfg):

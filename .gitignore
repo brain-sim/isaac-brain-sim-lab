@@ -1,6 +1,6 @@
-brain_sim/logs/
-brain_sim/outputs/
-brain_sim/wandb/
+logs/
+outputs/
+wandb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -16,5 +16,3 @@ BRAIN_SIM_ASSETS_ROBOTS_CONFIG_DIR = os.path.join(os.path.dirname(__file__), "ro
 BRAIN_SIM_ASSETS_METADATA = toml.load(os.path.join(BRAIN_SIM_ASSETS_EXT_DIR, "config", "extension.toml"))
 
 __version__ = BRAIN_SIM_ASSETS_METADATA["package"]["version"]
-
-from .props import *

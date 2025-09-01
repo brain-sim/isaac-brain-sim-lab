@@ -23,7 +23,6 @@ class WallConfiguration:
         self.device = torch.device(device) if isinstance(device, str) else device
         self._maze_generator = None
         self._distance_field = None
-        self._wall_segments = None
         
     def update_device(self, device: str | torch.device):
         """Update the device and move existing tensors to the new device."""
@@ -34,9 +33,6 @@ class WallConfiguration:
             
             if self._distance_field is not None:
                 self._distance_field = self._distance_field.to(self.device)
-                
-            if self._wall_segments is not None:
-                self._wall_segments = self._wall_segments.to(self.device)
         
     def _get_maze_generator(self):
         if self._maze_generator is None:
@@ -159,61 +155,6 @@ class WallConfiguration:
         )
         
         self._distance_field = torch.clamp(self._distance_field, min=0.0)
-        
-        self._precompute_wall_segments()
-    
-    def _precompute_wall_segments(self):
-        if self._wall_segments is not None:
-            return
-            
-        maze_generator = self._get_maze_generator()
-        maze_grid = maze_generator._maze.get_maze()
-        cell_size = maze_generator._cell_size
-        offset = self.get_position_offset()
-        H, W = maze_grid.shape
-        
-        wall_segments = []
-        
-        # Extract wall edges that border open space
-        for y in range(H):
-            for x in range(W):
-                if maze_grid[y, x] == 1:  # wall cell
-                    # Convert to world coordinates
-                    world_x = x * cell_size + offset[0]
-                    world_y = y * cell_size + offset[1]
-                    
-                    # Top edge (if borders open space above)
-                    if y == H - 1 or maze_grid[y + 1, x] == 0:
-                        wall_segments.append([
-                            world_x, world_y + cell_size,  # start point
-                            world_x + cell_size, world_y + cell_size  # end point
-                        ])
-                    
-                    # Bottom edge (if borders open space below)
-                    if y == 0 or maze_grid[y - 1, x] == 0:
-                        wall_segments.append([
-                            world_x, world_y,  # start point
-                            world_x + cell_size, world_y  # end point
-                        ])
-                    
-                    # Left edge (if borders open space to the left)
-                    if x == 0 or maze_grid[y, x - 1] == 0:
-                        wall_segments.append([
-                            world_x, world_y,  # start point
-                            world_x, world_y + cell_size  # end point
-                        ])
-                    
-                    # Right edge (if borders open space to the right)
-                    if x == W - 1 or maze_grid[y, x + 1] == 0:
-                        wall_segments.append([
-                            world_x + cell_size, world_y,  # start point
-                            world_x + cell_size, world_y + cell_size  # end point
-                        ])
-        
-        if wall_segments:
-            self._wall_segments = torch.tensor(wall_segments, dtype=torch.float32, device=self.device)
-        else:
-            self._wall_segments = torch.empty((0, 4), dtype=torch.float32, device=self.device)
     
     def get_wall_distances(self, robot_positions: torch.Tensor) -> torch.Tensor:
         
@@ -251,50 +192,3 @@ class WallConfiguration:
         distances = d0 * (1 - fy) + d1 * fy  # final interpolation
         
         return distances
-    
-    def get_wall_distances_raycast(self, robot_positions: torch.Tensor) -> torch.Tensor:
-        assert self._wall_segments is not None, "Wall segments should be computed"
-        
-        # Ensure wall segments are on the same device as robot positions
-        if self._wall_segments.device != robot_positions.device:
-            self._wall_segments = self._wall_segments.to(robot_positions.device)
-        
-        if self._wall_segments.numel() == 0:
-            return torch.full((len(robot_positions),), float('inf'), 
-                            device=robot_positions.device, dtype=torch.float32)
-        
-        offset = self.get_position_offset()
-        robot_xy = robot_positions[:, :2] - torch.tensor([offset[0], offset[1]], 
-                                                        device=robot_positions.device, dtype=torch.float32)
-        
-        # Shape: (M, 4) where M is number of wall segments, format: [x1, y1, x2, y2]
-        segments = self._wall_segments
-        
-        N = robot_xy.shape[0]
-        M = segments.shape[0]
-        
-        robots = robot_xy.unsqueeze(1)  # (N, 1, 2)
-        seg_start = segments[:, :2].unsqueeze(0)  # (1, M, 2) - [x1, y1]
-        seg_end = segments[:, 2:].unsqueeze(0)    # (1, M, 2) - [x2, y2]
-        
-        seg_vec = seg_end - seg_start
-        robot_vec = robots - seg_start
-        
-        seg_length_sq = torch.sum(seg_vec ** 2, dim=2, keepdim=True)  # (1, M, 1)
-        seg_length_sq = torch.clamp(seg_length_sq, min=1e-8)
-        
-        # Project robot onto segment line: (N, M, 1)
-        # t = dot(robot_vec, seg_vec) / seg_length_sq
-        t = torch.sum(robot_vec * seg_vec, dim=2, keepdim=True) / seg_length_sq
-        t = torch.clamp(t, 0.0, 1.0)
-        
-        # Closest point on segment: (N, M, 2)
-        closest_point = seg_start + t * seg_vec
-        
-        # Distance from robot to closest point: (N, M)
-        distances_to_segments = torch.norm(robots.squeeze(1).unsqueeze(1) - closest_point, dim=2)
-        
-        # Find minimum distance to any segment for each robot: (N,)
-        min_distances, _ = torch.min(distances_to_segments, dim=1)
-        
-        return min_distances
