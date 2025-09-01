@@ -52,16 +52,15 @@ class WallConfiguration:
     
     def create_maze_configuration(self, maze_file: str | None = None):
         if maze_file is None:
-            return self._get_maze_generator().get_wall_collection()
-        else:
-            offset = self.get_position_offset()
-            maze = bsMazeGenerator.create_example_maze(
-                f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/{maze_file}", 
-                position_offset=offset
-            )
-            if self._wall_segments is None:
-                self._precompute_wall_segments()
-            return maze.get_wall_collection()
+            maze_file = self.maze_file
+        offset = self.get_position_offset()
+        maze = bsMazeGenerator.create_example_maze(
+            f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/{maze_file}", 
+            position_offset=offset
+        )
+        if self._wall_segments is None:
+            self._precompute_wall_segments()
+        return maze.get_wall_collection()
     
     def apply_to_scene_cfg(self, scene, maze_file: str | None = None):
         if maze_file is None:
@@ -82,7 +81,6 @@ class WallConfiguration:
                     cell_x = x * cell_size + offset[0]
                     cell_y = y * cell_size + offset[1]
                     valid_cells.append((cell_x, cell_y, cell_size))
-        
         return valid_cells
     
     def get_random_valid_position(self, device=None) -> torch.Tensor:
@@ -93,9 +91,9 @@ class WallConfiguration:
         cell_x, cell_y, cell_size = random.choice(valid_cells)
         
         margin = 0.5
-        min_pos = margin
-        max_pos = cell_size - margin
-        
+        min_pos = 0.0 - cell_size / 2 + margin
+        max_pos = 0.0 + cell_size / 2 - margin
+
         x = cell_x + random.uniform(min_pos, max_pos)
         y = cell_y + random.uniform(min_pos, max_pos)
         
@@ -118,8 +116,8 @@ class WallConfiguration:
         margin = 0.5
         
         for cell_x, cell_y, cell_size in selected_cells:
-            min_pos = margin
-            max_pos = cell_size - margin
+            min_pos = 0.0 - cell_size / 2 + margin
+            max_pos = 0.0 + cell_size / 2 - margin
             
             x = cell_x + random.uniform(min_pos, max_pos)
             y = cell_y + random.uniform(min_pos, max_pos)
@@ -137,7 +135,6 @@ class WallConfiguration:
         maze_generator = self._get_maze_generator()
         maze_grid = maze_generator._maze.get_maze()
         cell_size = maze_generator._cell_size
-        offset = self.get_position_offset()
         H, W = maze_grid.shape
         
         wall_segments = []
@@ -147,8 +144,8 @@ class WallConfiguration:
             for x in range(W):
                 if maze_grid[y, x] == 1:  # wall cell
                     # Convert to world coordinates
-                    world_x = x * cell_size + offset[0]
-                    world_y = y * cell_size + offset[1]
+                    world_x = x * cell_size + (-self.room_size) / 2
+                    world_y = y * cell_size + (-self.room_size) / 2
                     
                     # Top edge (if borders open space above)
                     if y == H - 1 or maze_grid[y + 1, x] == 0:
@@ -185,18 +182,10 @@ class WallConfiguration:
     
     def get_wall_distances(self, robot_positions: torch.Tensor) -> torch.Tensor:
         assert self._wall_segments is not None, "Wall segments should be computed"
-        
-        # Ensure wall segments are on the same device as robot positions
-        if self._wall_segments.device != robot_positions.device:
-            self._wall_segments = self._wall_segments.to(robot_positions.device)
-        
         if self._wall_segments.numel() == 0:
             return torch.full((len(robot_positions),), float('inf'), 
                             device=robot_positions.device, dtype=torch.float32)
-        
-        offset = self.get_position_offset()
-        robot_xy = robot_positions[:, :2] - torch.tensor([offset[0], offset[1]], 
-                                                        device=robot_positions.device, dtype=torch.float32)
+        robot_xy = robot_positions[:, :2]
         
         # Shape: (M, 4) where M is number of wall segments, format: [x1, y1, x2, y2]
         segments = self._wall_segments

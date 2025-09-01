@@ -16,6 +16,15 @@ from . import agents
 ##
 
 gym.register(
+    id="Unit-Test-Spot-Nav-Avoid-v0",
+    entry_point=f"{__name__}.spot_nav_avoid_env:SpotNavAvoidEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.spot_nav_avoid_env_cfg:SpotNavAvoidEnvCfg",
+    },
+)
+
+gym.register(
     id="Test-Leatherback-Nav-v0",
     entry_point=f"{__name__}.leatherback_nav_env:LeatherbackNavEnv",
     disable_env_checker=True,

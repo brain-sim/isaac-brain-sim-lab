@@ -698,7 +698,7 @@ class NavEnv(DirectRLEnv):
         self._previous_heading_error = self._heading_error.clone()
 
     def _get_distance_to_walls(self):
-        """Calculate the distance from the robot to the nearest wall using precomputed distance field.
+        """Calculate the distance from the robot to the nearest wall using precomputed distance field/segments.
         Returns:
             torch.Tensor: Distance to nearest wall edge for each environment (num_envs,)
                          All values are positive since robots are guaranteed to spawn in open spaces.
