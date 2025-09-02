@@ -48,7 +48,7 @@ class SpotNavAvoidEnvCfg(NavEnvCfg):
             friction_offset_threshold=0.04,
             friction_correlation_distance=0.025,
             gpu_max_rigid_contact_count=524288,
-            gpu_max_rigid_patch_count=81920,
+            gpu_max_rigid_patch_count=150000,
             gpu_found_lost_pairs_capacity=524288,
             gpu_found_lost_aggregate_pairs_capacity=1048576,
             gpu_total_aggregate_pairs_capacity=524288,
