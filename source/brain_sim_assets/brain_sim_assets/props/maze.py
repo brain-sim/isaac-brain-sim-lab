@@ -93,7 +93,7 @@ class bsMazeGenerator:
 
         for i in range(height):
             for j in range(width):
-                if maze_grid[i, j] > 0 :
+                if maze_grid[i, j] > 0 and maze_grid[i, j] < 999:
                     world_x = j * self._cell_size + self._position_offset[0]
                     world_y = i * self._cell_size + self._position_offset[1]
                     world_z = self._wall_height / 2 + self._position_offset[2]

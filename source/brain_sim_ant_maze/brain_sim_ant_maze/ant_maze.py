@@ -110,6 +110,8 @@ class bsAntMaze:
                 elif char == 'B':
                     maze[i, j] = 0  # Buttons are on free space
                     buttons.append((i, j))
+                elif char == 'N':
+                    maze[i, j] = 999
                 else:
                     raise ValueError(f"Invalid character '{char}' at position ({i}, {j})")
         
