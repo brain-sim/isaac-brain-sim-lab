@@ -10,7 +10,7 @@ from brain_sim_assets import BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR
 
 from .nav_env import NavEnv
 from .linear_maze_env_cfg import LinearMazeEnvCfg
-from .spot_policy_controller import SpotPolicyController
+from brain_sim_assets.robots.spot import bsSpotLowLevelPolicyVanilla
 
 
 class LinearMazeEnv(NavEnv):
@@ -69,7 +69,7 @@ class LinearMazeEnv(NavEnv):
                 attrs=["bold"],
             )
         )
-        self.policy = SpotPolicyController(policy_file_path)
+        self.policy = bsSpotLowLevelPolicyVanilla(policy_file_path)
         self._low_level_previous_action = torch.zeros(
             (self.num_envs, 12), device=self.device, dtype=torch.float32
         )
