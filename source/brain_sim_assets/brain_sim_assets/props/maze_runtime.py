@@ -10,16 +10,16 @@ class bsMazeRuntime:
     def __init__(
             self, 
             room_size: float = 40.0, 
-            wall_thickness: float = 2.0, 
-            wall_height: float = 3.0, 
+            cell_size: float = 2.0,
             maze_file: str = "example_maze_sq_3_wall.txt",
+            maze_config: str = "example_config.json",
             device: str | torch.device = "cpu"
         ):
 
         self.room_size = room_size
-        self.wall_thickness = wall_thickness
-        self.wall_height = wall_height
+        self.cell_size = cell_size
         self.maze_file = maze_file
+        self.maze_config = maze_config
         self.device = torch.device(device) if isinstance(device, str) else device
         self._maze_generator = None
         self._wall_segments = None
@@ -39,48 +39,54 @@ class bsMazeRuntime:
             offset = self.get_position_offset()
             self._maze_generator = bsMazeGenerator.create_example_maze(
                 f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/{self.maze_file}", 
+                f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/{self.maze_config}",
                 position_offset=offset
             )
         return self._maze_generator
         
     def get_wall_position(self) -> float:
-        return (self.room_size - self.wall_thickness) / 2
+        return (self.room_size - self.cell_size) / 2
     
     def get_position_offset(self) -> tuple:
         wall_position = self.get_wall_position()
         return (-wall_position, -wall_position, 0.0)
-    
-    def create_maze_configuration(self, maze_file: str | None = None):
+
+    def create_maze_configuration(self, maze_file: str | None = None, maze_config: str | None = None):
         if maze_file is None:
             maze_file = self.maze_file
+        if maze_config is None:
+            maze_config = self.maze_config
         offset = self.get_position_offset()
         maze = bsMazeGenerator.create_example_maze(
             f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/{maze_file}", 
+            f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/{maze_config}",
             position_offset=offset
         )
         if self._wall_segments is None:
             self._precompute_wall_segments()
         return maze.get_wall_collection()
-    
-    def apply_to_scene_cfg(self, scene, maze_file: str | None = None):
+
+    def apply_to_scene_cfg(self, scene, maze_file: str | None = None, maze_config: str | None = None):
         if maze_file is None:
             maze_file = self.maze_file
-        walls_config = self.create_maze_configuration(maze_file)
+        if maze_config is None:
+            maze_config = self.maze_config
+        walls_config = self.create_maze_configuration(maze_file, maze_config)
         setattr(scene, "wall_collection", walls_config)
 
     def _get_valid_positions(self, valid_indicator: int | str = 0):
         maze_generator = self._get_maze_generator()
         maze_grid = maze_generator._maze.get_maze()
         offset = self.get_position_offset()
-        cell_size = maze_generator._cell_size
+        self.cell_size = maze_generator._cell_size
         
         valid_cells = []
         for y in range(len(maze_grid)):
             for x in range(len(maze_grid[0])):
                 if maze_grid[y][x] == valid_indicator:
-                    cell_x = x * cell_size + offset[0]
-                    cell_y = y * cell_size + offset[1]
-                    valid_cells.append((cell_x, cell_y, cell_size))
+                    cell_x = x * self.cell_size + offset[0]
+                    cell_y = y * self.cell_size + offset[1]
+                    valid_cells.append((cell_x, cell_y, self.cell_size))
         return valid_cells
     
     def get_random_valid_position(self, valid_indicator: int | str = 0, device=None) -> torch.Tensor:
@@ -137,7 +143,7 @@ class bsMazeRuntime:
             
         maze_generator = self._get_maze_generator()
         maze_grid = maze_generator._maze.get_maze()
-        cell_size = maze_generator._cell_size
+        self.cell_size = maze_generator._cell_size
         H, W = len(maze_grid), len(maze_grid[0])
         
         wall_segments = []
@@ -147,35 +153,35 @@ class bsMazeRuntime:
             for x in range(W):
                 if self.is_wall(maze_grid[y][x]):  # wall cell
                     # Convert to world coordinates
-                    world_x = x * cell_size + (-self.room_size) / 2
-                    world_y = y * cell_size + (-self.room_size) / 2
+                    world_x = x * self.cell_size + (-self.room_size) / 2
+                    world_y = y * self.cell_size + (-self.room_size) / 2
                     
                     # Top edge (if borders open space above)
                     if y == H - 1 or not self.is_wall(maze_grid[y + 1][x]):
                         wall_segments.append([
-                            world_x, world_y + cell_size,  # start point
-                            world_x + cell_size, world_y + cell_size  # end point
+                            world_x, world_y + self.cell_size,  # start point
+                            world_x + self.cell_size, world_y + self.cell_size  # end point
                         ])
                     
                     # Bottom edge (if borders open space below)
                     if y == 0 or not self.is_wall(maze_grid[y - 1][x]):
                         wall_segments.append([
                             world_x, world_y,  # start point
-                            world_x + cell_size, world_y  # end point
+                            world_x + self.cell_size, world_y  # end point
                         ])
                     
                     # Left edge (if borders open space to the left)
                     if x == 0 or not self.is_wall(maze_grid[y][x - 1]):
                         wall_segments.append([
                             world_x, world_y,  # start point
-                            world_x, world_y + cell_size  # end point
+                            world_x, world_y + self.cell_size  # end point
                         ])
                     
                     # Right edge (if borders open space to the right)
                     if x == W - 1 or not self.is_wall(maze_grid[y][x + 1]):
                         wall_segments.append([
-                            world_x + cell_size, world_y,  # start point
-                            world_x + cell_size, world_y + cell_size  # end point
+                            world_x + self.cell_size, world_y,  # start point
+                            world_x + self.cell_size, world_y + self.cell_size  # end point
                         ])
         
         if wall_segments:

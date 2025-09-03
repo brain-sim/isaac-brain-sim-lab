@@ -13,8 +13,8 @@ from .spot_policy_controller import SpotPolicyController
 
 
 class LinearMazeEnv(NavEnv):
-    cfg: LinearMazeEnvCfg  # type: ignore[override]
-    ACTION_SCALE = 0.2  # Scale for policy output (delta from default pose)
+    cfg: LinearMazeEnvCfg  
+    ACTION_SCALE = 0.2  
 
     def __init__(
         self,
@@ -23,7 +23,6 @@ class LinearMazeEnv(NavEnv):
         **kwargs,
     ):
         super().__init__(cfg, render_mode, **kwargs)
-        # Add room size as a class attribute
         self._goal_reached = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.int32
         )
@@ -44,13 +43,9 @@ class LinearMazeEnv(NavEnv):
         self._target_index = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.int32
         )
-
-        # Add accumulated laziness tracker
         self._accumulated_laziness = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.float32
         )
-
-        # Add avoid goal collision tracking
         self._episode_avoid_collisions = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.int32
         )
@@ -62,8 +57,6 @@ class LinearMazeEnv(NavEnv):
         self._dof_idx, _ = self.robot.find_joints(self.cfg.dof_name)
 
     def _setup_config(self):
-        # --- Low-level Spot policy integration ---
-        # TODO: Set the correct path to your TorchScript policy file
         policy_file_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
             "custom_assets",
@@ -77,7 +70,6 @@ class LinearMazeEnv(NavEnv):
             )
         )
         self.policy = SpotPolicyController(policy_file_path)
-        # Buffers for previous action and default joint positions
         self._low_level_previous_action = torch.zeros(
             (self.num_envs, 12), device=self.device, dtype=torch.float32
         )
@@ -118,7 +110,6 @@ class LinearMazeEnv(NavEnv):
             (self.num_envs,), self.max_episode_length, device=self.device
         )
 
-        # Add avoid penalty weight
         self.avoid_penalty_weight = self.cfg.avoid_penalty_weight
         self.fast_goal_reached_bonus = self.cfg.fast_goal_reached_weight
         self.avoid_goal_position_tolerance = self.cfg.avoid_goal_position_tolerance
@@ -356,7 +347,7 @@ class LinearMazeEnv(NavEnv):
         # Add wall distance penalty
         min_wall_dist = self._get_distance_to_walls()
         danger_distance = (
-            0.5
+            0.1
         )  # Distance at which to start penalizing
         wall_penalty = torch.nan_to_num(
             torch.where(
@@ -392,14 +383,7 @@ class LinearMazeEnv(NavEnv):
             < self._target_index.unsqueeze(1)
         )
         marker_indices[target_mask] = 2
-        # Original implementation:
-        # for env_idx in range(self.num_envs):
-        #     target_idx = self._target_index[env_idx].item()
-        #     if target_idx > 0:  # If we've passed at least one waypoint
-        #         marker_indices[env_idx, :target_idx] = 2
-        # Flatten and convert to list
         marker_indices = marker_indices.view(-1).tolist()
-        # Update visualizations
         self.waypoints.visualize(marker_indices=marker_indices)
         return {
             "Episode_Reward/goal_reached_reward": goal_reached_reward,
