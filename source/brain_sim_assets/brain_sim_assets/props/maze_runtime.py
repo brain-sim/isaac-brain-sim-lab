@@ -5,14 +5,14 @@ import random
 import numpy as np
 
 
-class WallConfiguration:
+class bsMazeRuntime:
     
     def __init__(
             self, 
             room_size: float = 40.0, 
             wall_thickness: float = 2.0, 
             wall_height: float = 3.0, 
-            maze_file: str = "example_maze_sq.txt",
+            maze_file: str = "example_maze_sq_3_wall.txt",
             device: str | torch.device = "cpu"
         ):
 
@@ -67,24 +67,24 @@ class WallConfiguration:
             maze_file = self.maze_file
         walls_config = self.create_maze_configuration(maze_file)
         setattr(scene, "wall_collection", walls_config)
-    
-    def _get_valid_positions(self):
+
+    def _get_valid_positions(self, valid_indicator: int | str = 0):
         maze_generator = self._get_maze_generator()
         maze_grid = maze_generator._maze.get_maze()
         offset = self.get_position_offset()
         cell_size = maze_generator._cell_size
         
         valid_cells = []
-        for y in range(maze_grid.shape[0]):
-            for x in range(maze_grid.shape[1]):
-                if maze_grid[y, x] == 0:
+        for y in range(len(maze_grid)):
+            for x in range(len(maze_grid[0])):
+                if maze_grid[y][x] == valid_indicator:
                     cell_x = x * cell_size + offset[0]
                     cell_y = y * cell_size + offset[1]
                     valid_cells.append((cell_x, cell_y, cell_size))
         return valid_cells
     
-    def get_random_valid_position(self, device=None) -> torch.Tensor:
-        valid_cells = self._get_valid_positions()
+    def get_random_valid_position(self, valid_indicator: int | str = 0, device=None) -> torch.Tensor:
+        valid_cells = self._get_valid_positions(valid_indicator)
         if not valid_cells:
             raise ValueError("No valid positions found in maze")
         
@@ -102,8 +102,8 @@ class WallConfiguration:
             position = position.to(device)
         return position
     
-    def get_random_valid_positions(self, num_positions: int, device=None) -> torch.Tensor:
-        valid_cells = self._get_valid_positions()
+    def get_random_valid_positions(self, num_positions: int, valid_indicator: int | str = 0, device=None) -> torch.Tensor:
+        valid_cells = self._get_valid_positions(valid_indicator)
         if not valid_cells:
             raise ValueError("No valid positions found in maze")
         
@@ -127,7 +127,10 @@ class WallConfiguration:
         if device is not None:
             result = result.to(device)
         return result
-    
+
+    def is_wall(self, indicator):
+        return type(indicator) is int and indicator > 0 and indicator < 999
+
     def _precompute_wall_segments(self):
         if self._wall_segments is not None:
             return
@@ -135,41 +138,41 @@ class WallConfiguration:
         maze_generator = self._get_maze_generator()
         maze_grid = maze_generator._maze.get_maze()
         cell_size = maze_generator._cell_size
-        H, W = maze_grid.shape
+        H, W = len(maze_grid), len(maze_grid[0])
         
         wall_segments = []
         
         # Extract wall edges that border open space
         for y in range(H):
             for x in range(W):
-                if maze_grid[y, x] == 1:  # wall cell
+                if self.is_wall(maze_grid[y][x]):  # wall cell
                     # Convert to world coordinates
                     world_x = x * cell_size + (-self.room_size) / 2
                     world_y = y * cell_size + (-self.room_size) / 2
                     
                     # Top edge (if borders open space above)
-                    if y == H - 1 or maze_grid[y + 1, x] == 0:
+                    if y == H - 1 or not self.is_wall(maze_grid[y + 1][x]):
                         wall_segments.append([
                             world_x, world_y + cell_size,  # start point
                             world_x + cell_size, world_y + cell_size  # end point
                         ])
                     
                     # Bottom edge (if borders open space below)
-                    if y == 0 or maze_grid[y - 1, x] == 0:
+                    if y == 0 or not self.is_wall(maze_grid[y - 1][x]):
                         wall_segments.append([
                             world_x, world_y,  # start point
                             world_x + cell_size, world_y  # end point
                         ])
                     
                     # Left edge (if borders open space to the left)
-                    if x == 0 or maze_grid[y, x - 1] == 0:
+                    if x == 0 or not self.is_wall(maze_grid[y][x - 1]):
                         wall_segments.append([
                             world_x, world_y,  # start point
                             world_x, world_y + cell_size  # end point
                         ])
                     
                     # Right edge (if borders open space to the right)
-                    if x == W - 1 or maze_grid[y, x + 1] == 0:
+                    if x == W - 1 or not self.is_wall(maze_grid[y][x + 1]):
                         wall_segments.append([
                             world_x + cell_size, world_y,  # start point
                             world_x + cell_size, world_y + cell_size  # end point

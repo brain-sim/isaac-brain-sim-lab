@@ -15,15 +15,15 @@ sys.path.insert(0, os.path.join(source_dir, 'brain_sim_tasks'))
 sys.path.insert(0, os.path.join(source_dir, 'brain_sim_assets'))
 sys.path.insert(0, os.path.join(source_dir, 'brain_sim_ant_maze'))
 
-from brain_sim_tasks.nav_avoid_tasks.direct.cognitiverl.walls_raycast import WallConfiguration
+from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 
 
 class TestRaycastingDistanceCalculation():
     
     def __init__(self):
-        self.config = WallConfiguration(room_size=20.0,
+        self.config = bsMazeRuntime(room_size=20.0,
                                         wall_thickness=2.0,
-                                        maze_file="example_maze_unit_test.txt")
+                                        maze_file="linear_maze.txt")
         self.config.create_maze_configuration()
         print(self.config._wall_segments)
         print(self.config.get_position_offset())

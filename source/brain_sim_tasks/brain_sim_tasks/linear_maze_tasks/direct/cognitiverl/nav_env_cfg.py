@@ -79,7 +79,7 @@ class NavEnvCfg(DirectRLEnvCfg):
 
     # Wall parameters
     room_size = 40.0
-    num_goals = 10
+    num_goals = 1
     wall_thickness = 2.0
     wall_height = 3.0
     position_tolerance = waypoint_cfg.markers["marker1"].radius
@@ -87,7 +87,7 @@ class NavEnvCfg(DirectRLEnvCfg):
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 
     # Initialize wall configuration (not a CFG but an interface to bsMaze) and apply to scene
-    wall_config = bsMazeRuntime(room_size, wall_thickness, wall_height)
+    wall_config = bsMazeRuntime(room_size, wall_thickness, wall_height, maze_file="linear_maze.txt")
     wall_config.apply_to_scene_cfg(scene)
 
     # Terminations

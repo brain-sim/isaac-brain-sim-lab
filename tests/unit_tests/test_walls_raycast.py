@@ -14,50 +14,50 @@ sys.path.insert(0, os.path.join(source_dir, 'brain_sim_tasks'))
 sys.path.insert(0, os.path.join(source_dir, 'brain_sim_assets'))
 sys.path.insert(0, os.path.join(source_dir, 'brain_sim_ant_maze'))
 
-from brain_sim_tasks.nav_avoid_tasks.direct.cognitiverl.walls_raycast import WallConfiguration
+from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 
 
-class TestWallConfiguration(unittest.TestCase):
+class TestbsMazeRuntime(unittest.TestCase):
     
     def setUp(self):
-        if WallConfiguration is None:
-            self.skipTest("WallConfiguration not available")
+        if bsMazeRuntime is None:
+            self.skipTest("bsMazeRuntime not available")
             
         self.device = torch.device('cpu')
         self.room_size = 40.0
         self.wall_thickness = 2.0
         self.wall_height = 3.0
-        self.maze_file = "example_maze_sq.txt"
+        self.maze_file = "example_maze_unit_test.txt"
         
     def test_initialization_default_parameters(self):
-        config = WallConfiguration()
+        config = bsMazeRuntime(maze_file="example_maze_unit_test.txt")
         
         self.assertEqual(config.room_size, 40.0)
         self.assertEqual(config.wall_thickness, 2.0)
         self.assertEqual(config.wall_height, 3.0)
-        self.assertEqual(config.maze_file, "example_maze_sq.txt")
+        self.assertEqual(config.maze_file, "example_maze_unit_test.txt")
         self.assertEqual(config.device, torch.device('cpu'))
         self.assertIsNone(config._maze_generator)
         self.assertIsNone(config._wall_segments)
         
     def test_initialization_custom_parameters(self):
         custom_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        config = WallConfiguration(
+        config = bsMazeRuntime(
             room_size=80.0,
             wall_thickness=4.0,
             wall_height=4.0,
-            maze_file="custom_maze.txt",
+            maze_file="example_maze_unit_test.txt",
             device=custom_device
         )
         
         self.assertEqual(config.room_size, 80.0)
         self.assertEqual(config.wall_thickness, 4.0)
         self.assertEqual(config.wall_height, 4.0)
-        self.assertEqual(config.maze_file, "custom_maze.txt")
+        self.assertEqual(config.maze_file, "example_maze_unit_test.txt")
         self.assertEqual(config.device, custom_device)
         
     def test_device_update(self):
-        config = WallConfiguration(device='cpu')
+        config = bsMazeRuntime(device='cpu')
         
         if torch.cuda.is_available():
             config.update_device('cuda')
@@ -67,13 +67,13 @@ class TestWallConfiguration(unittest.TestCase):
         self.assertEqual(config.device, torch.device('cpu'))
         
     def test_wall_position_calculation(self):
-        config = WallConfiguration(room_size=40.0, wall_thickness=2.0)
+        config = bsMazeRuntime(room_size=40.0, wall_thickness=2.0)
         wall_position = config.get_wall_position()
         expected_position = (40.0 - 2.0) / 2
         self.assertEqual(wall_position, expected_position)
         
     def test_position_offset_calculation(self):
-        config = WallConfiguration(room_size=40.0, wall_thickness=2.0)
+        config = bsMazeRuntime(room_size=40.0, wall_thickness=2.0)
         offset = config.get_position_offset()
         expected_wall_position = (40.0 - 2.0) / 2
         expected_offset = (-expected_wall_position, -expected_wall_position, 0.0)
@@ -83,12 +83,12 @@ class TestWallConfiguration(unittest.TestCase):
 class TestWallSegmentPrecomputation(unittest.TestCase):
     
     def setUp(self):
-        if WallConfiguration is None:
-            self.skipTest("WallConfiguration not available")
+        if bsMazeRuntime is None:
+            self.skipTest("bsMazeRuntime not available")
             
-        self.config = WallConfiguration()
+        self.config = bsMazeRuntime()
         
-    @patch('brain_sim_tasks.nav_avoid_tasks.direct.cognitiverl.walls_raycast.bsMazeGenerator')
+    @patch('brain_sim_assets.props.maze_runtime.bsMazeGenerator')
     def test_wall_segment_precomputation(self, mock_maze_generator):
         """Test wall segment precomputation from maze grid."""
         # Mock maze generator and maze grid
@@ -117,10 +117,10 @@ class TestWallSegmentPrecomputation(unittest.TestCase):
 class TestRaycastingDistanceCalculation(unittest.TestCase):
     
     def setUp(self):
-        if WallConfiguration is None:
-            self.skipTest("WallConfiguration not available")
+        if bsMazeRuntime is None:
+            self.skipTest("bsMazeRuntime not available")
             
-        self.config = WallConfiguration(room_size=20.0,
+        self.config = bsMazeRuntime(room_size=20.0,
                                         wall_thickness=2.0,
                                         maze_file="example_maze_unit_test.txt")
         self.config.create_maze_configuration()
@@ -160,12 +160,12 @@ class TestRaycastingDistanceCalculation(unittest.TestCase):
 
 class TestPositionValidation(unittest.TestCase):    
     def setUp(self):
-        if WallConfiguration is None:
-            self.skipTest("WallConfiguration not available")
+        if bsMazeRuntime is None:
+            self.skipTest("bsMazeRuntime not available")
             
-        self.config = WallConfiguration()
+        self.config = bsMazeRuntime()
         
-    @patch('brain_sim_tasks.nav_avoid_tasks.direct.cognitiverl.walls_raycast.bsMazeGenerator')
+    @patch('brain_sim_assets.props.maze_runtime.bsMazeGenerator')
     def test_random_valid_position_generation(self, mock_maze_generator):
         return
 
@@ -190,7 +190,7 @@ class TestPositionValidation(unittest.TestCase):
         self.assertEqual(position.shape, (3,))  # [x, y, z]
         self.assertEqual(position[2].item(), 0.0)  # Z should be 0
         
-    @patch('brain_sim_tasks.nav_avoid_tasks.direct.cognitiverl.walls_raycast.bsMazeGenerator')
+    @patch('brain_sim_assets.props.maze_runtime.bsMazeGenerator')
     def test_multiple_random_valid_positions(self, mock_maze_generator):
         return
         mock_maze_instance = MagicMock()

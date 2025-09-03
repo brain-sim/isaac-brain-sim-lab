@@ -35,8 +35,7 @@ import torch
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import parse_env_cfg
 
-import brain_sim_tasks.maze_tasks 
-import brain_sim_tasks.nav_avoid_tasks
+import brain_sim_tasks
 
 def main():
     """Zero actions agent with Isaac Lab environment."""

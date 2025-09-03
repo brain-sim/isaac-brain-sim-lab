@@ -86,14 +86,17 @@ class bsMazeGenerator:
             maze = self._maze
         self._create_walls(maze)
 
+    def is_wall(self, indicator):
+        return type(indicator) is int and indicator > 0 and indicator < 999
+
     def _create_walls(self, maze: bsAntMaze):
         """Original method - kept for backwards compatibility but deprecated."""
         maze_grid = maze.get_maze()
-        height, width = maze_grid.shape
+        height, width = len(maze_grid), len(maze_grid[0])
 
         for i in range(height):
             for j in range(width):
-                if maze_grid[i, j] > 0 and maze_grid[i, j] < 999:
+                if self.is_wall(maze_grid[i][j]):
                     world_x = j * self._cell_size + self._position_offset[0]
                     world_y = i * self._cell_size + self._position_offset[1]
                     world_z = self._wall_height / 2 + self._position_offset[2]
@@ -107,7 +110,7 @@ class bsMazeGenerator:
                             self._cell_size, 
                             self._wall_height
                         ),
-                        type=f"{maze_grid[i, j]}"
+                        type=f"{maze_grid[i][j]}"
                     )
                     
                     self._walls.append(wall_cfg)

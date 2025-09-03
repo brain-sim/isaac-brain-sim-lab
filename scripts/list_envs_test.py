@@ -27,8 +27,7 @@ simulation_app = app_launcher.app
 import gymnasium as gym
 from prettytable import PrettyTable
 
-import brain_sim_tasks.maze_tasks
-import brain_sim_tasks.nav_avoid_tasks
+import brain_sim_tasks
 
 
 def main():
