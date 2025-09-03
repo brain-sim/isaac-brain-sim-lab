@@ -81,7 +81,7 @@ class LinearMazeEnvCfg(NavEnvCfg):
 
     # Goal waypoints configuration
     waypoint_cfg = WAYPOINT_CFG
-    position_tolerance = waypoint_cfg.markers["marker1"].radius
+    position_tolerance = 1.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
 
     # Reward Coefficients

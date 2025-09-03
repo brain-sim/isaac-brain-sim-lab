@@ -82,7 +82,7 @@ class NavEnvCfg(DirectRLEnvCfg):
     num_goals = 1
     wall_thickness = 2.0
     wall_height = 3.0
-    position_tolerance = waypoint_cfg.markers["marker1"].radius
+    position_tolerance = 1.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 
