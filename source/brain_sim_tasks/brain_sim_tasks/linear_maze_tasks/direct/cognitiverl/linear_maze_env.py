@@ -6,6 +6,7 @@ import torch
 from isaaclab.sensors.camera import TiledCamera, TiledCameraCfg
 from isaaclab.sim.spawners.sensors.sensors_cfg import PinholeCameraCfg
 from termcolor import colored
+from brain_sim_assets import BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR
 
 from .nav_env import NavEnv
 from .linear_maze_env_cfg import LinearMazeEnvCfg
@@ -58,8 +59,7 @@ class LinearMazeEnv(NavEnv):
 
     def _setup_config(self):
         policy_file_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "custom_assets",
+            BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR,
             self.cfg.policy_file_path,
         )
         print(
