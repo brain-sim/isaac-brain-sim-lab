@@ -8,7 +8,7 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg, PhysxCfg
 from isaaclab.utils import configclass
 
-from .waypoint import WAYPOINT_CFG
+from brain_sim_assets.props.waypoint import WAYPOINT_CFG
 from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 
 @configclass

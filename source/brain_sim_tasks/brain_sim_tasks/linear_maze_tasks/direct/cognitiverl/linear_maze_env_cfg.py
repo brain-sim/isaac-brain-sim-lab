@@ -9,7 +9,7 @@ from isaaclab.utils import configclass
 from isaaclab_assets.robots.spot import SPOT_CFG
 
 from .nav_env_cfg import NavEnvCfg
-from .waypoint import WAYPOINT_CFG
+from brain_sim_assets.props.waypoint import WAYPOINT_CFG
 
 
 @configclass
