@@ -87,7 +87,7 @@ class NavEnvCfg(DirectRLEnvCfg):
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 
     # Initialize wall configuration (not a CFG but an interface to bsMaze) and apply to scene
-    wall_config = bsMazeRuntime(room_size, wall_thickness, wall_height)
+    wall_config = bsMazeRuntime(room_size)
     wall_config.apply_to_scene_cfg(scene)
 
     # Terminations

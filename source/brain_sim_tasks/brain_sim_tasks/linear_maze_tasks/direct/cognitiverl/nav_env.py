@@ -15,6 +15,7 @@ from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
 from isaaclab.utils import math
 
 from .nav_env_cfg import NavEnvCfg
+import numpy as np
 
 class NavEnv(DirectRLEnv):
     cfg: NavEnvCfg
@@ -28,10 +29,9 @@ class NavEnv(DirectRLEnv):
         play_mode: bool = False,
         **kwargs,
     ):
-        # Add room size as a class attribut
-        self.room_size = getattr(cfg, "room_size", 40.0)
+        self.room_size = getattr(cfg, "room_size", 20.0)
         self._num_goals = getattr(cfg, "num_goals", 1)
-        self.env_spacing = getattr(cfg, "env_spacing", 40.0)
+        self.env_spacing = getattr(cfg, "env_spacing", 20.0)
 
         super().__init__(cfg, render_mode, **kwargs)
 
@@ -53,28 +53,21 @@ class NavEnv(DirectRLEnv):
         self._target_index = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.int32
         )
-
-        # Add accumulated laziness tracker
         self._accumulated_laziness = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.float32
         )
-
-        # Add episode metrics
         self._episode_waypoints_passed = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.int32
         )
         self._episode_reward_buf = torch.zeros(
             (self.num_envs), device=self.device, dtype=torch.float32
         )
-
-        # Add RSL-style logging buffers
         self._episode_reward_infos_buf = {}
         self._metrics_infos_buf = {}
         self._terminations_infos_buf = defaultdict(
             lambda: torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
         )
 
-        # Add reward tracking for step rewards
         self._step_rewards_buffer = []
         self._episode_step_rewards = []
 
@@ -93,15 +86,14 @@ class NavEnv(DirectRLEnv):
         raise NotImplementedError("Subclass must implement this method")
 
     def _setup_plane(self):
-        # Create a large ground plane without grid
         spawn_ground_plane(
             prim_path="/World/ground",
             cfg=GroundPlaneCfg(
                 size=(
                     4096 * 40.0,
                     4096 * 40.0,
-                ),  # Much larger ground plane (500m x 500m)
-                color=(0.2, 0.2, 0.2),  # Dark gray color
+                ),  
+                color=(0.2, 0.2, 0.2),  
                 physics_material=sim_utils.RigidBodyMaterialCfg(
                     friction_combine_mode="multiply",
                     restitution_combine_mode="multiply",
@@ -115,26 +107,19 @@ class NavEnv(DirectRLEnv):
     def _setup_scene(self):
         self._setup_plane()
 
-        # Setup rest of the scene
         self.robot = Articulation(self.cfg.robot_cfg)
         self._setup_camera()
         self.waypoints = VisualizationMarkers(self.cfg.waypoint_cfg)
         self.object_state = []
 
-        # FIRST: Clone environments to initialize env_origins
         self.scene.clone_environments(copy_from_source=False)
         self.scene.filter_collisions(global_prim_paths=[])
         self.scene.articulations["robot"] = self.robot
 
-        # Import the necessary classes and NumPy
-        import numpy as np
-
-        # Define wall properties
         self.wall_thickness = self.cfg.wall_thickness
         self.wall_height = self.cfg.wall_height
         self.wall_position = (self.room_size - self.wall_thickness) / 2
 
-        # Add lighting
         light_cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
         light_cfg.func("/World/Light", light_cfg)
 
@@ -183,17 +168,14 @@ class NavEnv(DirectRLEnv):
             env_ids: A tensor of environment IDs that have been reset.
         """
         if len(env_ids) > 0:
-            # log episode length
             log_infos = {}
             log_infos["Metrics/episode_length"] = torch.mean(
                 self.episode_length_buf[env_ids].float()
             ).item()
-            # calculate and log completion percentage
             completion_frac = (
                 self._episode_waypoints_passed[env_ids].float() / self._num_goals
             )
             log_infos["Metrics/success_rate"] = torch.mean(completion_frac).item()
-            # log episode reward
             log_infos["Metrics/episode_reward"] = torch.mean(
                 self._episode_reward_buf[env_ids].float()
             ).item()
@@ -207,7 +189,6 @@ class NavEnv(DirectRLEnv):
                 self._episode_reward_buf[env_ids].float().max().item()
             )
 
-            # Add avoid goal collision metrics if they exist
             if hasattr(self, "_episode_avoid_collisions"):
                 log_infos["Metrics/avoid_collisions_per_episode"] = torch.mean(
                     self._episode_avoid_collisions[env_ids].float()
@@ -219,66 +200,31 @@ class NavEnv(DirectRLEnv):
             self.extras["log"].update(log_infos)
 
     def step(self, action: torch.Tensor) -> VecEnvStepReturn:
-        """Execute one time-step of the environment's dynamics.
-
-        The environment steps forward at a fixed time-step, while the physics simulation is decimated at a
-        lower time-step. This is to ensure that the simulation is stable. These two time-steps can be configured
-        independently using the :attr:`DirectRLEnvCfg.decimation` (number of simulation steps per environment step)
-        and the :attr:`DirectRLEnvCfg.sim.physics_dt` (physics time-step). Based on these parameters, the environment
-        time-step is computed as the product of the two.
-
-        This function performs the following steps:
-
-        1. Pre-process the actions before stepping through the physics.
-        2. Apply the actions to the simulator and step through the physics in a decimated manner.
-        3. Compute the reward and done signals.
-        4. Reset environments that have terminated or reached the maximum episode length.
-        5. Apply interval events if they are enabled.
-        6. Compute observations.
-
-        Args:
-            action: The actions to apply on the environment. Shape is (num_envs, action_dim).
-
-        Returns:
-            A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
-        """
+        
         action = action.to(self.device)
-        # add action noise
         if self.cfg.action_noise_model:
             action = self._action_noise_model.apply(action)
 
-        # process actions
         self._pre_physics_step(action)
 
-        # check if we need to do rendering within the physics loop
-        # note: checked here once to avoid multiple checks within the loop
         is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors()
 
-        # perform physics stepping
         for _ in range(self.cfg.decimation):
             self._sim_step_counter += 1
-            # set actions into buffers
             self._apply_action()
-            # set actions into simulator
             self.scene.write_data_to_sim()
-            # simulate
             self.sim.step(render=False)
-            # render between steps only if the GUI or an RTX sensor needs it
-            # note: we assume the render interval to be the shortest accepted rendering interval.
-            #    If a camera needs rendering at a faster frequency, this will lead to unexpected behavior.
             if (
                 self._sim_step_counter % self.cfg.sim.render_interval == 0
                 and is_rendering
             ):
                 self.sim.render()
-            # update buffers at sim dt
             self.scene.update(dt=self.physics_dt)
 
         self.camera.update(dt=self.step_dt)
         if hasattr(self, "height_scanner"):
             self.height_scanner.update(dt=self.step_dt)
-        # post-step:
-        # -- update env counters (used for curriculum generation)
+        
         self.episode_length_buf += 1  # step in current episode (per env)
         self.common_step_counter += 1  # total step (common for all envs)
         self.extras["log"] = {}
@@ -293,29 +239,22 @@ class NavEnv(DirectRLEnv):
         )  # [num_envs]
         self._episode_reward_buf += self.reward_buf
 
-        # -- reset envs that terminated/timed-out and log the episode information
         reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
 
         if len(reset_env_ids) > 0:
             self._log_episode_info(reset_env_ids)
             self._reset_idx(reset_env_ids)
-            # update articulation kinematics
             self.scene.write_data_to_sim()
             self.sim.forward()
-            # if sensors are added to the scene, make sure we render to reflect changes in reset
             if self.sim.has_rtx_sensors() and self.cfg.rerender_on_reset:
                 self.sim.render()
 
-        # post-step: step interval event
         if self.cfg.events:
             if "interval" in self.event_manager.available_modes:
                 self.event_manager.apply(mode="interval", dt=self.step_dt)
 
-        # update observations
         self.obs_buf = self._get_observations()
 
-        # add observation noise
-        # note: we apply no noise to the state space (since it is used for critic networks)
         if self.cfg.observation_noise_model:
             self.obs_buf["policy"] = self._observation_noise_model.apply(
                 self.obs_buf["policy"]
@@ -324,7 +263,6 @@ class NavEnv(DirectRLEnv):
             if k != "policy":
                 del self.obs_buf[k]
 
-        # Add RSL-style log data to extras
         self.extras["log"].update(self._populate_step_log_dict())
         self.extras["log"].update(termination_infos)
         self.extras["log"].update(
@@ -334,7 +272,6 @@ class NavEnv(DirectRLEnv):
             }
         )
 
-        # return observations, rewards, resets and extras
         return (
             self.obs_buf,
             self.reward_buf,
@@ -344,36 +281,12 @@ class NavEnv(DirectRLEnv):
         )
 
     def render(self, recompute: bool = False) -> np.ndarray | None:
-        """Run rendering without stepping through the physics.
-
-        By convention, if mode is:
-
-        - **human**: Render to the current display and return nothing. Usually for human consumption.
-        - **rgb_array**: Return an numpy.ndarray with shape (x, y, 3), representing RGB values for an
-          x-by-y pixel image, suitable for turning into a video.
-
-        Args:
-            recompute: Whether to force a render even if the simulator has already rendered the scene.
-                Defaults to False.
-
-        Returns:
-            The rendered image as a numpy array if mode is "rgb_array". Otherwise, returns None.
-
-        Raises:
-            RuntimeError: If mode is set to "rgb_data" and simulation render mode does not support it.
-                In this case, the simulation render mode must be set to ``RenderMode.PARTIAL_RENDERING``
-                or ``RenderMode.FULL_RENDERING``.
-            NotImplementedError: If an unsupported rendering mode is specified.
-        """
-        # run a rendering step of the simulator
-        # if we have rtx sensors, we do not need to render again sin
+        
         if not self.sim.has_rtx_sensors() and not recompute:
             self.sim.render()
-        # decide the rendering mode
         if self.render_mode == "human" or self.render_mode is None:
             return None
         elif self.render_mode == "rgb_array":
-            # check that if any render could have happened
             if self.sim.render_mode.value < self.sim.RenderMode.PARTIAL_RENDERING.value:
                 raise RuntimeError(
                     f"Cannot render '{self.render_mode}' when the simulation render mode is"
@@ -381,7 +294,6 @@ class NavEnv(DirectRLEnv):
                     f"'{self.sim.RenderMode.PARTIAL_RENDERING.name}' or '{self.sim.RenderMode.FULL_RENDERING.name}'."
                     " If running headless, make sure --enable_cameras is set."
                 )
-            # create the annotator if it does not exist
             if not hasattr(self, "_rgb_annotator"):
                 import omni.replicator.core as rep
 
@@ -600,15 +512,12 @@ class NavEnv(DirectRLEnv):
             num_reset, valid_indicator='s', device=self.device
         )
         robot_pose[:, :2] = random_positions[:, :2] + self.scene.env_origins[env_ids, :2]
-
-        # Keep random rotation for variety
-        angles = (
-            torch.pi
-            / 6.0
-            * torch.rand((num_reset), dtype=torch.float32, device=self.device)
-        )
-        robot_pose[:, 3] = torch.cos(angles * 0.5)
-        robot_pose[:, 6] = torch.sin(angles * 0.5)
+        # Set orientation to face -y direction (-90 degree rotation around z-axis)
+        angle = torch.tensor(-torch.pi / 4, device=self.device, dtype=torch.float32)
+        robot_pose[:, 3] = torch.cos(angle)  # w component
+        robot_pose[:, 4] = 0.0  # x component
+        robot_pose[:, 5] = 0.0  # y component
+        robot_pose[:, 6] = torch.sin(angle)  # z component  
 
         self.robot.write_root_pose_to_sim(robot_pose, env_ids)
         self.robot.write_root_velocity_to_sim(robot_velocities, env_ids)
@@ -619,7 +528,6 @@ class NavEnv(DirectRLEnv):
         self._target_positions[env_ids, :, :] = 0.0
         self._markers_pos[env_ids, :, :] = 0.0
 
-        # Generate waypoints with proper spacing
         waypoint_positions = self._generate_waypoints(
             env_ids,
             robot_pose
@@ -652,14 +560,7 @@ class NavEnv(DirectRLEnv):
         self._previous_heading_error = self._heading_error.clone()
 
     def _get_distance_to_walls(self):
-        """Calculate the distance from the robot to the nearest wall using precomputed distance field/segments.
-        Returns:
-            torch.Tensor: Distance to nearest wall edge for each environment (num_envs,)
-                         All values are positive since robots are guaranteed to spawn in open spaces.
-        """
         robot_positions = self.robot.data.root_pos_w[:, :2]
         env_origins = self.scene.env_origins[:, :2]
-        
         relative_positions = robot_positions - env_origins
-        
         return self.cfg.wall_config.get_wall_distances(relative_positions)

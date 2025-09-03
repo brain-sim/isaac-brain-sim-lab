@@ -22,8 +22,8 @@ class TestRaycastingDistanceCalculation():
     
     def __init__(self):
         self.config = bsMazeRuntime(room_size=20.0,
-                                        wall_thickness=2.0,
-                                        maze_file="linear_maze.txt")
+                                        maze_file="linear_maze.txt",
+                                        maze_config="maze_cell_1.json")
         self.config.create_maze_configuration()
         print(self.config._wall_segments)
         print(self.config.get_position_offset())

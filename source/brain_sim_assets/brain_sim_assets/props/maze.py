@@ -11,8 +11,8 @@ class bsMazeGenerator:
     
     def __init__(
             self, 
-            maze_config_path: Optional[str] = None, 
             maze_txt_path: Optional[str] = None, 
+            maze_config_path: Optional[str] = None, 
             position_offset: tuple = (0.0, 0.0, 0.0),
             create_wall_on_init: bool = True
         ):
@@ -39,6 +39,7 @@ class bsMazeGenerator:
     def create_example_maze(
             cls, 
             maze_txt_path_in: Optional[str] = None, 
+            maze_config_path_in: Optional[str] = None,
             position_offset: tuple = (0.0, 0.0, 0.0),
             create_wall_on_init: bool = True
         ):
@@ -47,9 +48,13 @@ class bsMazeGenerator:
             maze_txt_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_maze.txt"
         else:
             maze_txt_path = maze_txt_path_in
-        
-        maze_config_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_config.json"
-        return cls(maze_config_path, maze_txt_path, position_offset, create_wall_on_init)
+
+        if maze_config_path_in is None:
+            maze_config_path = f"{BRAIN_SIM_ASSETS_PROPS_CONFIG_DIR}/example_config.json"
+        else:
+            maze_config_path = maze_config_path_in
+
+        return cls(maze_txt_path, maze_config_path, position_offset, create_wall_on_init)
 
     def setup(self):
         if self._maze_config:

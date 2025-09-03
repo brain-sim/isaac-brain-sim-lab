@@ -26,7 +26,6 @@ class LinearMazeEnvCfg(NavEnvCfg):
     observation_space = (
         img_size[0] * img_size[1] * img_size[2] + 4
     )  # Changed from 8 to 9 to include minimum wall distance
-    # policy_file_path = "spot_policy_custom_rslrl.pt"
     policy_file_path = "rslrl_policy.pt"
 
     # Override sim to use custom render_interval
@@ -79,12 +78,10 @@ class LinearMazeEnvCfg(NavEnvCfg):
         "hr_kn",
     ]
 
-    # Goal waypoints configuration
     waypoint_cfg = WAYPOINT_CFG
     position_tolerance = 1.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
 
-    # Reward Coefficients
     goal_reached_bonus = 125.0
     wall_penalty_weight = -1.0  # -0.2
     linear_speed_weight = 0.0  # 0.05
@@ -95,12 +92,10 @@ class LinearMazeEnvCfg(NavEnvCfg):
     heading_coefficient = 0.25
     heading_progress_weight = 0.0  # 0.05
 
-    # Laziness
     laziness_decay = 0.3
     laziness_threshold = 8.0
     max_laziness = 10.0
 
-    # Action Scaling
     throttle_scale = 1.5
     steering_scale = 1.0
     throttle_max = 4.5

@@ -25,16 +25,14 @@ class TestbsMazeRuntime(unittest.TestCase):
             
         self.device = torch.device('cpu')
         self.room_size = 40.0
-        self.wall_thickness = 2.0
-        self.wall_height = 3.0
+        self.cell_size = 2.0
         self.maze_file = "example_maze_unit_test.txt"
         
     def test_initialization_default_parameters(self):
         config = bsMazeRuntime(maze_file="example_maze_unit_test.txt")
         
         self.assertEqual(config.room_size, 40.0)
-        self.assertEqual(config.wall_thickness, 2.0)
-        self.assertEqual(config.wall_height, 3.0)
+        self.assertEqual(config.cell_size, 2.0)
         self.assertEqual(config.maze_file, "example_maze_unit_test.txt")
         self.assertEqual(config.device, torch.device('cpu'))
         self.assertIsNone(config._maze_generator)
@@ -44,16 +42,16 @@ class TestbsMazeRuntime(unittest.TestCase):
         custom_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         config = bsMazeRuntime(
             room_size=80.0,
-            wall_thickness=4.0,
-            wall_height=4.0,
+            cell_size=4.0,
             maze_file="example_maze_unit_test.txt",
+            maze_config="maze_cell_4.json",
             device=custom_device
         )
         
         self.assertEqual(config.room_size, 80.0)
-        self.assertEqual(config.wall_thickness, 4.0)
-        self.assertEqual(config.wall_height, 4.0)
+        self.assertEqual(config.cell_size, 4.0)
         self.assertEqual(config.maze_file, "example_maze_unit_test.txt")
+        self.assertEqual(config.maze_config, "maze_cell_4.json")
         self.assertEqual(config.device, custom_device)
         
     def test_device_update(self):
@@ -67,13 +65,13 @@ class TestbsMazeRuntime(unittest.TestCase):
         self.assertEqual(config.device, torch.device('cpu'))
         
     def test_wall_position_calculation(self):
-        config = bsMazeRuntime(room_size=40.0, wall_thickness=2.0)
+        config = bsMazeRuntime(room_size=40.0, cell_size=2.0)
         wall_position = config.get_wall_position()
         expected_position = (40.0 - 2.0) / 2
         self.assertEqual(wall_position, expected_position)
         
     def test_position_offset_calculation(self):
-        config = bsMazeRuntime(room_size=40.0, wall_thickness=2.0)
+        config = bsMazeRuntime(room_size=40.0, cell_size=2.0)
         offset = config.get_position_offset()
         expected_wall_position = (40.0 - 2.0) / 2
         expected_offset = (-expected_wall_position, -expected_wall_position, 0.0)
@@ -121,7 +119,7 @@ class TestRaycastingDistanceCalculation(unittest.TestCase):
             self.skipTest("bsMazeRuntime not available")
             
         self.config = bsMazeRuntime(room_size=20.0,
-                                        wall_thickness=2.0,
+                                        cell_size=2.0,
                                         maze_file="example_maze_unit_test.txt")
         self.config.create_maze_configuration()
         
