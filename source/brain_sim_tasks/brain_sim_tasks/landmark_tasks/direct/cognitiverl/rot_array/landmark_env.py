@@ -9,17 +9,17 @@ from termcolor import colored
 from brain_sim_assets import BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR
 
 from .nav_env import NavEnv
-from .linear_maze_env_cfg import LinearMazeEnvCfg
+from .landmark_env_cfg import LandmarkEnvCfg
 from brain_sim_assets.robots.spot import bsSpotLowLevelPolicyVanilla
 
 
-class LinearMazeEnv(NavEnv):
-    cfg: LinearMazeEnvCfg  
+class LandmarkEnv(NavEnv):
+    cfg: LandmarkEnvCfg  
     ACTION_SCALE = 0.2  
 
     def __init__(
         self,
-        cfg: LinearMazeEnvCfg,
+        cfg: LandmarkEnvCfg,
         render_mode: str | None = None,
         **kwargs,
     ):
@@ -287,7 +287,8 @@ class LinearMazeEnv(NavEnv):
 
         self._target_index = self._target_index + goal_reached
         self._episode_waypoints_passed += goal_reached.int()
-        self.task_completed = self._target_index > (self._num_goals - 1)
+        # Complete when gets to the goal which is the third last waypoint
+        self.task_completed = self._target_index > (self._num_goals - 3)
         self._target_index = self._target_index % self._num_goals
         assert (
             self._previous_waypoint_reached_step[goal_reached]
@@ -347,7 +348,7 @@ class LinearMazeEnv(NavEnv):
         # Add wall distance penalty
         min_wall_dist = self._get_distance_to_walls()
         danger_distance = (
-            0.1
+            0.5
         )  # Distance at which to start penalizing
         wall_penalty = torch.nan_to_num(
             torch.where(
@@ -376,6 +377,10 @@ class LinearMazeEnv(NavEnv):
         marker_indices[
             torch.arange(self.num_envs, device=self.device), self._target_index
         ] = 1
+        # Set the next target to 3 (cyan)
+        marker_indices[
+            torch.arange(self.num_envs, device=self.device), self._target_index + 1
+        ] = 3
         # Set completed targets to 2 (invisible)
         # Create a mask for completed targets
         target_mask = (self._target_index.unsqueeze(1) > 0) & (

@@ -23,7 +23,7 @@ class NavEnvCfg(DirectRLEnvCfg):
     @configclass
     class NavSceneCfg(InteractiveSceneCfg):
         num_envs=512  # Match your actual training env count
-        env_spacing = 20.0
+        env_spacing = 40.0
         lazy_sensor_update=True  # Add this for better performance
         replicate_physics=True
 
@@ -73,21 +73,23 @@ class NavEnvCfg(DirectRLEnvCfg):
     # scene
     scene: NavSceneCfg = NavSceneCfg()
     env_spacing = scene.env_spacing
-    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(marker0_radius=0.5, marker1_radius=0.0, marker2_radius=0.0)
+    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
+        marker0_radius=1.0, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=1.0
+    )
     static_friction = 2.0
     dynamic_friction = 2.0
 
     # Wall parameters
-    room_size = 20.0
-    num_goals = 1
-    wall_thickness = 1.0
+    room_size = 40.0
+    num_goals = 3
+    wall_thickness = 2.0
     wall_height = 3.0
     position_tolerance = 1.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 
     # Initialize wall configuration (not a CFG but an interface to bsMaze) and apply to scene
-    wall_config = bsMazeRuntime(room_size, maze_file="linear_maze.txt", maze_config="maze_cell_1.json")
+    wall_config = bsMazeRuntime(room_size, maze_file="landmark.txt", maze_config="example_config.json")
     wall_config.apply_to_scene_cfg(scene)
 
     # Terminations
