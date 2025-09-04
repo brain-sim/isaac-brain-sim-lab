@@ -13,7 +13,7 @@ from brain_sim_assets.props.waypoint import bsWaypointGenerator
 
 
 @configclass
-class LinearMazeEnvCfg(NavEnvCfg):
+class LandmarkEnvCfg(NavEnvCfg):
     physcis_dt = 1 / 200
     # Two-level decimation for hierarchical control
     low_level_decimation = 4  # Low-level locomotion policy runs at 50Hz
@@ -78,7 +78,9 @@ class LinearMazeEnvCfg(NavEnvCfg):
         "hr_kn",
     ]
 
-    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(marker0_radius=0.5, marker1_radius=0.0, marker2_radius=0.0)
+    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
+        marker0_radius=1.0, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=1.0
+    )
     position_tolerance = 1.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
 
