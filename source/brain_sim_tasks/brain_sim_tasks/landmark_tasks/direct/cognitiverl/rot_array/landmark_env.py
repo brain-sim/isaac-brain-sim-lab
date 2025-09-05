@@ -72,29 +72,7 @@ class LandmarkEnv(DirectRLEnv):
             if hasattr(component, 'post_env_init'):
                 component.post_env_init()
 
-    def _setup_plane(self):
-        spawn_ground_plane(
-            prim_path="/World/ground",
-            cfg=GroundPlaneCfg(
-                size=(
-                    4096 * 40.0,
-                    4096 * 40.0,
-                ),
-                color=(0.2, 0.2, 0.2),
-                physics_material=sim_utils.RigidBodyMaterialCfg(
-                    friction_combine_mode="multiply",
-                    restitution_combine_mode="multiply",
-                    static_friction=self.cfg.static_friction,
-                    dynamic_friction=self.cfg.dynamic_friction,
-                    restitution=0.0,
-                ),
-            ),
-        )
-
     def _setup_scene(self):
-
-        self._setup_plane()
-
         # Setup required components
         setup_components = ['robot', 'waypoint']
         for name in setup_components:
@@ -114,11 +92,6 @@ class LandmarkEnv(DirectRLEnv):
 
         self.wall_height = self.cfg.wall_height
         self.wall_position = (self.cfg.room_size - self.cfg.wall_thickness) / 2
-
-        light_cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
-        light_cfg.func("/World/Light", light_cfg)
-
-
 
     def _log_episode_info(self, env_ids: torch.Tensor):
         if len(env_ids) > 0:
@@ -181,14 +154,15 @@ class LandmarkEnv(DirectRLEnv):
         self.episode_length_buf += 1
         self.common_step_counter += 1
         self.extras["log"] = {}
+        
+        reward_dict = self.env_component_reward.get_rewards()
+        self.reward_buf = torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
+        self._episode_reward_buf += self.reward_buf
 
         self.reset_terminated[:], self.reset_time_outs[:] = self._get_dones()
         # Get termination infos for logging
         _, _, termination_infos = self.env_component_termination.get_dones()
-        
         self.reset_buf = self.reset_terminated | self.reset_time_outs
-        self.reward_buf = self._get_rewards()
-        self._episode_reward_buf += self.reward_buf
 
         reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
 
@@ -213,9 +187,6 @@ class LandmarkEnv(DirectRLEnv):
         for k, v in self.obs_buf.items():
             if k != "policy":
                 del self.obs_buf[k]
-
-        # Get detailed reward breakdown for logging
-        reward_dict = self.env_component_reward.get_rewards()
         
         self.extras["log"].update(self._populate_step_log_dict())
         self.extras["log"].update(termination_infos)
@@ -295,7 +266,8 @@ class LandmarkEnv(DirectRLEnv):
     def _get_rewards(self) -> torch.Tensor:
         """Compute and return the rewards for the environment."""
         reward_dict = self.env_component_reward.get_rewards()
-        return torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
+        # return torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
+        return reward_dict
 
     def _get_dones(self) -> tuple[torch.Tensor, torch.Tensor]:
         """Compute and return the done flags for the environment."""

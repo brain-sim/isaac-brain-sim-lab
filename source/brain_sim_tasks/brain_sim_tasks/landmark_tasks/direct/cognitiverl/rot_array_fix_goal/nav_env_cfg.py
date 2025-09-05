@@ -63,7 +63,6 @@ class NavEnvCfg(DirectRLEnvCfg):
             gpu_max_particle_contacts=0,  # Not using particles
         )
     )
-    sim.create_stage_in_memory = True
 
     img_size = [3, 128, 128]
     observation_space = (

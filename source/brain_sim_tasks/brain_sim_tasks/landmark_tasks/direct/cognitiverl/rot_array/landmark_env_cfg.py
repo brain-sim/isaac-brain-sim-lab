@@ -1,4 +1,6 @@
-from isaaclab.assets import ArticulationCfg
+import isaaclab.sim as sim_utils
+
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.envs import DirectRLEnvCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg, PhysxCfg
@@ -17,9 +19,6 @@ class LandmarkEnvCfg(DirectRLEnvCfg):
     high_level_decimation = 5  # High-level navigation policy runs at 10Hz  
     decimation = low_level_decimation * high_level_decimation  # Total decimation = 20
     render_interval = 10  # Render at same frequency as env steps (10Hz)
-
-    static_friction = 2.0
-    dynamic_friction = 2.0
 
     episode_length_s = 240.0
     action_space = 3
@@ -92,11 +91,33 @@ class LandmarkEnvCfg(DirectRLEnvCfg):
         lazy_sensor_update=True  
         replicate_physics=True
 
+        ground = AssetBaseCfg(
+            prim_path="/World/ground",
+            spawn=sim_utils.GroundPlaneCfg(
+                size=(
+                    4096 * 40.0,
+                    4096 * 40.0,
+                ),
+                color=(0.2, 0.2, 0.2),
+                physics_material=sim_utils.RigidBodyMaterialCfg(
+                    friction_combine_mode="multiply",
+                    restitution_combine_mode="multiply",
+                    static_friction=2.0,
+                    dynamic_friction=2.0,
+                    restitution=0.0,
+                ),
+            )
+        )
+        dome_light = AssetBaseCfg(
+            prim_path="/World/Light",
+            spawn=sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
+        )
+
     # scene
     scene: NavSceneCfg = NavSceneCfg()
     env_spacing = scene.env_spacing
     waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
-        marker0_radius=1.0, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=1.0
+        marker0_radius=0.5, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=0.5
     )
     
     # Wall parameters
@@ -104,7 +125,7 @@ class LandmarkEnvCfg(DirectRLEnvCfg):
     num_goals = 3
     wall_thickness = 1.0
     wall_height = 3.0
-    position_tolerance = 1.0
+    position_tolerance = waypoint_cfg.markers["marker1"].radius * 2.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 
@@ -115,5 +136,5 @@ class LandmarkEnvCfg(DirectRLEnvCfg):
     # Terminations
     termination_on_goal_reached = True
     termination_on_vehicle_flip = True
-    termination_on_avoid_goal_collision = True
+    termination_on_avoid_goal_collision = False
     termination_on_stuck = False

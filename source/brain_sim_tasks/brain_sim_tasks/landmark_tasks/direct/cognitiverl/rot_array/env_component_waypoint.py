@@ -32,7 +32,7 @@ class EnvComponentWaypoint:
 
     def generate_random_waypoint(self, env_origins, num_reset, robot_xy=None, min_distance=2.5):
         """Generate random valid waypoints."""
-        max_attempts = 100
+        max_attempts = 1000
         placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
         waypoint_positions = torch.zeros((num_reset, 2), device=self.env.device)
         
@@ -85,7 +85,7 @@ class EnvComponentWaypoint:
     def generate_offset_waypoint(self, env_origins, base_waypoints, offset_distance):
         """Generate waypoint at offset distance from base waypoint."""
         num_reset = base_waypoints.shape[0]
-        max_attempts = 100
+        max_attempts = 1000
         placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
         waypoint_positions = torch.zeros((num_reset, 2), device=self.env.device)
         
@@ -129,7 +129,7 @@ class EnvComponentWaypoint:
     def generate_perpendicular_waypoint(self, env_origins, waypoint1, waypoint2, perp_offset):
         """Generate waypoint perpendicular to line between two waypoints."""
         num_reset = waypoint1.shape[0]
-        max_attempts = 100
+        max_attempts = 1000
         
         center_point = (waypoint1 + waypoint2) / 2.0
         
@@ -195,10 +195,10 @@ class EnvComponentWaypoint:
         robot_xy = robot_poses[:, :2]
 
         if waypoint_offset is None:
-            waypoint_offset = 2.5
+            waypoint_offset = 4
         
         if perpendicular_offset is None:
-            perpendicular_offset = 1.25
+            perpendicular_offset = 2
 
         waypoint_positions = torch.zeros((num_reset, self.env.cfg.num_goals, 2), device=self.env.device)
         

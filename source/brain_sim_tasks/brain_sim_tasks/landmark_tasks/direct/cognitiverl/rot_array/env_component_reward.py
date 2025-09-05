@@ -101,7 +101,7 @@ class EnvComponentReward:
         # Check task completion
         self.env.task_completed = self.env.env_component_waypoint._target_index > (self.env.cfg.num_goals - 3)
         self.env.env_component_waypoint._target_index = self.env.env_component_waypoint._target_index % self.env.cfg.num_goals
-        
+
         # Fast goal reached reward
         assert (
             self._previous_waypoint_reached_step[goal_reached]
