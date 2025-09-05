@@ -1,401 +1,307 @@
 from __future__ import annotations
 
+import copy
 import os
+from collections import defaultdict
+from collections.abc import Sequence
 
+import isaaclab.sim as sim_utils
+import numpy as np
 import torch
-from isaaclab.sensors.camera import TiledCamera, TiledCameraCfg
-from isaaclab.sim.spawners.sensors.sensors_cfg import PinholeCameraCfg
-from termcolor import colored
-from brain_sim_assets import BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR
+from isaaclab.envs import DirectRLEnv
+from isaaclab.envs.common import VecEnvStepReturn
+from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
 
-from .nav_env import NavEnv
 from .landmark_env_cfg import LandmarkEnvCfg
-from brain_sim_assets.robots.spot import bsSpotLowLevelPolicyVanilla
+from .env_component_robot import EnvComponentRobot
+from .env_component_observation import EnvComponentObservation
+from .env_component_reward import EnvComponentReward
+from .env_component_termination import EnvComponentTermination
+from .env_component_waypoint import EnvComponentWaypoint
 
 
-class LandmarkEnv(NavEnv):
-    cfg: LandmarkEnvCfg  
-    ACTION_SCALE = 0.2  
+class LandmarkEnv(DirectRLEnv):
+    cfg: LandmarkEnvCfg
+    ACTION_SCALE = 0.2
 
     def __init__(
         self,
         cfg: LandmarkEnvCfg,
         render_mode: str | None = None,
+        debug: bool = False,
+        max_total_steps: int | None = None,
+        play_mode: bool = False,
         **kwargs,
     ):
+
+        # Initialize environment components
+        self.components = {
+            'robot': EnvComponentRobot(self),
+            'observation': EnvComponentObservation(self),
+            'reward': EnvComponentReward(self),
+            'termination': EnvComponentTermination(self),
+            'waypoint': EnvComponentWaypoint(self)
+        }
+        
+        for name, component in self.components.items():
+            setattr(self, f'env_component_{name}', component)
+
         super().__init__(cfg, render_mode, **kwargs)
-        self._goal_reached = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.int32
-        )
-        self.task_completed = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.bool
-        )
-        self._target_positions = torch.zeros(
-            (self.num_envs, self._num_goals, 2),
-            device=self.device,
-            dtype=torch.float32,
-        )
-        self._markers_pos = torch.zeros(
-            (self.num_envs, self._num_goals, 3),
-            device=self.device,
-            dtype=torch.float32,
-        )
+
+        self.cfg.wall_config.update_device(self.device)
+
+        # Initialize tracking variables
+        self._goal_reached = torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
+        self.task_completed = torch.zeros((self.num_envs), device=self.device, dtype=torch.bool)
+        self._episode_reward_buf = torch.zeros((self.num_envs), device=self.device, dtype=torch.float32)
+        self._episode_reward_infos_buf = {}
+        self._metrics_infos_buf = {}
+        self._terminations_infos_buf = defaultdict(lambda: torch.zeros((self.num_envs), device=self.device, dtype=torch.int32))
+
+        self._step_rewards_buffer = []
+        self._episode_step_rewards = []
+
+        self._debug = debug
+        self.max_total_steps = max_total_steps
+        self.play_mode = play_mode
         self.env_spacing = self.cfg.env_spacing
-        self._target_index = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.int32
-        )
-        self._accumulated_laziness = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.float32
-        )
-        self._episode_avoid_collisions = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.int32
-        )
-        self._avoid_goal_hit_this_step = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.bool
-        )
+        self.max_episode_length_buf = torch.full((self.num_envs,), self.max_episode_length, device=self.device)
 
-    def _setup_robot_dof_idx(self):
-        self._dof_idx, _ = self.robot.find_joints(self.cfg.dof_name)
+        # Post-initialize all environment components
+        for component in self.components.values():
+            if hasattr(component, 'post_env_init'):
+                component.post_env_init()
 
-    def _setup_config(self):
-        policy_file_path = os.path.join(
-            BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR,
-            self.cfg.policy_file_path,
-        )
-        print(
-            colored(
-                f"[INFO] Loading policy from {policy_file_path}",
-                "magenta",
-                attrs=["bold"],
+    def _setup_scene(self):
+        # Setup required components
+        setup_components = ['robot', 'waypoint']
+        for name in setup_components:
+            component = self.components[name]
+            if hasattr(component, 'setup'):
+                component.setup()
+
+        # Get robot from component and setup scene
+        self.robot = self.env_component_robot.robot
+        self.camera = self.env_component_robot.camera
+        self.waypoints = self.env_component_waypoint.waypoints
+        self.object_state = []
+
+        self.scene.clone_environments(copy_from_source=False)
+        self.scene.filter_collisions(global_prim_paths=[])
+        self.scene.articulations["robot"] = self.robot
+
+        self.wall_height = self.cfg.wall_height
+        self.wall_position = (self.cfg.room_size - self.cfg.wall_thickness) / 2
+
+    def _log_episode_info(self, env_ids: torch.Tensor):
+        if len(env_ids) > 0:
+            log_infos = {}
+            log_infos["Metrics/episode_length"] = torch.mean(
+                self.episode_length_buf[env_ids].float()
+            ).item()
+            completion_frac = (
+                self.env_component_waypoint._episode_waypoints_passed[env_ids].float() / self.cfg.num_goals
             )
-        )
-        self.policy = bsSpotLowLevelPolicyVanilla(policy_file_path)
-        self._low_level_previous_action = torch.zeros(
-            (self.num_envs, 12), device=self.device, dtype=torch.float32
-        )
-        self._previous_action = torch.zeros(
-            (self.num_envs, self.cfg.action_space),
-            device=self.device,
-            dtype=torch.float32,
-        )
-        self._previous_waypoint_reached_step = torch.zeros(
-            (self.num_envs,), device=self.device, dtype=torch.int32
-        )
-        self.position_tolerance = self.cfg.position_tolerance
-        self.goal_reached_bonus = self.cfg.goal_reached_bonus
-        self.laziness_penalty_weight = self.cfg.laziness_penalty_weight
-        self.laziness_decay = (
-            self.cfg.laziness_decay
-        )  # How much previous laziness carries over
-        self.laziness_threshold = (
-            self.cfg.laziness_threshold
-        )  # Speed threshold for considering "lazy"
-        self.max_laziness = (
-            self.cfg.max_laziness
-        )  # Cap on accumulated laziness to prevent extreme penalties
-        self.wall_penalty_weight = self.cfg.wall_penalty_weight
-        self.linear_speed_weight = self.cfg.linear_speed_weight
-        self.throttle_scale = self.cfg.throttle_scale
-        self._actions = torch.zeros(
-            (self.num_envs, self.cfg.action_space),
-            device=self.device,
-            dtype=torch.float32,
-        )
-        self.steering_scale = self.cfg.steering_scale
-        self.throttle_max = self.cfg.throttle_max
-        self.steering_max = self.cfg.steering_max
-        self._default_pos = self.robot.data.default_joint_pos.clone()
-        self._smoothing_factor = torch.tensor([0.75, 0.3, 0.3], device=self.device)
-        self.max_episode_length_buf = torch.full(
-            (self.num_envs,), self.max_episode_length, device=self.device
+            log_infos["Metrics/success_rate"] = torch.mean(completion_frac).item()
+            log_infos["Metrics/episode_reward"] = torch.mean(
+                self._episode_reward_buf[env_ids].float()
+            ).item()
+            log_infos["Metrics/goals_reached"] = torch.mean(
+                self.env_component_waypoint._episode_waypoints_passed[env_ids].float()
+            ).item()
+            log_infos["Metrics/max_episode_length"] = torch.mean(
+                self.max_episode_length_buf[env_ids].float()
+            )
+            log_infos["Metrics/max_episode_return"] = (
+                self._episode_reward_buf[env_ids].float().max().item()
+            )
+
+            if hasattr(self.env_component_reward, "_episode_avoid_collisions"):
+                log_infos["Metrics/avoid_collisions_per_episode"] = torch.mean(
+                    self.env_component_reward._episode_avoid_collisions[env_ids].float()
+                ).item()
+                log_infos["Metrics/max_avoid_collisions_per_episode"] = (
+                    self.env_component_reward._episode_avoid_collisions[env_ids].float().max().item()
+                )
+
+            self.extras["log"].update(log_infos)
+
+    def step(self, action: torch.Tensor) -> VecEnvStepReturn:
+        action = action.to(self.device)
+        if self.cfg.action_noise_model:
+            action = self._action_noise_model.apply(action)
+
+        self._pre_physics_step(action)
+
+        is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors()
+
+        for _ in range(self.cfg.decimation):
+            self._sim_step_counter += 1
+            self._apply_action()
+            self.scene.write_data_to_sim()
+            self.sim.step(render=False)
+            if (
+                self._sim_step_counter % self.cfg.sim.render_interval == 0
+                and is_rendering
+            ):
+                self.sim.render()
+            self.scene.update(dt=self.physics_dt)
+
+        self.env_component_robot.update_camera(dt=self.step_dt)
+        if hasattr(self, "height_scanner"):
+            self.height_scanner.update(dt=self.step_dt)
+        
+        self.episode_length_buf += 1
+        self.common_step_counter += 1
+        self.extras["log"] = {}
+        
+        reward_dict = self.env_component_reward.get_rewards()
+        self.reward_buf = torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
+        self._episode_reward_buf += self.reward_buf
+
+        self.reset_terminated[:], self.reset_time_outs[:] = self._get_dones()
+        # Get termination infos for logging
+        _, _, termination_infos = self.env_component_termination.get_dones()
+        self.reset_buf = self.reset_terminated | self.reset_time_outs
+
+        reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
+
+        if len(reset_env_ids) > 0:
+            self._log_episode_info(reset_env_ids)
+            self._reset_idx(reset_env_ids)
+            self.scene.write_data_to_sim()
+            self.sim.forward()
+            if self.sim.has_rtx_sensors() and self.cfg.rerender_on_reset:
+                self.sim.render()
+
+        if self.cfg.events:
+            if "interval" in self.event_manager.available_modes:
+                self.event_manager.apply(mode="interval", dt=self.step_dt)
+
+        self.obs_buf = self._get_observations()
+
+        if self.cfg.observation_noise_model:
+            self.obs_buf["policy"] = self._observation_noise_model.apply(
+                self.obs_buf["policy"]
+            )
+        for k, v in self.obs_buf.items():
+            if k != "policy":
+                del self.obs_buf[k]
+        
+        self.extras["log"].update(self._populate_step_log_dict())
+        self.extras["log"].update(termination_infos)
+        self.extras["log"].update(
+            {
+                reward_name: reward_val.mean().item()
+                for reward_name, reward_val in reward_dict.items()
+            }
         )
 
-        self.avoid_penalty_weight = self.cfg.avoid_penalty_weight
-        self.fast_goal_reached_bonus = self.cfg.fast_goal_reached_weight
-        self.avoid_goal_position_tolerance = self.cfg.avoid_goal_position_tolerance
-
-        self.heading_coefficient = self.cfg.heading_coefficient
-        self.heading_progress_weight = self.cfg.heading_progress_weight
-
-        self.termination_on_avoid_goal_collision = (
-            self.cfg.termination_on_avoid_goal_collision
+        return (
+            self.obs_buf,
+            self.reward_buf,
+            self.reset_terminated,
+            self.reset_time_outs,
+            self.extras,
         )
-        self.termination_on_goal_reached = self.cfg.termination_on_goal_reached
-        self.termination_on_vehicle_flip = self.cfg.termination_on_vehicle_flip
-        self.termination_on_stuck = self.cfg.termination_on_stuck
 
-    def _setup_camera(self):
-        camera_prim_path = "/World/envs/env_.*/Robot/body/Camera"
-        pinhole_cfg = PinholeCameraCfg(
-            focal_length=16.0,
-            horizontal_aperture=32.0,
-            vertical_aperture=32.0,
-            focus_distance=1.0,
-            clipping_range=(0.01, 1000.0),
-            lock_camera=True,
-        )
-        camera_cfg = TiledCameraCfg(
-            prim_path=camera_prim_path,
-            update_period=self.step_dt,
-            height=self.cfg.img_size[1],
-            width=self.cfg.img_size[2],
-            data_types=["rgb"],
-            spawn=pinhole_cfg,
-            offset=TiledCameraCfg.OffsetCfg(
-                pos=(0.25, 0.0, 0.25),  # At the head, adjust as needed
-                rot=(0.5, -0.5, 0.5, -0.5),
-                convention="ros",
-            ),
-        )
-        self.camera = TiledCamera(camera_cfg)
+    def render(self, recompute: bool = False) -> np.ndarray | None:
+        if not self.sim.has_rtx_sensors() and not recompute:
+            self.sim.render()
+        if self.render_mode == "human" or self.render_mode is None:
+            return None
+        elif self.render_mode == "rgb_array":
+            if self.sim.render_mode.value < self.sim.RenderMode.PARTIAL_RENDERING.value:
+                raise RuntimeError(
+                    f"Cannot render '{self.render_mode}' when the simulation render mode is"
+                    f" '{self.sim.render_mode.name}'. Please set the simulation render mode to:"
+                    f"'{self.sim.RenderMode.PARTIAL_RENDERING.name}' or '{self.sim.RenderMode.FULL_RENDERING.name}'."
+                    " If running headless, make sure --enable_cameras is set."
+                )
+            if not hasattr(self, "_rgb_annotator"):
+                import omni.replicator.core as rep
+                self._render_product = rep.create.render_product(
+                    self.cfg.viewer.cam_prim_path, self.cfg.viewer.resolution
+                )
+                self._rgb_annotator = rep.AnnotatorRegistry.get_annotator(
+                    "rgb", device="cpu"
+                )
+                self._rgb_annotator.attach([self._render_product])
+            rgb_data = self._rgb_annotator.get_data()
+            rgb_data = np.frombuffer(rgb_data, dtype=np.uint8).reshape(*rgb_data.shape)
+            if rgb_data.size == 0:
+                return np.zeros(
+                    (self.cfg.viewer.resolution[1], self.cfg.viewer.resolution[0], 3),
+                    dtype=np.uint8,
+                )
+            else:
+                return rgb_data[:, :, :3]
+        else:
+            raise NotImplementedError(
+                f"Render mode '{self.render_mode}' is not supported. Please use: {self.metadata['render_modes']}."
+            )
+
+
+
+    def _populate_step_log_dict(self) -> dict:
+        log_dict = {}
+        log_dict["Metrics/max_step_reward"] = self.reward_buf.max().item()
+        log_dict["Metrics/avg_step_reward"] = self.reward_buf.mean().item()
+        log_dict["Metrics/min_step_reward"] = self.reward_buf.min().item()
+        log_dict["Metrics/std_step_reward"] = self.reward_buf.std().item()
+        return log_dict
 
     def _pre_physics_step(self, actions: torch.Tensor) -> None:
-        actions = (
-            self._smoothing_factor * actions
-            + (1 - self._smoothing_factor) * self._previous_action
-        )
-        self._previous_action = actions.clone()
-        self._actions = actions.clone()
-        self._actions = torch.nan_to_num(self._actions, 0.0)
-        self._actions[:, 0] = self._actions[:, 0] * self.throttle_scale
-        self._actions[:, 1:] = self._actions[:, 1:] * self.steering_scale
-        self._actions[:, 0] = torch.clamp(
-            self._actions[:, 0], min=0.0, max=self.throttle_max
-        )
-        self._actions[:, 1:] = torch.clamp(
-            self._actions[:, 1:], min=-self.steering_max, max=self.steering_max
-        )
+        """Pre-process actions before stepping through the physics."""
+        self.env_component_robot.pre_physics_step(actions)
 
     def _apply_action(self) -> None:
-        # --- Vectorized low-level Spot policy call for all environments ---
-        # Gather all required robot state as torch tensors
-        # TODO: Replace the following with actual command logic per environment
-        default_pos = self._default_pos.clone()  # [num_envs, 12]
-        # The following assumes your robot exposes these as torch tensors of shape [num_envs, ...]
-        lin_vel_I = self.robot.data.root_lin_vel_w  # [num_envs, 3]
-        ang_vel_I = self.robot.data.root_ang_vel_w  # [num_envs, 3]
-        q_IB = self.robot.data.root_quat_w  # [num_envs, 4]
-        joint_pos = self.robot.data.joint_pos  # [num_envs, 12]
-        joint_vel = self.robot.data.joint_vel  # [num_envs, 12]
-        # Compute actions for all environments
-        actions = self.policy.get_action(
-            lin_vel_I,
-            ang_vel_I,
-            q_IB,
-            self._actions,
-            self._low_level_previous_action,
-            default_pos,
-            joint_pos,
-            joint_vel,
-        )
-        # Update previous action buffer
-        self._low_level_previous_action = actions.detach()
-        # Scale and offset actions as in Spot reference policy
-        joint_positions = self._default_pos + actions * self.ACTION_SCALE
-        # Apply joint position targets directly
-        self.robot.set_joint_position_target(joint_positions)
+        """Apply actions to the simulator."""
+        self.env_component_robot.apply_action()
 
-    def _get_image_obs(self) -> torch.Tensor:
-        image_obs = self.camera.data.output["rgb"].float().permute(0, 3, 1, 2) / 255.0
-        image_obs = image_obs.reshape(self.num_envs, -1)
-        return image_obs
+    def _get_observations(self) -> dict:
+        """Compute and return the observations for the environment."""
+        return self.env_component_observation.get_observations()
 
-    def _get_state_obs(self, image_obs) -> torch.Tensor:
-        return torch.cat(
-            (
-                image_obs,
-                self._actions[:, 0].unsqueeze(dim=1),
-                self._actions[:, 1].unsqueeze(dim=1),
-                self._actions[:, 2].unsqueeze(dim=1),
-                self._get_distance_to_walls().unsqueeze(dim=1),  # Add wall distance
-            ),
-            dim=-1,
-        )
+    def _get_rewards(self) -> torch.Tensor:
+        """Compute and return the rewards for the environment."""
+        reward_dict = self.env_component_reward.get_rewards()
+        # return torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
+        return reward_dict
 
-    def _check_stuck_termination(self, max_steps: int = 300) -> torch.Tensor:
-        """Early termination if robot is stuck/wandering without progress"""
-        # If no goal reached in last max_steps and barely moving, terminate
-        steps_since_goal = (
-            self.episode_length_buf - self._previous_waypoint_reached_step
-        )
-        stuck_too_long = steps_since_goal > max_steps
-        return stuck_too_long
+    def _get_dones(self) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compute and return the done flags for the environment."""
+        terminated, time_outs, _ = self.env_component_termination.get_dones()
+        return terminated, time_outs
 
-    def _check_avoid_goal_collision(self) -> torch.Tensor:
-        """Check if the robot has collided with the avoid goal"""
-        # Check for avoid goal collisions (future waypoints) - VECTORIZED VERSION
-        robot_positions = self.robot.data.root_pos_w[:, :2]  # (num_envs, 2)
+    def _reset_idx(self, env_ids: Sequence[int] | None):
+        if env_ids is None:
+            env_ids = self.robot._ALL_INDICES
+        super()._reset_idx(env_ids)
+        
+        # Update episode length buffer
+        if self.play_mode:
+            self.max_episode_length_buf[env_ids] = self.max_episode_length
+        else:
+            min_episode_length = min(
+                200 + self.common_step_counter, int(0.7 * self.max_episode_length)
+            )
+            self.max_episode_length_buf[env_ids] = torch.randint(
+                min_episode_length,
+                self.max_episode_length + 1,
+                (len(env_ids),),
+                device=self.device,
+            )
 
-        # Create mask for future waypoints (goals with index > current target index)
-        goal_indices = torch.arange(self._num_goals, device=self.device).unsqueeze(
-            0
-        )  # (1, num_goals)
-        target_indices = self._target_index.unsqueeze(1)  # (num_envs, 1)
-        future_waypoint_mask = goal_indices > target_indices  # (num_envs, num_goals)
-
-        # Calculate distances from each robot to all waypoints
-        # robot_positions: (num_envs, 2) -> (num_envs, 1, 2)
-        # _target_positions: (num_envs, num_goals, 2)
-        robot_pos_expanded = robot_positions.unsqueeze(1)  # (num_envs, 1, 2)
-        distances = torch.norm(
-            robot_pos_expanded - self._target_positions, dim=2
-        )  # (num_envs, num_goals)
-
-        # Apply future waypoint mask and check for collisions
-        future_distances = (
-            distances * future_waypoint_mask.float()
-        )  # Zero out non-future waypoints
-        future_distances = torch.where(
-            future_waypoint_mask,
-            future_distances,
-            torch.full_like(future_distances, float("inf")),  # Set non-future to inf
-        )
-
-        # Check which environments have collisions with future waypoints
-        collision_mask = (
-            future_distances < self.avoid_goal_position_tolerance
-        )  # (num_envs, num_goals)
-        env_has_collision = collision_mask.any(dim=1)  # (num_envs,)
-        return env_has_collision
-
-    def _get_rewards(self) -> dict[str, torch.Tensor]:
-        goal_reached = self._position_error < self.position_tolerance
-        target_heading_rew = self.heading_progress_weight * torch.exp(
-            -torch.abs(self.target_heading_error) / self.heading_coefficient
-        )
-        target_heading_rew = torch.nan_to_num(
-            target_heading_rew, posinf=0.0, neginf=0.0
-        )
-        goal_reached_reward = self.goal_reached_bonus * torch.nan_to_num(
-            torch.where(
-                goal_reached,
-                1.0,
-                torch.zeros_like(self._position_error),
-            ),
-            posinf=0.0,
-            neginf=0.0,
-        )
-
-        # Apply penalties for environments with collisions
-        env_has_collision = self._check_avoid_goal_collision()
-        avoid_penalty = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.float32
-        )
-        avoid_penalty[env_has_collision] = self.avoid_penalty_weight
-        self._avoid_goal_hit_this_step[env_has_collision] = True
-        self._episode_avoid_collisions += env_has_collision.int()
-
-        self._target_index = self._target_index + goal_reached
-        self._episode_waypoints_passed += goal_reached.int()
-        # Complete when gets to the goal which is the third last waypoint
-        self.task_completed = self._target_index > (self._num_goals - 3)
-        self._target_index = self._target_index % self._num_goals
-        assert (
-            self._previous_waypoint_reached_step[goal_reached]
-            < self.episode_length_buf[goal_reached]
-        ).all(), "Previous waypoint reached step is greater than episode length"
-        # Compute k using torch.log
-        k = torch.log(
-            torch.tensor(self.fast_goal_reached_bonus, device=self.device)
-        ) / (self.max_episode_length - 1)
-        steps_taken = self.episode_length_buf - self._previous_waypoint_reached_step
-        fast_goal_reached_reward = torch.where(
-            goal_reached,
-            self.fast_goal_reached_bonus * torch.exp(-k * (steps_taken - 1)),
-            torch.zeros_like(self._previous_waypoint_reached_step),
-        )
-        fast_goal_reached_reward = torch.clamp(
-            fast_goal_reached_reward, min=0.0, max=self.fast_goal_reached_bonus
-        )
-        self._previous_waypoint_reached_step = torch.where(
-            goal_reached,
-            self.episode_length_buf,
-            self._previous_waypoint_reached_step,
-        )
-        # Calculate current laziness based on speed
-        linear_speed = torch.norm(
-            self.robot.data.root_lin_vel_b[:, :2], dim=-1
-        )  # XY plane velocity
-        current_laziness = torch.where(
-            linear_speed < self.laziness_threshold,
-            torch.ones_like(linear_speed),  # Count as lazy
-            torch.zeros_like(linear_speed),  # Not lazy
-        )
-
-        # Update accumulated laziness with decay
-        self._accumulated_laziness = (
-            self._accumulated_laziness * self.laziness_decay
-            + current_laziness * (1 - self.laziness_decay)
-        )
-        # Clamp to prevent extreme values
-        self._accumulated_laziness = torch.clamp(
-            self._accumulated_laziness, 0.0, self.max_laziness
-        )
-
-        # Reset accumulated laziness when reaching waypoint
-        self._accumulated_laziness = torch.where(
-            goal_reached,
-            torch.zeros_like(self._accumulated_laziness),
-            self._accumulated_laziness,
-        )
-        # Calculate laziness penalty using log
-        laziness_penalty = torch.nan_to_num(
-            -self.laziness_penalty_weight * torch.log1p(self._accumulated_laziness),
-            posinf=0.0,
-            neginf=0.0,
-        )  # log1p(x) = log(1 + x)
-
-        # Add wall distance penalty
-        min_wall_dist = self._get_distance_to_walls()
-        danger_distance = (
-            0.5
-        )  # Distance at which to start penalizing
-        wall_penalty = torch.nan_to_num(
-            torch.where(
-                min_wall_dist > danger_distance,
-                torch.zeros_like(min_wall_dist),
-                self.wall_penalty_weight
-                * torch.exp(
-                    1.0 - min_wall_dist / danger_distance
-                ),  # Exponential penalty
-            ),
-            posinf=0.0,
-            neginf=0.0,
-        )
-        linear_speed_reward = self.linear_speed_weight * torch.nan_to_num(
-            linear_speed,
-            posinf=0.0,
-            neginf=0.0,
-        )
-        # Create a tensor of 0s (future), 1s (current), and 2s (completed)
-        marker_indices = torch.zeros(
-            (self.num_envs, self._num_goals),
-            device=self.device,
-            dtype=torch.long,
-        )
-        # Set current targets to 1 (green)
-        marker_indices[
-            torch.arange(self.num_envs, device=self.device), self._target_index
-        ] = 1
-        # Set the next target to 3 (cyan)
-        marker_indices[
-            torch.arange(self.num_envs, device=self.device), self._target_index + 1
-        ] = 3
-        # Set completed targets to 2 (invisible)
-        # Create a mask for completed targets
-        target_mask = (self._target_index.unsqueeze(1) > 0) & (
-            torch.arange(self._num_goals, device=self.device)
-            < self._target_index.unsqueeze(1)
-        )
-        marker_indices[target_mask] = 2
-        marker_indices = marker_indices.view(-1).tolist()
-        self.waypoints.visualize(marker_indices=marker_indices)
-        return {
-            "Episode_Reward/goal_reached_reward": goal_reached_reward,
-            "Episode_Reward/linear_speed_reward": linear_speed_reward,
-            "Episode_Reward/laziness_penalty": laziness_penalty,
-            "Episode_Reward/wall_penalty": wall_penalty,
-            "Episode_Reward/fast_goal_reached_reward": fast_goal_reached_reward,
-            "Episode_Reward/avoid_penalty": avoid_penalty,
-            "Episode_Reward/target_heading_rew": target_heading_rew,
-        }
+        # Reset episode tracking
+        self._episode_reward_buf[env_ids] = 0.0
+        
+        # Reset robot and get pose
+        robot_pose = self.env_component_robot.reset(env_ids)
+        
+        # Reset waypoints
+        self.env_component_waypoint.reset(env_ids, robot_pose)
+        
+        # Reset other components
+        self.env_component_observation.reset(env_ids)
+        self.env_component_reward.reset(env_ids)

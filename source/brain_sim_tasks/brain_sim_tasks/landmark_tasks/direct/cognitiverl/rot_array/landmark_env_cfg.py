@@ -1,36 +1,33 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
+import isaaclab.sim as sim_utils
 
-from isaaclab.assets import ArticulationCfg
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.envs import DirectRLEnvCfg
+from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg, PhysxCfg
 from isaaclab.utils import configclass
+
 from isaaclab_assets.robots.spot import SPOT_CFG
 
-from .nav_env_cfg import NavEnvCfg
 from brain_sim_assets.props.waypoint import bsWaypointGenerator
-
+from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 
 @configclass
-class LandmarkEnvCfg(NavEnvCfg):
-    physcis_dt = 1 / 200
-    # Two-level decimation for hierarchical control
+class LandmarkEnvCfg(DirectRLEnvCfg):
+
+    physics_dt = 1.0 / 200.0  # Physics timestep
     low_level_decimation = 4  # Low-level locomotion policy runs at 50Hz
     high_level_decimation = 5  # High-level navigation policy runs at 10Hz  
     decimation = low_level_decimation * high_level_decimation  # Total decimation = 20
     render_interval = 10  # Render at same frequency as env steps (10Hz)
-    episode_length_s = 120.0
+
+    episode_length_s = 240.0
     action_space = 3
     img_size = [3, 128, 128]
-    observation_space = (
-        img_size[0] * img_size[1] * img_size[2] + 4
-    )  # Changed from 8 to 9 to include minimum wall distance
+    observation_space = (img_size[0] * img_size[1] * img_size[2] + 4)  
     policy_file_path = "rslrl_policy.pt"
 
-    # Override sim to use custom render_interval
     sim: SimulationCfg = SimulationCfg(
-        dt=physcis_dt,
+        dt=physics_dt,
         render_interval=render_interval,  # Uses the render_interval defined above (32)
         use_fabric=True,  # Enable USD Fabric for better performance
         device="cuda:0",  # Use GPU for physics
@@ -59,40 +56,24 @@ class LandmarkEnvCfg(NavEnvCfg):
             gpu_max_particle_contacts=0,
         ),
     )
-    robot_cfg: ArticulationCfg = SPOT_CFG.replace(
-        prim_path="/World/envs/env_.*/Robot",
-    )
+
+    robot_cfg: ArticulationCfg = SPOT_CFG.replace(prim_path="/World/envs/env_.*/Robot")
 
     dof_name = [
-        "fl_hx",
-        "fr_hx",
-        "hl_hx",
-        "hr_hx",
-        "fl_hy",
-        "fr_hy",
-        "hl_hy",
-        "hr_hy",
-        "fl_kn",
-        "fr_kn",
-        "hl_kn",
-        "hr_kn",
+        "fl_hx", "fr_hx", "hl_hx", "hr_hx",
+        "fl_hy", "fr_hy", "hl_hy", "hr_hy",
+        "fl_kn", "fr_kn", "hl_kn", "hr_kn",
     ]
 
-    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
-        marker0_radius=1.0, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=1.0
-    )
-    position_tolerance = 1.0
-    avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
-
     goal_reached_bonus = 125.0
-    wall_penalty_weight = -1.0  # -0.2
-    linear_speed_weight = 0.0  # 0.05
-    laziness_penalty_weight = 0.0  # -0.3
-    avoid_penalty_weight = -250.0  # 0.0
+    wall_penalty_weight = -1.0  
+    linear_speed_weight = 0.0  
+    laziness_penalty_weight = 0.0
+    avoid_penalty_weight = -250.0
 
     fast_goal_reached_weight = 125.0
     heading_coefficient = 0.25
-    heading_progress_weight = 0.0  # 0.05
+    heading_progress_weight = 0.0  
 
     laziness_decay = 0.3
     laziness_threshold = 8.0
@@ -103,6 +84,57 @@ class LandmarkEnvCfg(NavEnvCfg):
     throttle_max = 4.5
     steering_max = 3.0
 
-    termination_on_avoid_goal_collision = True
-    termination_on_stuck = False
+    @configclass
+    class NavSceneCfg(InteractiveSceneCfg):
+        num_envs=512  
+        env_spacing = 20.0
+        lazy_sensor_update=True  
+        replicate_physics=True
+
+        ground = AssetBaseCfg(
+            prim_path="/World/ground",
+            spawn=sim_utils.GroundPlaneCfg(
+                size=(
+                    4096 * 40.0,
+                    4096 * 40.0,
+                ),
+                color=(0.2, 0.2, 0.2),
+                physics_material=sim_utils.RigidBodyMaterialCfg(
+                    friction_combine_mode="multiply",
+                    restitution_combine_mode="multiply",
+                    static_friction=2.0,
+                    dynamic_friction=2.0,
+                    restitution=0.0,
+                ),
+            )
+        )
+        dome_light = AssetBaseCfg(
+            prim_path="/World/Light",
+            spawn=sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
+        )
+
+    # scene
+    scene: NavSceneCfg = NavSceneCfg()
+    env_spacing = scene.env_spacing
+    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
+        marker0_radius=0.5, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=0.5
+    )
+    
+    # Wall parameters
+    room_size = 20.0
+    num_goals = 3
+    wall_thickness = 1.0
+    wall_height = 3.0
+    position_tolerance = waypoint_cfg.markers["marker1"].radius * 2.0
+    avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
+    position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
+
+    # Initialize wall configuration (not a CFG but an interface to bsMaze) and apply to scene
+    wall_config = bsMazeRuntime(room_size, maze_file="landmark.txt", maze_config="maze_cell_1.json")
+    wall_config.apply_to_scene_cfg(scene)
+
+    # Terminations
+    termination_on_goal_reached = True
+    termination_on_vehicle_flip = True
+    termination_on_avoid_goal_collision = False
     termination_on_stuck = False

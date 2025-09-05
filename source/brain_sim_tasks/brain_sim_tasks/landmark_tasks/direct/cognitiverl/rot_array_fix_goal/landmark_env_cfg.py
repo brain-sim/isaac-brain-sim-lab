@@ -14,7 +14,7 @@ from brain_sim_assets.props.waypoint import bsWaypointGenerator
 
 @configclass
 class LandmarkEnvCfg(NavEnvCfg):
-    physcis_dt = 1 / 200
+    physics_dt = 1 / 200
     # Two-level decimation for hierarchical control
     low_level_decimation = 4  # Low-level locomotion policy runs at 50Hz
     high_level_decimation = 5  # High-level navigation policy runs at 10Hz  
@@ -30,7 +30,7 @@ class LandmarkEnvCfg(NavEnvCfg):
 
     # Override sim to use custom render_interval
     sim: SimulationCfg = SimulationCfg(
-        dt=physcis_dt,
+        dt=physics_dt,
         render_interval=render_interval,  # Uses the render_interval defined above (32)
         use_fabric=True,  # Enable USD Fabric for better performance
         device="cuda:0",  # Use GPU for physics
