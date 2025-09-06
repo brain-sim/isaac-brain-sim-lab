@@ -8,9 +8,7 @@ Python module serving as a project/extension template.
 """
 
 # Register Gym environments.
-from .maze_tasks import *
-from .nav_avoid_tasks import *
-from .linear_maze_tasks import *
+from .legacy_tasks import *
 from .landmark_tasks import *
 
 # Register UI extensions.
