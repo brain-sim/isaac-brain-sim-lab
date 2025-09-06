@@ -134,7 +134,7 @@ class SpotNavAvoidEnv(NavEnv):
         self.termination_on_goal_reached = self.cfg.termination_on_goal_reached
         self.termination_on_vehicle_flip = self.cfg.termination_on_vehicle_flip
         self.termination_on_stuck = self.cfg.termination_on_stuck
-        
+
         # Initialize current joint targets
         self._current_joint_targets = self._default_pos.clone()
 
@@ -208,8 +208,10 @@ class SpotNavAvoidEnv(NavEnv):
             # Update previous action buffer
             self._low_level_previous_action = actions.detach()
             # Scale and offset actions as in Spot reference policy
-            self._current_joint_targets = self._default_pos + actions * self.ACTION_SCALE
-        
+            self._current_joint_targets = (
+                self._default_pos + actions * self.ACTION_SCALE
+            )
+
         # Apply the current joint position targets (reuse from previous calculation if within decimation)
         self.robot.set_joint_position_target(self._current_joint_targets)
         # Increment physics step counter

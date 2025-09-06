@@ -17,6 +17,7 @@ from isaaclab.utils import math
 from .nav_env_cfg import NavEnvCfg
 import numpy as np
 
+
 class NavEnv(DirectRLEnv):
     cfg: NavEnvCfg
 
@@ -92,8 +93,8 @@ class NavEnv(DirectRLEnv):
                 size=(
                     4096 * 40.0,
                     4096 * 40.0,
-                ),  
-                color=(0.2, 0.2, 0.2),  
+                ),
+                color=(0.2, 0.2, 0.2),
                 physics_material=sim_utils.RigidBodyMaterialCfg(
                     friction_combine_mode="multiply",
                     restitution_combine_mode="multiply",
@@ -200,7 +201,7 @@ class NavEnv(DirectRLEnv):
             self.extras["log"].update(log_infos)
 
     def step(self, action: torch.Tensor) -> VecEnvStepReturn:
-        
+
         action = action.to(self.device)
         if self.cfg.action_noise_model:
             action = self._action_noise_model.apply(action)
@@ -224,7 +225,7 @@ class NavEnv(DirectRLEnv):
         self.camera.update(dt=self.step_dt)
         if hasattr(self, "height_scanner"):
             self.height_scanner.update(dt=self.step_dt)
-        
+
         self.episode_length_buf += 1  # step in current episode (per env)
         self.common_step_counter += 1  # total step (common for all envs)
         self.extras["log"] = {}
@@ -281,7 +282,7 @@ class NavEnv(DirectRLEnv):
         )
 
     def render(self, recompute: bool = False) -> np.ndarray | None:
-        
+
         if not self.sim.has_rtx_sensors() and not recompute:
             self.sim.render()
         if self.render_mode == "human" or self.render_mode is None:
@@ -402,15 +403,17 @@ class NavEnv(DirectRLEnv):
             terminated.float().mean().item()
         )
         return terminated, time_outs, termination_infos
-    
+
     def _generate_waypoints(self, env_ids, robot_poses):
-        
+
         num_reset = len(env_ids)
         env_origins = self.scene.env_origins[env_ids, :2]  # (num_reset, 2)
         robot_xy = robot_poses[:, :2]  # (num_reset, 2)
 
-        waypoint_positions = torch.zeros((num_reset, self._num_goals, 2), device=self.device)
-        
+        waypoint_positions = torch.zeros(
+            (num_reset, self._num_goals, 2), device=self.device
+        )
+
         for goal_idx in range(self._num_goals):
             max_attempts = 100
             placed = torch.zeros(num_reset, dtype=torch.bool, device=self.device)
@@ -425,9 +428,9 @@ class NavEnv(DirectRLEnv):
 
                 # Generate valid positions using the wall configuration
                 random_positions = self.cfg.wall_config.get_random_valid_positions(
-                    num_unplaced, valid_indicator='f', device=self.device
+                    num_unplaced, valid_indicator="f", device=self.device
                 )  # (num_unplaced, 3) - [x, y, z]
-                
+
                 # Extract x, y coordinates (ignore z)
                 tx = random_positions[:, 0]  # (num_unplaced,)
                 ty = random_positions[:, 1]  # (num_unplaced,)
@@ -459,9 +462,9 @@ class NavEnv(DirectRLEnv):
 
                 # Generate fallback positions using valid positions
                 random_positions = self.cfg.wall_config.get_random_valid_positions(
-                    num_unplaced, valid_indicator='f', device=self.device
+                    num_unplaced, valid_indicator="f", device=self.device
                 )  # (num_unplaced, 3)
-                
+
                 tx = random_positions[:, 0]  # (num_unplaced,)
                 ty = random_positions[:, 1]  # (num_unplaced,)
 
@@ -509,15 +512,17 @@ class NavEnv(DirectRLEnv):
         robot_pose[:, :3] += self.scene.env_origins[env_ids]
 
         random_positions = self.cfg.wall_config.get_random_valid_positions(
-            num_reset, valid_indicator='s', device=self.device
+            num_reset, valid_indicator="s", device=self.device
         )
-        robot_pose[:, :2] = random_positions[:, :2] + self.scene.env_origins[env_ids, :2]
+        robot_pose[:, :2] = (
+            random_positions[:, :2] + self.scene.env_origins[env_ids, :2]
+        )
         # Set orientation to face -y direction (-90 degree rotation around z-axis)
         angle = torch.tensor(-torch.pi / 4, device=self.device, dtype=torch.float32)
         robot_pose[:, 3] = torch.cos(angle)  # w component
         robot_pose[:, 4] = 0.0  # x component
         robot_pose[:, 5] = 0.0  # y component
-        robot_pose[:, 6] = torch.sin(angle)  # z component  
+        robot_pose[:, 6] = torch.sin(angle)  # z component
 
         self.robot.write_root_pose_to_sim(robot_pose, env_ids)
         self.robot.write_root_velocity_to_sim(robot_velocities, env_ids)
@@ -528,10 +533,7 @@ class NavEnv(DirectRLEnv):
         self._target_positions[env_ids, :, :] = 0.0
         self._markers_pos[env_ids, :, :] = 0.0
 
-        waypoint_positions = self._generate_waypoints(
-            env_ids,
-            robot_pose
-        )
+        waypoint_positions = self._generate_waypoints(env_ids, robot_pose)
 
         self._target_positions[env_ids] = waypoint_positions
 

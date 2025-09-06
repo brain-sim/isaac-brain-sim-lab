@@ -172,7 +172,7 @@ def make_isaaclab_env(task, device, num_envs, capture_video, disable_fabric, **a
     )
     from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
-    import brain_sim_tasks    # noqa: F401
+    import brain_sim_tasks  # noqa: F401
 
     def thunk():
         cfg = parse_env_cfg(
@@ -378,9 +378,9 @@ def main(args):
     set_high_precision()
     n_obs = int(np.prod(envs.observation_space.shape[1:]))
     n_act = int(np.prod(envs.action_space.shape[1:]))
-    assert isinstance(envs.action_space, gym.spaces.Box), (
-        "only continuous action space is supported"
-    )
+    assert isinstance(
+        envs.action_space, gym.spaces.Box
+    ), "only continuous action space is supported"
 
     fixed_td = TensorDict(
         {

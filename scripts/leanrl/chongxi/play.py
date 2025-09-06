@@ -113,6 +113,7 @@ def make_isaaclab_env(
     **kwargs,
 ):
     import isaaclab_tasks  # noqa: F401
+
     # from isaaclab_rl.torchrl import (
     #     IsaacLabVecEnvWrapper,
     # )
@@ -129,9 +130,9 @@ def make_isaaclab_env(
         env = gym.make(
             task,
             cfg=cfg,
-            render_mode="rgb_array"
-            if (capture_video and log_dir is not None)
-            else None,
+            render_mode=(
+                "rgb_array" if (capture_video and log_dir is not None) else None
+            ),
             play_mode=True,
         )
         if capture_video and log_dir is not None:
@@ -174,9 +175,9 @@ def main(args):
 
     n_obs = int(np.prod(eval_envs.observation_space.shape[1:]))
     n_act = int(np.prod(eval_envs.action_space.shape[1:]))
-    assert isinstance(eval_envs.action_space, gym.spaces.Box), (
-        "only continuous action space is supported"
-    )
+    assert isinstance(
+        eval_envs.action_space, gym.spaces.Box
+    ), "only continuous action space is supported"
 
     AGENT_LOOKUP = {
         "CNNPPOAgent": CNNPPOAgent,
@@ -184,7 +185,7 @@ def main(args):
 
     agent_class = AGENT_LOOKUP[args.agent]
     agent = agent_class(n_obs, n_act, img_size=eval_envs.unwrapped.cfg.img_size)
-    
+
     # Determine checkpoint path
     if args.checkpoint_path:
         # Use specific checkpoint if provided
@@ -217,7 +218,7 @@ def main(args):
                     attrs=["bold"],
                 )
             )
-    
+
     # Check if checkpoint exists
     if not os.path.exists(checkpoint_path):
         raise FileNotFoundError(
@@ -227,19 +228,23 @@ def main(args):
                 attrs=["bold"],
             )
         )
-    
-    checkpoint = torch.load(
-        checkpoint_path, map_location="cpu", weights_only=False
-    )
-    
+
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+
     # Try to load EMA weights first if available, otherwise load regular weights
     if "ema_model_state_dict" in checkpoint:
         agent.load_state_dict(checkpoint["ema_model_state_dict"])
-        print(colored("[INFO] : Agent loaded from EMA weights.", "cyan", attrs=["bold"]))
+        print(
+            colored("[INFO] : Agent loaded from EMA weights.", "cyan", attrs=["bold"])
+        )
     else:
         agent.load_state_dict(checkpoint["model_state_dict"])
-        print(colored("[INFO] : Agent loaded from regular weights.", "green", attrs=["bold"]))
-    
+        print(
+            colored(
+                "[INFO] : Agent loaded from regular weights.", "green", attrs=["bold"]
+            )
+        )
+
     # Print checkpoint info if available
     if "global_step" in checkpoint:
         print(
@@ -341,6 +346,7 @@ def main(args):
 
 if __name__ == "__main__":
     import traceback
+
     try:
         os.environ["WANDB_MODE"] = "dryrun"
         main(args)

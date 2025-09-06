@@ -11,6 +11,7 @@ from isaaclab.utils import configclass
 from brain_sim_assets.props.waypoint import bsWaypointGenerator
 from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 
+
 @configclass
 class NavEnvCfg(DirectRLEnvCfg):
     """
@@ -22,10 +23,10 @@ class NavEnvCfg(DirectRLEnvCfg):
 
     @configclass
     class NavSceneCfg(InteractiveSceneCfg):
-        num_envs=512  # Match your actual training env count
+        num_envs = 512  # Match your actual training env count
         env_spacing = 20.0
-        lazy_sensor_update=True  # Add this for better performance
-        replicate_physics=True
+        lazy_sensor_update = True  # Add this for better performance
+        replicate_physics = True
 
     # env
     decimation = 64  # Increased from 4 - fewer physics steps per RL step
@@ -33,7 +34,7 @@ class NavEnvCfg(DirectRLEnvCfg):
 
     # simulation
     sim: SimulationCfg = SimulationCfg(
-        dt=1/200,  # Increased from 1/200 - ~2x faster physics!
+        dt=1 / 200,  # Increased from 1/200 - ~2x faster physics!
         render_interval=8,  # Render every N simulation steps
         use_fabric=True,  # Enable USD Fabric for better performance
         device="cuda:0",  # Use GPU for physics
@@ -61,19 +62,19 @@ class NavEnvCfg(DirectRLEnvCfg):
             gpu_max_num_partitions=8,
             gpu_max_soft_body_contacts=0,  # Not using soft bodies
             gpu_max_particle_contacts=0,  # Not using particles
-        )
+        ),
     )
     sim.create_stage_in_memory = True
 
     img_size = [3, 128, 128]
-    observation_space = (
-        img_size[0] * img_size[1] * img_size[2] + 4
-    ) 
+    observation_space = img_size[0] * img_size[1] * img_size[2] + 4
 
     # scene
     scene: NavSceneCfg = NavSceneCfg()
     env_spacing = scene.env_spacing
-    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(marker0_radius=0.5, marker1_radius=0.0, marker2_radius=0.0)
+    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
+        marker0_radius=0.5, marker1_radius=0.0, marker2_radius=0.0
+    )
     static_friction = 2.0
     dynamic_friction = 2.0
 
@@ -87,7 +88,9 @@ class NavEnvCfg(DirectRLEnvCfg):
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 
     # Initialize wall configuration (not a CFG but an interface to bsMaze) and apply to scene
-    wall_config = bsMazeRuntime(room_size, maze_file="linear_maze.txt", maze_config="maze_cell_1.json")
+    wall_config = bsMazeRuntime(
+        room_size, maze_file="linear_maze.txt", maze_config="maze_cell_1.json"
+    )
     wall_config.apply_to_scene_cfg(scene)
 
     # Terminations

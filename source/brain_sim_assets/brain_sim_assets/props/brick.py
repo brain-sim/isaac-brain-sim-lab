@@ -6,13 +6,15 @@ from brain_sim_assets import BRAIN_SIM_ASSETS_PROPS_DATA_DIR
 
 
 class bsBrickGenerator:
-    
+
     @staticmethod
-    def get_brick_object(prim_path: str = "{ENV_REGEX_NS}/Brick", 
-                         pos: tuple = (1.0, 0.0, 0.5), 
-                         rot: tuple = (1, 0, 0, 0),
-                         scale: tuple = (0.3, 0.3, 0.3),
-                         type: str = "A") -> RigidObjectCfg:
+    def get_brick_object(
+        prim_path: str = "{ENV_REGEX_NS}/Brick",
+        pos: tuple = (1.0, 0.0, 0.5),
+        rot: tuple = (1, 0, 0, 0),
+        scale: tuple = (0.3, 0.3, 0.3),
+        type: str = "A",
+    ) -> RigidObjectCfg:
         return RigidObjectCfg(
             prim_path=prim_path,
             init_state=RigidObjectCfg.InitialStateCfg(pos=pos, rot=rot),

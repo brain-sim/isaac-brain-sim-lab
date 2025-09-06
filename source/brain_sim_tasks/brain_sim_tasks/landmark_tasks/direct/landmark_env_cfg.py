@@ -8,10 +8,11 @@ from isaaclab.utils import configclass
 
 from isaaclab_assets.robots.spot import SPOT_CFG
 
+
 @configclass
 class NavSceneCfg(InteractiveSceneCfg):
-    lazy_sensor_update=True  
-    replicate_physics=True
+    lazy_sensor_update = True
+    replicate_physics = True
 
     ground = AssetBaseCfg(
         prim_path="/World/ground",
@@ -28,26 +29,27 @@ class NavSceneCfg(InteractiveSceneCfg):
                 dynamic_friction=2.0,
                 restitution=0.0,
             ),
-        )
+        ),
     )
     dome_light = AssetBaseCfg(
         prim_path="/World/Light",
-        spawn=sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
+        spawn=sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75)),
     )
+
 
 @configclass
 class LandmarkEnvCfg(DirectRLEnvCfg):
 
     physics_dt = 1.0 / 200.0  # Physics timestep
     low_level_decimation = 4  # Low-level locomotion policy runs at 50Hz
-    high_level_decimation = 5  # High-level navigation policy runs at 10Hz  
+    high_level_decimation = 5  # High-level navigation policy runs at 10Hz
     decimation = low_level_decimation * high_level_decimation  # Total decimation = 20
     render_interval = 10  # Render at same frequency as env steps (10Hz)
 
     episode_length_s = 240.0
     action_space = 3
     img_size = [3, 128, 128]
-    observation_space = (img_size[0] * img_size[1] * img_size[2] + 4)  
+    observation_space = img_size[0] * img_size[1] * img_size[2] + 4
     policy_file_path = "rslrl_policy.pt"
 
     sim: SimulationCfg = SimulationCfg(
@@ -84,9 +86,18 @@ class LandmarkEnvCfg(DirectRLEnvCfg):
     robot_cfg: ArticulationCfg = SPOT_CFG.replace(prim_path="/World/envs/env_.*/Robot")
 
     dof_name = [
-        "fl_hx", "fr_hx", "hl_hx", "hr_hx",
-        "fl_hy", "fr_hy", "hl_hy", "hr_hy",
-        "fl_kn", "fr_kn", "hl_kn", "hr_kn",
+        "fl_hx",
+        "fr_hx",
+        "hl_hx",
+        "hr_hx",
+        "fl_hy",
+        "fr_hy",
+        "hl_hy",
+        "hr_hy",
+        "fl_kn",
+        "fr_kn",
+        "hl_kn",
+        "hr_kn",
     ]
 
     # Terminations

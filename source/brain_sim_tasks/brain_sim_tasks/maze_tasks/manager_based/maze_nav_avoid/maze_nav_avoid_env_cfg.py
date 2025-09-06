@@ -11,7 +11,7 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors.camera import TiledCameraCfg
 from isaaclab.sensors import ContactSensorCfg
 from isaaclab.utils import configclass
-from isaaclab_assets.robots.spot import SPOT_CFG  
+from isaaclab_assets.robots.spot import SPOT_CFG
 
 from brain_sim_assets.props.maze import bsMazeGenerator
 from brain_sim_assets.props.markers import bsMarkersGenerator
@@ -26,6 +26,7 @@ from .mdp.mdp_cfg import (
     TerminationsCfg,
 )
 
+
 @configclass
 class BrainSimSceneCfg(InteractiveSceneCfg):
 
@@ -35,7 +36,9 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
     )
 
     robot: ArticulationCfg = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True)
+    contact_forces = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True
+    )
 
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
@@ -70,7 +73,7 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
         if start_goal:
             start_pos = start_goal[0]
             self.robot.init_state.pos = (start_pos[0], start_pos[1], 0.5)
-        
+
         wall_configs = maze.get_wall_collection()
         for wall_name, wall_cfg in wall_configs.items():
             setattr(self, wall_name, wall_cfg)
@@ -79,6 +82,7 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
         marker_configs = markers.get_marker_configs_dict()
         for marker_name, marker_cfg in marker_configs.items():
             setattr(self, marker_name, marker_cfg)
+
 
 @configclass
 class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
@@ -99,7 +103,7 @@ class BrainSimEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = 10  # 50 Hz
         self.episode_length_s = 300.0
         # simulation settings
-        self.sim.dt = 1.0/200.0
+        self.sim.dt = 1.0 / 200.0
         self.sim.render_interval = self.decimation
         self.sim.physics_material.static_friction = 1.0
         self.sim.physics_material.dynamic_friction = 1.0

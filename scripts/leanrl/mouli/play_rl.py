@@ -64,7 +64,9 @@ class ExperimentArgs:
     device: str = "cuda:0"
     """device to use for training"""
 
-    checkpoint_path: str = "/home/user/cognitiverl/wandb/run-20250701_001447-0ldtuxzk/files/checkpoints/ckpt_4915200.pt"
+    checkpoint_path: str = (
+        "/home/user/cognitiverl/wandb/run-20250701_001447-0ldtuxzk/files/checkpoints/ckpt_4915200.pt"
+    )
     """path to the checkpoint to load"""
     num_eval_envs: int = 32
     """number of environments to run for evaluation/play."""
@@ -111,6 +113,7 @@ def make_isaaclab_env(
     **kwargs,
 ):
     import isaaclab_tasks  # noqa: F401
+
     # from isaaclab_rl.torchrl import (
     #     IsaacLabVecEnvWrapper,
     # )
@@ -118,6 +121,7 @@ def make_isaaclab_env(
     from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
     import cognitiverl.tasks  # noqa: F401
+
     # import brain_sim_tasks
 
     def thunk():
@@ -127,9 +131,9 @@ def make_isaaclab_env(
         env = gym.make(
             task,
             cfg=cfg,
-            render_mode="rgb_array"
-            if (capture_video and log_dir is not None)
-            else None,
+            render_mode=(
+                "rgb_array" if (capture_video and log_dir is not None) else None
+            ),
             play_mode=True,
         )
         if capture_video and log_dir is not None:
@@ -172,9 +176,9 @@ def main(args):
 
     n_obs = int(np.prod(eval_envs.observation_space.shape[1:]))
     n_act = int(np.prod(eval_envs.action_space.shape[1:]))
-    assert isinstance(eval_envs.action_space, gym.spaces.Box), (
-        "only continuous action space is supported"
-    )
+    assert isinstance(
+        eval_envs.action_space, gym.spaces.Box
+    ), "only continuous action space is supported"
 
     AGENT_LOOKUP = {
         "CNNPPOAgent": CNNPPOAgent,
@@ -287,6 +291,7 @@ def main(args):
 
 if __name__ == "__main__":
     import traceback
+
     try:
         os.environ["WANDB_MODE"] = "dryrun"
         main(args)

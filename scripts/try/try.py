@@ -7,6 +7,7 @@ import numpy as np
 from typing import Dict, List
 from isaaclab.app import AppLauncher
 
+
 def launch_app():
     # add argparse arguments
     parser = argparse.ArgumentParser(
@@ -40,6 +41,7 @@ def launch_app():
 
 
 from isaaclab.app import AppLauncher
+
 simulation_app, args = launch_app()
 
 
@@ -71,9 +73,9 @@ def make_isaaclab_env(
         env = gym.make(
             task,
             cfg=cfg,
-            render_mode="rgb_array"
-            if (capture_video and log_dir is not None)
-            else None,
+            render_mode=(
+                "rgb_array" if (capture_video and log_dir is not None) else None
+            ),
             debug=False,
             play_mode=True,
         )
@@ -118,8 +120,10 @@ class bsKeyboard:
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
-        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-    
+        self._sub_keyboard = self._input.subscribe_to_keyboard_events(
+            self._keyboard, self._sub_keyboard_event
+        )
+
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
         """Subscriber callback to when kit is updated."""
 
@@ -127,18 +131,26 @@ class bsKeyboard:
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             # on pressing, the command is incremented
             if event.input.name in self._input_keyboard_mapping:
-                self._base_command = np.array(self._base_command) + np.array(self._input_keyboard_mapping[event.input.name])
+                self._base_command = np.array(self._base_command) + np.array(
+                    self._input_keyboard_mapping[event.input.name]
+                )
                 self._base_command = self._base_command.tolist()
-                print(f"[DEBUG]: Key pressed: {event.input.name}, Command: {self._base_command}")
+                print(
+                    f"[DEBUG]: Key pressed: {event.input.name}, Command: {self._base_command}"
+                )
 
         elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
             # on release, the command is decremented
             if event.input.name in self._input_keyboard_mapping:
-                self._base_command = np.array(self._base_command) - np.array(self._input_keyboard_mapping[event.input.name])
+                self._base_command = np.array(self._base_command) - np.array(
+                    self._input_keyboard_mapping[event.input.name]
+                )
                 self._base_command = self._base_command.tolist()
-                print(f"[DEBUG]: Key released: {event.input.name}, Command: {self._base_command}")
+                print(
+                    f"[DEBUG]: Key released: {event.input.name}, Command: {self._base_command}"
+                )
         return True
-    
+
     def get_base_command(self) -> List[float]:
         """Get the current base command."""
         return self._base_command
@@ -159,12 +171,12 @@ def main():
     # Initialize keyboard handler
     keyboard_handler = bsKeyboard()
     keyboard_handler.setup()
-    
+
     obs, _ = env.reset()
-    
+
     print("[INFO]: Use WASD/Arrow keys/Numpad to move, Q/E to yaw.")
     print("[INFO]: W/UP/NUMPAD_8: forward, S/DOWN/NUMPAD_2: backward")
-    print("[INFO]: A/LEFT/NUMPAD_4: left, D/RIGHT/NUMPAD_6: right") 
+    print("[INFO]: A/LEFT/NUMPAD_4: left, D/RIGHT/NUMPAD_6: right")
     print("[INFO]: Q/N/NUMPAD_7: yaw left, E/M/NUMPAD_9: yaw right")
     print("[INFO]: Press ESC to exit.")
 
@@ -174,17 +186,17 @@ def main():
             # Get current command from keyboard
             command = keyboard_handler.get_base_command()
             action = torch.tensor(command, dtype=torch.float32)
-            
+
             # Step the environment
             obs, reward, terminated, truncated, info = env.step(action)
-            
+
             # Check if we should exit (ESC key handling would need to be added to bsKeyboard)
             if terminated or truncated:
                 obs, _ = env.reset()
-                
+
     except KeyboardInterrupt:
         print("[INFO]: Keyboard interrupt received. Exiting...")
-    
+
     env.close()
 
 

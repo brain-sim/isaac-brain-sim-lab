@@ -12,7 +12,7 @@ from brain_sim_assets.robots.spot import bsSpotLowLevelPolicyVanilla
 
 class EnvComponentRobot:
     """Component responsible for robot control, setup, and actions."""
-    
+
     def __init__(self, env):
         self.env = env
         self.robot = None
@@ -76,7 +76,7 @@ class EnvComponentRobot:
             )
         )
         self.policy = bsSpotLowLevelPolicyVanilla(policy_file_path)
-        
+
         # Initialize action-related tensors
         self._low_level_previous_action = torch.zeros(
             (self.env.num_envs, 12), device=self.env.device, dtype=torch.float32
@@ -91,7 +91,7 @@ class EnvComponentRobot:
             device=self.env.device,
             dtype=torch.float32,
         )
-        
+
         # Action parameters
         self.throttle_scale = self.env.cfg.throttle_scale
         self.steering_scale = self.env.cfg.steering_scale
@@ -127,7 +127,7 @@ class EnvComponentRobot:
         q_IB = self.robot.data.root_quat_w  # [num_envs, 4]
         joint_pos = self.robot.data.joint_pos  # [num_envs, 12]
         joint_vel = self.robot.data.joint_vel  # [num_envs, 12]
-        
+
         # Compute actions for all environments
         actions = self.policy.get_action(
             lin_vel_I,
@@ -139,20 +139,20 @@ class EnvComponentRobot:
             joint_pos,
             joint_vel,
         )
-        
+
         # Update previous action buffer
         self._low_level_previous_action = actions.detach()
-        
+
         # Scale and offset actions as in Spot reference policy
         joint_positions = self._default_pos + actions * self.env.ACTION_SCALE
-        
+
         # Apply joint position targets directly
         self.robot.set_joint_position_target(joint_positions)
 
     def reset(self, env_ids):
         """Reset robot for specified environments."""
         self.camera.reset(env_ids)
-        
+
         # Reset robot state
         num_reset = len(env_ids)
         default_state = self.robot.data.default_root_state[env_ids]
@@ -167,11 +167,15 @@ class EnvComponentRobot:
         random_positions = self.env.cfg.wall_config.get_random_valid_positions(
             num_reset, device=self.env.device
         )
-        robot_pose[:, :2] = random_positions[:, :2] + self.env.scene.env_origins[env_ids, :2]
+        robot_pose[:, :2] = (
+            random_positions[:, :2] + self.env.scene.env_origins[env_ids, :2]
+        )
 
         # Random orientation
         angles = (
-            torch.pi / 6.0 * torch.rand((num_reset), dtype=torch.float32, device=self.env.device)
+            torch.pi
+            / 6.0
+            * torch.rand((num_reset), dtype=torch.float32, device=self.env.device)
         )
         robot_pose[:, 3] = torch.cos(angles * 0.5)
         robot_pose[:, 6] = torch.sin(angles * 0.5)
@@ -182,7 +186,7 @@ class EnvComponentRobot:
         self.robot.write_joint_state_to_sim(
             joint_positions, joint_velocities, None, env_ids
         )
-        
+
         return robot_pose
 
     def update_camera(self, dt):

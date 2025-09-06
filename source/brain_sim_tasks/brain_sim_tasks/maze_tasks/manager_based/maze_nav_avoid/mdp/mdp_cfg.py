@@ -1,4 +1,3 @@
-
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.utils import configclass
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
@@ -9,26 +8,32 @@ from .reward_cfg import BaseRewardsCfg
 from .terminate_cfg import BaseTerminationsCfg
 from .command_cfg import BaseCommandsCfg
 
+
 @configclass
 class CommandsCfg(BaseCommandsCfg):
-    pass # Already inherits from BaseCommandsCfg
+    pass  # Already inherits from BaseCommandsCfg
+
 
 @configclass
 class ActionsCfg:
     hierarchical_spot = HierarchicalSpotActionCfg()
 
+
 @configclass
 class ObservationsCfg:
     policy = PolicyCfg()
+
 
 @configclass
 class EventCfg:
     reset_scene = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
+
 @configclass
 class RewardsCfg(BaseRewardsCfg):
-    pass # Already inherits from BaseRewardsCfg
+    pass  # Already inherits from BaseRewardsCfg
+
 
 @configclass
 class TerminationsCfg(BaseTerminationsCfg):
-    pass # Already inherits from BaseTerminationsCfg
+    pass  # Already inherits from BaseTerminationsCfg

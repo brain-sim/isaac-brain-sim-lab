@@ -21,6 +21,7 @@ from .components.env_component_reward import EnvComponentReward
 
 from typing import Type
 
+
 class LandmarkEnv(DirectRLEnv):
     cfg: DirectRLEnvCfg
     ACTION_SCALE = 0.2
@@ -28,41 +29,53 @@ class LandmarkEnv(DirectRLEnv):
     def __init__(
         self,
         cfg: DirectRLEnvCfg,
-        render_mode:                str | None = None,
-        debug:                      bool = False,
-        max_total_steps:            int | None = None,
-        play_mode:                  bool = False,
-        component_robot_cls:        Type[EnvComponentRobot]       = EnvComponentRobot,
-        component_observation_cls:  Type[EnvComponentObservation] = EnvComponentObservation,
-        component_reward_cls:       Type[EnvComponentReward]      = EnvComponentReward,
-        component_termination_cls:  Type[EnvComponentTermination] = EnvComponentTermination,
-        component_waypoint_cls:     Type[EnvComponentWaypoint]    = EnvComponentWaypoint,
+        render_mode: str | None = None,
+        debug: bool = False,
+        max_total_steps: int | None = None,
+        play_mode: bool = False,
+        component_robot_cls: Type[EnvComponentRobot] = EnvComponentRobot,
+        component_observation_cls: Type[
+            EnvComponentObservation
+        ] = EnvComponentObservation,
+        component_reward_cls: Type[EnvComponentReward] = EnvComponentReward,
+        component_termination_cls: Type[
+            EnvComponentTermination
+        ] = EnvComponentTermination,
+        component_waypoint_cls: Type[EnvComponentWaypoint] = EnvComponentWaypoint,
         **kwargs,
     ):
 
         # Initialize environment components
         self.components = {
-            'robot':        component_robot_cls(self),
-            'observation':  component_observation_cls(self),
-            'reward':       component_reward_cls(self),
-            'termination':  component_termination_cls(self),
-            'waypoint':     component_waypoint_cls(self)
+            "robot": component_robot_cls(self),
+            "observation": component_observation_cls(self),
+            "reward": component_reward_cls(self),
+            "termination": component_termination_cls(self),
+            "waypoint": component_waypoint_cls(self),
         }
-        
+
         for name, component in self.components.items():
-            setattr(self, f'env_component_{name}', component)
+            setattr(self, f"env_component_{name}", component)
 
         super().__init__(cfg, render_mode, **kwargs)
 
         self.cfg.wall_config.update_device(self.device)
 
         # Initialize tracking variables
-        self._goal_reached = torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
-        self.task_completed = torch.zeros((self.num_envs), device=self.device, dtype=torch.bool)
-        self._episode_reward_buf = torch.zeros((self.num_envs), device=self.device, dtype=torch.float32)
+        self._goal_reached = torch.zeros(
+            (self.num_envs), device=self.device, dtype=torch.int32
+        )
+        self.task_completed = torch.zeros(
+            (self.num_envs), device=self.device, dtype=torch.bool
+        )
+        self._episode_reward_buf = torch.zeros(
+            (self.num_envs), device=self.device, dtype=torch.float32
+        )
         self._episode_reward_infos_buf = {}
         self._metrics_infos_buf = {}
-        self._terminations_infos_buf = defaultdict(lambda: torch.zeros((self.num_envs), device=self.device, dtype=torch.int32))
+        self._terminations_infos_buf = defaultdict(
+            lambda: torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
+        )
 
         self._step_rewards_buffer = []
         self._episode_step_rewards = []
@@ -71,19 +84,21 @@ class LandmarkEnv(DirectRLEnv):
         self.max_total_steps = max_total_steps
         self.play_mode = play_mode
         self.env_spacing = self.cfg.env_spacing
-        self.max_episode_length_buf = torch.full((self.num_envs,), self.max_episode_length, device=self.device)
+        self.max_episode_length_buf = torch.full(
+            (self.num_envs,), self.max_episode_length, device=self.device
+        )
 
         # Post-initialize all environment components
         for component in self.components.values():
-            if hasattr(component, 'post_env_init'):
+            if hasattr(component, "post_env_init"):
                 component.post_env_init()
 
     def _setup_scene(self):
         # Setup required components
-        setup_components = ['robot', 'waypoint']
+        setup_components = ["robot", "waypoint"]
         for name in setup_components:
             component = self.components[name]
-            if hasattr(component, 'setup'):
+            if hasattr(component, "setup"):
                 component.setup()
 
         # Get robot from component and setup scene
@@ -106,7 +121,8 @@ class LandmarkEnv(DirectRLEnv):
                 self.episode_length_buf[env_ids].float()
             ).item()
             completion_frac = (
-                self.env_component_waypoint._episode_waypoints_passed[env_ids].float() / self.cfg.num_goals
+                self.env_component_waypoint._episode_waypoints_passed[env_ids].float()
+                / self.cfg.num_goals
             )
             log_infos["Metrics/success_rate"] = torch.mean(completion_frac).item()
             log_infos["Metrics/episode_reward"] = torch.mean(
@@ -127,7 +143,10 @@ class LandmarkEnv(DirectRLEnv):
                     self.env_component_reward._episode_avoid_collisions[env_ids].float()
                 ).item()
                 log_infos["Metrics/max_avoid_collisions_per_episode"] = (
-                    self.env_component_reward._episode_avoid_collisions[env_ids].float().max().item()
+                    self.env_component_reward._episode_avoid_collisions[env_ids]
+                    .float()
+                    .max()
+                    .item()
                 )
 
             self.extras["log"].update(log_infos)
@@ -156,11 +175,11 @@ class LandmarkEnv(DirectRLEnv):
         self.env_component_robot.update_camera(dt=self.step_dt)
         if hasattr(self, "height_scanner"):
             self.height_scanner.update(dt=self.step_dt)
-        
+
         self.episode_length_buf += 1
         self.common_step_counter += 1
         self.extras["log"] = {}
-        
+
         reward_dict = self.env_component_reward.get_rewards()
         self.reward_buf = torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
         self._episode_reward_buf += self.reward_buf
@@ -193,7 +212,7 @@ class LandmarkEnv(DirectRLEnv):
         for k, v in self.obs_buf.items():
             if k != "policy":
                 del self.obs_buf[k]
-        
+
         self.extras["log"].update(self._populate_step_log_dict())
         self.extras["log"].update(termination_infos)
         self.extras["log"].update(
@@ -226,6 +245,7 @@ class LandmarkEnv(DirectRLEnv):
                 )
             if not hasattr(self, "_rgb_annotator"):
                 import omni.replicator.core as rep
+
                 self._render_product = rep.create.render_product(
                     self.cfg.viewer.cam_prim_path, self.cfg.viewer.resolution
                 )
@@ -246,8 +266,6 @@ class LandmarkEnv(DirectRLEnv):
             raise NotImplementedError(
                 f"Render mode '{self.render_mode}' is not supported. Please use: {self.metadata['render_modes']}."
             )
-
-
 
     def _populate_step_log_dict(self) -> dict:
         log_dict = {}
@@ -283,7 +301,7 @@ class LandmarkEnv(DirectRLEnv):
         if env_ids is None:
             env_ids = self.robot._ALL_INDICES
         super()._reset_idx(env_ids)
-        
+
         # Update episode length buffer
         if self.play_mode:
             self.max_episode_length_buf[env_ids] = self.max_episode_length
@@ -300,13 +318,13 @@ class LandmarkEnv(DirectRLEnv):
 
         # Reset episode tracking
         self._episode_reward_buf[env_ids] = 0.0
-        
+
         # Reset robot and get pose
         robot_pose = self.env_component_robot.reset(env_ids)
-        
+
         # Reset waypoints
         self.env_component_waypoint.reset(env_ids, robot_pose)
-        
+
         # Reset other components
         self.env_component_observation.reset(env_ids)
         self.env_component_reward.reset(env_ids)

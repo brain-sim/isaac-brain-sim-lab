@@ -22,6 +22,7 @@ from brain_sim_assets import BRAIN_SIM_ASSETS_ROBOTS_DATA_DIR
 # MDP settings
 ##
 
+
 @configclass
 class CommandsCfg:
     """Command specifications for the MDP."""
@@ -56,17 +57,23 @@ class ObservationsCfg:
 
         # `` observation terms (order preserved)
         base_lin_vel = ObsTerm(
-            func=mdp.base_lin_vel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.1, n_max=0.1)
+            func=mdp.base_lin_vel,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+            noise=Unoise(n_min=-0.1, n_max=0.1),
         )
         base_ang_vel = ObsTerm(
-            func=mdp.base_ang_vel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.1, n_max=0.1)
+            func=mdp.base_ang_vel,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+            noise=Unoise(n_min=-0.1, n_max=0.1),
         )
         projected_gravity = ObsTerm(
             func=mdp.projected_gravity,
             params={"asset_cfg": SceneEntityCfg("robot")},
             noise=Unoise(n_min=-0.05, n_max=0.05),
         )
-        velocity_commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands, params={"command_name": "base_velocity"}
+        )
 
         actions = ObsTerm(func=mdp.last_action)
 
@@ -120,39 +127,37 @@ class EventCfg:
         },
     )
 
+
 @configclass
 class RewardsCfg:
-    
+
     # Task-specific rewards for navigation
     track_lin_vel_xy_exp = RewTerm(
-        func=mdp.track_lin_vel_xy_exp, 
+        func=mdp.track_lin_vel_xy_exp,
         weight=2.0,
-        params={"command_name": "base_velocity", "std": 0.5}
+        params={"command_name": "base_velocity", "std": 0.5},
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
         weight=1.0,
-        params={"command_name": "base_velocity", "std": 0.5}
+        params={"command_name": "base_velocity", "std": 0.5},
     )
-    
+
     # Penalize excessive commands
-    action_rate = RewTerm(
-        func=mdp.action_rate_l2, 
-        weight=-0.01
-    )
-    
+    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
+
     # Penalize undesired states
     base_motion = RewTerm(
-        func=spot_mdp.base_motion_penalty, 
-        weight=-0.5, 
-        params={"asset_cfg": SceneEntityCfg("robot")}
+        func=spot_mdp.base_motion_penalty,
+        weight=-0.5,
+        params={"asset_cfg": SceneEntityCfg("robot")},
     )
     base_orientation = RewTerm(
-        func=spot_mdp.base_orientation_penalty, 
-        weight=-1.0, 
-        params={"asset_cfg": SceneEntityCfg("robot")}
+        func=spot_mdp.base_orientation_penalty,
+        weight=-1.0,
+        params={"asset_cfg": SceneEntityCfg("robot")},
     )
-    
+
 
 @configclass
 class TerminationsCfg:

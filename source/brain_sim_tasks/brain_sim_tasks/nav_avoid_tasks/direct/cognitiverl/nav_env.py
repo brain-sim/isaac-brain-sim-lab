@@ -16,6 +16,7 @@ from isaaclab.utils import math
 
 from .nav_env_cfg import NavEnvCfg
 
+
 class NavEnv(DirectRLEnv):
     cfg: NavEnvCfg
 
@@ -490,16 +491,18 @@ class NavEnv(DirectRLEnv):
             terminated.float().mean().item()
         )
         return terminated, time_outs, termination_infos
-    
+
     def _generate_waypoints(self, env_ids, robot_poses):
-        
+
         num_reset = len(env_ids)
         env_origins = self.scene.env_origins[env_ids, :2]  # (num_reset, 2)
         robot_xy = robot_poses[:, :2]  # (num_reset, 2)
 
-        waypoint_positions = torch.zeros((num_reset, self._num_goals, 2), device=self.device)
+        waypoint_positions = torch.zeros(
+            (num_reset, self._num_goals, 2), device=self.device
+        )
         min_spacing = 6.0  # Default minimum spacing between waypoints
-        
+
         for goal_idx in range(self._num_goals):
             max_attempts = 100
             placed = torch.zeros(num_reset, dtype=torch.bool, device=self.device)
@@ -516,7 +519,7 @@ class NavEnv(DirectRLEnv):
                 random_positions = self.cfg.wall_config.get_random_valid_positions(
                     num_unplaced, device=self.device
                 )  # (num_unplaced, 3) - [x, y, z]
-                
+
                 # Extract x, y coordinates (ignore z)
                 tx = random_positions[:, 0]  # (num_unplaced,)
                 ty = random_positions[:, 1]  # (num_unplaced,)
@@ -532,7 +535,9 @@ class NavEnv(DirectRLEnv):
                 )  # (num_unplaced,)
                 robot_valid = robot_distances >= 2.5
 
-                waypoint_valid = torch.ones(num_unplaced, dtype=torch.bool, device=self.device)
+                waypoint_valid = torch.ones(
+                    num_unplaced, dtype=torch.bool, device=self.device
+                )
                 if goal_idx > 0:
                     prev_waypoints = waypoint_positions[
                         unplaced_mask, :goal_idx, :
@@ -566,7 +571,7 @@ class NavEnv(DirectRLEnv):
                 random_positions = self.cfg.wall_config.get_random_valid_positions(
                     num_unplaced, device=self.device
                 )  # (num_unplaced, 3)
-                
+
                 tx = random_positions[:, 0]  # (num_unplaced,)
                 ty = random_positions[:, 1]  # (num_unplaced,)
 
@@ -577,7 +582,6 @@ class NavEnv(DirectRLEnv):
                 waypoint_positions[unplaced_indices, goal_idx, :] = fallback_positions
 
         return waypoint_positions
-
 
     def _generate_waypoints_with_spacing(self, env_ids, robot_poses, min_spacing=6.0):
         """Generate waypoints ensuring minimum spacing between them and from robot spawn - VECTORIZED."""
@@ -729,7 +733,9 @@ class NavEnv(DirectRLEnv):
         random_positions = self.cfg.wall_config.get_random_valid_positions(
             num_reset, device=self.device
         )
-        robot_pose[:, :2] = random_positions[:, :2] + self.scene.env_origins[env_ids, :2]
+        robot_pose[:, :2] = (
+            random_positions[:, :2] + self.scene.env_origins[env_ids, :2]
+        )
 
         # Keep random rotation for variety
         angles = (
@@ -750,10 +756,7 @@ class NavEnv(DirectRLEnv):
         self._markers_pos[env_ids, :, :] = 0.0
 
         # Generate waypoints with proper spacing
-        waypoint_positions = self._generate_waypoints(
-            env_ids,
-            robot_pose
-        )
+        waypoint_positions = self._generate_waypoints(env_ids, robot_pose)
         # waypoint_positions = self._generate_waypoints_with_spacing(
         #     env_ids,
         #     robot_pose,
@@ -797,7 +800,7 @@ class NavEnv(DirectRLEnv):
         """
         robot_positions = self.robot.data.root_pos_w[:, :2]
         env_origins = self.scene.env_origins[:, :2]
-        
+
         relative_positions = robot_positions - env_origins
-        
+
         return self.cfg.wall_config.get_wall_distances(relative_positions)

@@ -2,6 +2,7 @@ import math
 from isaaclab.utils import configclass
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
+
 @configclass
 class BaseCommandsCfg:
     # base_velocity = mdp.UniformVelocityCommandCfg(
@@ -13,9 +14,9 @@ class BaseCommandsCfg:
     #     heading_control_stiffness=0.5,
     #     # debug_vis=True,
     #     ranges=mdp.UniformVelocityCommandCfg.Ranges(
-    #         lin_vel_x=(-12.0, 12.0), 
-    #         lin_vel_y=(-12.0, 12.0), 
-    #         ang_vel_z=(-12.0, 12.0), 
+    #         lin_vel_x=(-12.0, 12.0),
+    #         lin_vel_y=(-12.0, 12.0),
+    #         ang_vel_z=(-12.0, 12.0),
     #         heading=(-0.65 * math.pi, 0.65 * math.pi)
     #     ),
     # )

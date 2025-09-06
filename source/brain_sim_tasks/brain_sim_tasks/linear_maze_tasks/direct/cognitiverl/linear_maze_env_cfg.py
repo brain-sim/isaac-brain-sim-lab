@@ -17,7 +17,7 @@ class LinearMazeEnvCfg(NavEnvCfg):
     physcis_dt = 1 / 200
     # Two-level decimation for hierarchical control
     low_level_decimation = 4  # Low-level locomotion policy runs at 50Hz
-    high_level_decimation = 5  # High-level navigation policy runs at 10Hz  
+    high_level_decimation = 5  # High-level navigation policy runs at 10Hz
     decimation = low_level_decimation * high_level_decimation  # Total decimation = 20
     render_interval = 10  # Render at same frequency as env steps (10Hz)
     episode_length_s = 120.0
@@ -78,7 +78,9 @@ class LinearMazeEnvCfg(NavEnvCfg):
         "hr_kn",
     ]
 
-    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(marker0_radius=0.5, marker1_radius=0.0, marker2_radius=0.0)
+    waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
+        marker0_radius=0.5, marker1_radius=0.0, marker2_radius=0.0
+    )
     position_tolerance = 1.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
 

@@ -11,6 +11,7 @@ from isaaclab.utils import configclass
 from .waypoint import WAYPOINT_CFG
 from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 
+
 @configclass
 class NavEnvCfg(DirectRLEnvCfg):
     """
@@ -22,10 +23,10 @@ class NavEnvCfg(DirectRLEnvCfg):
 
     @configclass
     class NavSceneCfg(InteractiveSceneCfg):
-        num_envs=512  # Match your actual training env count
+        num_envs = 512  # Match your actual training env count
         env_spacing = 40.0
-        lazy_sensor_update=True  # Add this for better performance
-        replicate_physics=True
+        lazy_sensor_update = True  # Add this for better performance
+        replicate_physics = True
 
     # env
     decimation = 64  # Increased from 4 - fewer physics steps per RL step
@@ -33,7 +34,7 @@ class NavEnvCfg(DirectRLEnvCfg):
 
     # simulation
     sim: SimulationCfg = SimulationCfg(
-        dt=1/200,  # Increased from 1/200 - ~2x faster physics!
+        dt=1 / 200,  # Increased from 1/200 - ~2x faster physics!
         render_interval=8,  # Render every N simulation steps
         use_fabric=True,  # Enable USD Fabric for better performance
         device="cuda:0",  # Use GPU for physics
@@ -61,7 +62,7 @@ class NavEnvCfg(DirectRLEnvCfg):
             gpu_max_num_partitions=8,
             gpu_max_soft_body_contacts=0,  # Not using soft bodies
             gpu_max_particle_contacts=0,  # Not using particles
-        )
+        ),
     )
     sim.create_stage_in_memory = True
 

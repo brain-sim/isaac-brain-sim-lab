@@ -24,7 +24,7 @@ from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 import isaaclab_tasks.manager_based.locomotion.velocity.config.spot.mdp as spot_mdp
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
-from isaaclab_assets.robots.spot import SPOT_CFG  
+from isaaclab_assets.robots.spot import SPOT_CFG
 from isaaclab.sensors import ContactSensorCfg
 
 from brain_sim_assets.props.maze import bsMazeGenerator
@@ -46,7 +46,9 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
 
     # robot
     robot: ArticulationCfg = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True)
+    contact_forces = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True
+    )
 
     # lights
     dome_light = AssetBaseCfg(
@@ -57,15 +59,16 @@ class BrainSimSceneCfg(InteractiveSceneCfg):
     def __post_init__(self):
 
         maze = bsMazeGenerator.create_example_maze()
-        
+
         start_goal = maze.get_start_goal()
         if start_goal:
             start_pos = start_goal[0]
             self.robot.init_state.pos = (start_pos[0], start_pos[1], 0.5)
-        
+
         wall_configs = maze.get_wall_collection()
         for wall_name, wall_cfg in wall_configs.items():
             setattr(self, wall_name, wall_cfg)
+
 
 @configclass
 class CommandsCfg:
@@ -84,7 +87,6 @@ class CommandsCfg:
     )
 
 
-
 ##
 # MDP settings
 ##
@@ -94,7 +96,9 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_pos = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*"], scale=0.2, use_default_offset=True)
+    joint_pos = mdp.JointPositionActionCfg(
+        asset_name="robot", joint_names=[".*"], scale=0.2, use_default_offset=True
+    )
 
 
 @configclass
@@ -107,22 +111,32 @@ class ObservationsCfg:
 
         # `` observation terms (order preserved)
         base_lin_vel = ObsTerm(
-            func=mdp.base_lin_vel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.1, n_max=0.1)
+            func=mdp.base_lin_vel,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+            noise=Unoise(n_min=-0.1, n_max=0.1),
         )
         base_ang_vel = ObsTerm(
-            func=mdp.base_ang_vel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.1, n_max=0.1)
+            func=mdp.base_ang_vel,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+            noise=Unoise(n_min=-0.1, n_max=0.1),
         )
         projected_gravity = ObsTerm(
             func=mdp.projected_gravity,
             params={"asset_cfg": SceneEntityCfg("robot")},
             noise=Unoise(n_min=-0.05, n_max=0.05),
         )
-        velocity_commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands, params={"command_name": "base_velocity"}
+        )
         joint_pos = ObsTerm(
-            func=mdp.joint_pos_rel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.05, n_max=0.05)
+            func=mdp.joint_pos_rel,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+            noise=Unoise(n_min=-0.05, n_max=0.05),
         )
         joint_vel = ObsTerm(
-            func=mdp.joint_vel_rel, params={"asset_cfg": SceneEntityCfg("robot")}, noise=Unoise(n_min=-0.5, n_max=0.5)
+            func=mdp.joint_vel_rel,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+            noise=Unoise(n_min=-0.5, n_max=0.5),
         )
         actions = ObsTerm(func=mdp.last_action)
 
@@ -187,6 +201,7 @@ class EventCfg:
         },
     )
 
+
 @configclass
 class RewardsCfg:
     # -- task
@@ -208,7 +223,12 @@ class RewardsCfg:
     base_linear_velocity = RewTerm(
         func=spot_mdp.base_linear_velocity_reward,
         weight=5.0,
-        params={"std": 1.0, "ramp_rate": 0.5, "ramp_at_vel": 1.0, "asset_cfg": SceneEntityCfg("robot")},
+        params={
+            "std": 1.0,
+            "ramp_rate": 0.5,
+            "ramp_at_vel": 1.0,
+            "asset_cfg": SceneEntityCfg("robot"),
+        },
     )
     foot_clearance = RewTerm(
         func=spot_mdp.foot_clearance_reward,
@@ -241,10 +261,14 @@ class RewardsCfg:
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot")},
     )
     base_motion = RewTerm(
-        func=spot_mdp.base_motion_penalty, weight=-2.0, params={"asset_cfg": SceneEntityCfg("robot")}
+        func=spot_mdp.base_motion_penalty,
+        weight=-2.0,
+        params={"asset_cfg": SceneEntityCfg("robot")},
     )
     base_orientation = RewTerm(
-        func=spot_mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")}
+        func=spot_mdp.base_orientation_penalty,
+        weight=-3.0,
+        params={"asset_cfg": SceneEntityCfg("robot")},
     )
     foot_slip = RewTerm(
         func=spot_mdp.foot_slip_penalty,
@@ -279,6 +303,7 @@ class RewardsCfg:
         weight=-1.0e-2,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
     )
+
 
 @configclass
 class TerminationsCfg:

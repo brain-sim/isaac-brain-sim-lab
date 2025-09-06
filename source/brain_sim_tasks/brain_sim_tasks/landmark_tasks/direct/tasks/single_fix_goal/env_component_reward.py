@@ -4,12 +4,13 @@ import torch
 
 from ...components.env_component_reward import EnvComponentReward
 
+
 class DerivedEnvComponentReward(EnvComponentReward):
     """Component responsible for reward calculation."""
-    
+
     def __init__(self, env):
         self.env = env
-    
+
     def post_env_init(self):
 
         self._accumulated_laziness = torch.zeros(
@@ -44,13 +45,16 @@ class DerivedEnvComponentReward(EnvComponentReward):
         """Check if robot collides with future waypoints."""
         robot_positions = self.env.env_component_robot.robot.data.root_pos_w[:, :2]
 
-        goal_indices = torch.arange(self.env.cfg.num_goals, device=self.env.device).unsqueeze(0)
+        goal_indices = torch.arange(
+            self.env.cfg.num_goals, device=self.env.device
+        ).unsqueeze(0)
         target_indices = self.env.env_component_waypoint._target_index.unsqueeze(1)
         future_waypoint_mask = goal_indices > target_indices
 
         robot_pos_expanded = robot_positions.unsqueeze(1)
         distances = torch.norm(
-            robot_pos_expanded - self.env.env_component_waypoint._target_positions, dim=2
+            robot_pos_expanded - self.env.env_component_waypoint._target_positions,
+            dim=2,
         )
 
         future_distances = distances * future_waypoint_mask.float()
@@ -67,14 +71,19 @@ class DerivedEnvComponentReward(EnvComponentReward):
     def get_rewards(self) -> dict[str, torch.Tensor]:
         """Calculate all reward components."""
         # Check if goal is reached
-        goal_reached = self.env.env_component_observation._position_error < self.position_tolerance
-        
+        goal_reached = (
+            self.env.env_component_observation._position_error < self.position_tolerance
+        )
+
         # Target heading reward
         target_heading_rew = self.heading_progress_weight * torch.exp(
-            -torch.abs(self.env.env_component_observation.target_heading_error) / self.heading_coefficient
+            -torch.abs(self.env.env_component_observation.target_heading_error)
+            / self.heading_coefficient
         )
-        target_heading_rew = torch.nan_to_num(target_heading_rew, posinf=0.0, neginf=0.0)
-        
+        target_heading_rew = torch.nan_to_num(
+            target_heading_rew, posinf=0.0, neginf=0.0
+        )
+
         # Goal reached reward
         goal_reached_reward = self.goal_reached_bonus * torch.nan_to_num(
             torch.where(
@@ -96,19 +105,25 @@ class DerivedEnvComponentReward(EnvComponentReward):
         self._episode_avoid_collisions += env_has_collision.int()
 
         # Update waypoint progress
-        self.env.env_component_waypoint._target_index = self.env.env_component_waypoint._target_index + goal_reached
+        self.env.env_component_waypoint._target_index = (
+            self.env.env_component_waypoint._target_index + goal_reached
+        )
         self.env.env_component_waypoint._episode_waypoints_passed += goal_reached.int()
-        
+
         # Check task completion
-        self.env.task_completed = self.env.env_component_waypoint._target_index > (self.env.cfg.num_goals - 2)
-        self.env.env_component_waypoint._target_index = self.env.env_component_waypoint._target_index % self.env.cfg.num_goals
+        self.env.task_completed = self.env.env_component_waypoint._target_index > (
+            self.env.cfg.num_goals - 2
+        )
+        self.env.env_component_waypoint._target_index = (
+            self.env.env_component_waypoint._target_index % self.env.cfg.num_goals
+        )
 
         # Fast goal reached reward
         assert (
             self._previous_waypoint_reached_step[goal_reached]
             < self.env.episode_length_buf[goal_reached]
         ).all(), "Previous waypoint reached step is greater than episode length"
-        
+
         k = torch.log(
             torch.tensor(self.fast_goal_reached_bonus, device=self.env.device)
         ) / (self.env.max_episode_length - 1)
@@ -126,7 +141,7 @@ class DerivedEnvComponentReward(EnvComponentReward):
             self.env.episode_length_buf,
             self._previous_waypoint_reached_step,
         )
-        
+
         # Laziness penalty
         linear_speed = torch.norm(
             self.env.env_component_robot.robot.data.root_lin_vel_b[:, :2], dim=-1
@@ -152,7 +167,7 @@ class DerivedEnvComponentReward(EnvComponentReward):
             torch.zeros_like(self._accumulated_laziness),
             self._accumulated_laziness,
         )
-        
+
         laziness_penalty = torch.nan_to_num(
             -self.laziness_penalty_weight * torch.log1p(self._accumulated_laziness),
             posinf=0.0,
@@ -172,7 +187,7 @@ class DerivedEnvComponentReward(EnvComponentReward):
             posinf=0.0,
             neginf=0.0,
         )
-        
+
         # Linear speed reward
         linear_speed_reward = self.linear_speed_weight * torch.nan_to_num(
             linear_speed,

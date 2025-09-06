@@ -95,10 +95,12 @@ class WallDistanceVisualizer:
                     x1 = (x + 1) * self.cell_size - margin
                     y1 = (y + 1) * self.cell_size - margin
                     if x1 > x0 and y1 > y0:
-                        candidates.append((
-                            x0 + random.random() * (x1 - x0),
-                            y0 + random.random() * (y1 - y0)
-                        ))
+                        candidates.append(
+                            (
+                                x0 + random.random() * (x1 - x0),
+                                y0 + random.random() * (y1 - y0),
+                            )
+                        )
         if not candidates:
             raise ValueError("No valid positions found.")
         return random.choice(candidates)
@@ -113,7 +115,13 @@ class WallDistanceVisualizer:
     def _plot_maze_with_robot(self, ax, robot_x, robot_y):
         H, W = self.maze_grid.shape
         extent = self._common_extent()
-        ax.imshow(self.maze_grid, cmap="binary", origin="lower", extent=extent, interpolation="nearest")
+        ax.imshow(
+            self.maze_grid,
+            cmap="binary",
+            origin="lower",
+            extent=extent,
+            interpolation="nearest",
+        )
         ax.plot(robot_x, robot_y, "ro", markersize=10, label="Robot")
 
         # highlight the cell the robot is in
@@ -146,7 +154,7 @@ class WallDistanceVisualizer:
         # Calculate the actual cell that contains the robot (without the -0.5 shift)
         robot_cell_x = int(np.floor(robot_x / self.cell_size))
         robot_cell_y = int(np.floor(robot_y / self.cell_size))
-        
+
         # cell bounds in world coords for the robot's actual cell
         left = robot_cell_x * self.cell_size
         right = (robot_cell_x + 1) * self.cell_size
@@ -170,7 +178,7 @@ class WallDistanceVisualizer:
         interp_right = (gx0 + 1) * self.cell_size
         interp_bottom = gy0 * self.cell_size
         interp_top = (gy0 + 1) * self.cell_size
-        
+
         corners = [
             (interp_left, interp_bottom, "d00 (bl)"),
             (interp_right, interp_bottom, "d01 (br)"),
@@ -192,8 +200,20 @@ class WallDistanceVisualizer:
         ax.set_xlim(left - 0.2 * self.cell_size, right + 0.2 * self.cell_size)
         ax.set_ylim(bottom - 0.2 * self.cell_size, top + 0.2 * self.cell_size)
         # Set grid with 1-unit spacing for the visible area
-        ax.set_xticks(np.arange(np.floor(left - 0.2 * self.cell_size), np.ceil(right + 0.2 * self.cell_size) + 1, 1))
-        ax.set_yticks(np.arange(np.floor(bottom - 0.2 * self.cell_size), np.ceil(top + 0.2 * self.cell_size) + 1, 1))
+        ax.set_xticks(
+            np.arange(
+                np.floor(left - 0.2 * self.cell_size),
+                np.ceil(right + 0.2 * self.cell_size) + 1,
+                1,
+            )
+        )
+        ax.set_yticks(
+            np.arange(
+                np.floor(bottom - 0.2 * self.cell_size),
+                np.ceil(top + 0.2 * self.cell_size) + 1,
+                1,
+            )
+        )
         ax.grid(True, alpha=0.25)
         ax.set_xlabel("X (world)")
         ax.set_ylabel("Y (world)")
@@ -202,7 +222,9 @@ class WallDistanceVisualizer:
     def _plot_distance_field(self, ax):
         df = self._distance_field.cpu().numpy()
         extent = self._common_extent()
-        im = ax.imshow(df, cmap="viridis", origin="lower", extent=extent, interpolation="nearest")
+        im = ax.imshow(
+            df, cmap="viridis", origin="lower", extent=extent, interpolation="nearest"
+        )
         ax.set_aspect("equal")
         ax.set_xlabel("X (world)")
         ax.set_ylabel("Y (world)")
@@ -265,7 +287,9 @@ class WallDistanceVisualizer:
         robot_cell_x = int(np.floor(robot_x / self.cell_size))
         robot_cell_y = int(np.floor(robot_y / self.cell_size))
         self._plot_robot_cell_detail(ax2, robot_x, robot_y, gx0, gy0, gx1, gy1, fx, fy)
-        ax2.set_title(f"Robot Cell Detail\nRobot in Grid Cell ({robot_cell_x}, {robot_cell_y})\nInterpolation from ({gx0}, {gy0})")
+        ax2.set_title(
+            f"Robot Cell Detail\nRobot in Grid Cell ({robot_cell_x}, {robot_cell_y})\nInterpolation from ({gx0}, {gy0})"
+        )
 
         # 3) Distance field (per cell center)
         self._plot_distance_field(ax3)
@@ -280,7 +304,7 @@ class WallDistanceVisualizer:
         extent = self._common_extent()
         x_min, x_max, y_min, y_max = extent
         resolution = 60  # Lower resolution for faster computation
-        
+
         step_x = (x_max - x_min) / resolution
         step_y = (y_max - y_min) / resolution
         xs = x_min + (np.arange(resolution) + 0.5) * step_x
@@ -297,21 +321,41 @@ class WallDistanceVisualizer:
                     distances[i, j], _ = self.get_wall_distance_single_robot(rx, ry)
 
         im5 = ax5.imshow(
-            distances, cmap="viridis", origin="lower",
-            extent=extent, interpolation="bilinear"
+            distances,
+            cmap="viridis",
+            origin="lower",
+            extent=extent,
+            interpolation="bilinear",
         )
-        
+
         # Add contour lines
         X_cont, Y_cont = np.meshgrid(xs, ys)
-        contours = ax5.contour(X_cont, Y_cont, distances, levels=[0.5], colors='red', linewidths=2)
-        ax5.clabel(contours, inline=True, fontsize=8, fmt='%.1f')
-        
+        contours = ax5.contour(
+            X_cont, Y_cont, distances, levels=[0.5], colors="red", linewidths=2
+        )
+        ax5.clabel(contours, inline=True, fontsize=8, fmt="%.1f")
+
         additional_levels = [0.25, 0.75, 1.0, 1.5, 2.0]
-        ax5.contour(X_cont, Y_cont, distances, levels=additional_levels, colors='white', linewidths=1, alpha=0.7)
-        
+        ax5.contour(
+            X_cont,
+            Y_cont,
+            distances,
+            levels=additional_levels,
+            colors="white",
+            linewidths=1,
+            alpha=0.7,
+        )
+
         # Mark robot position on heatmap
-        ax5.plot(robot_x, robot_y, "ro", markersize=8, markeredgecolor='white', markeredgewidth=2)
-        
+        ax5.plot(
+            robot_x,
+            robot_y,
+            "ro",
+            markersize=8,
+            markeredgecolor="white",
+            markeredgewidth=2,
+        )
+
         ax5.set_aspect("equal")
         ax5.set_title("Distance Heatmap with Contours")
         ax5.set_xlabel("X (world)")
@@ -322,7 +366,13 @@ class WallDistanceVisualizer:
         plt.colorbar(im5, ax=ax5, label="Distance to Wall")
 
         # 6) Reference maze layout
-        ax6.imshow(self.maze_grid, cmap="binary", origin="lower", extent=extent, interpolation="nearest")
+        ax6.imshow(
+            self.maze_grid,
+            cmap="binary",
+            origin="lower",
+            extent=extent,
+            interpolation="nearest",
+        )
         ax6.plot(robot_x, robot_y, "ro", markersize=8, label="Robot")
         ax6.set_aspect("equal")
         ax6.set_title("Maze Reference")
@@ -340,7 +390,7 @@ class WallDistanceVisualizer:
         """
         Heatmap of distances across the maze (open space only).
         Uses the center-aligned sampler (–0.5 shift) via get_wall_distance_single_robot.
-        
+
         Args:
             resolution: Number of pixels per dimension for the heatmap
             contour_level: Distance value for the highlighted red contour line
@@ -368,19 +418,39 @@ class WallDistanceVisualizer:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
         im1 = ax1.imshow(
-            distances, cmap="viridis", origin="lower",
-            extent=extent, interpolation="bilinear"
+            distances,
+            cmap="viridis",
+            origin="lower",
+            extent=extent,
+            interpolation="bilinear",
         )
-        
+
         X_cont, Y_cont = np.meshgrid(xs, ys)
-        contours = ax1.contour(X_cont, Y_cont, distances, levels=[contour_level], colors='red', linewidths=2)
-        ax1.clabel(contours, inline=True, fontsize=10, fmt='%.1f')
-        
+        contours = ax1.contour(
+            X_cont,
+            Y_cont,
+            distances,
+            levels=[contour_level],
+            colors="red",
+            linewidths=2,
+        )
+        ax1.clabel(contours, inline=True, fontsize=10, fmt="%.1f")
+
         additional_levels = [0.25, 0.75, 1.0, 1.5, 2.0]
-        ax1.contour(X_cont, Y_cont, distances, levels=additional_levels, colors='white', linewidths=1, alpha=0.7)
-        
+        ax1.contour(
+            X_cont,
+            Y_cont,
+            distances,
+            levels=additional_levels,
+            colors="white",
+            linewidths=1,
+            alpha=0.7,
+        )
+
         ax1.set_aspect("equal")
-        ax1.set_title(f"Robot–Wall Distance Heatmap ({resolution}×{resolution})\nRed contour: {contour_level} distance level")
+        ax1.set_title(
+            f"Robot–Wall Distance Heatmap ({resolution}×{resolution})\nRed contour: {contour_level} distance level"
+        )
         ax1.set_xlabel("X (world)")
         ax1.set_ylabel("Y (world)")
         # Set grid with 1-unit spacing
@@ -390,7 +460,13 @@ class WallDistanceVisualizer:
         ax1.grid(True, alpha=0.25)
         plt.colorbar(im1, ax=ax1, label="Distance to Wall")
 
-        ax2.imshow(self.maze_grid, cmap="binary", origin="lower", extent=extent, interpolation="nearest")
+        ax2.imshow(
+            self.maze_grid,
+            cmap="binary",
+            origin="lower",
+            extent=extent,
+            interpolation="nearest",
+        )
         ax2.set_aspect("equal")
         ax2.set_title("Maze Layout (Reference)")
         ax2.set_xlabel("X (world)")
@@ -406,20 +482,24 @@ class WallDistanceVisualizer:
 
 # ---------- Example maze & main ----------
 
+
 def create_example_maze():
     """Example 10×10 maze."""
-    return np.array([
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
-        [1, 0, 1, 1, 1, 1, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    ], dtype=np.uint8)
+    return np.array(
+        [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+            [1, 0, 1, 1, 1, 1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        ],
+        dtype=np.uint8,
+    )
 
 
 def main():

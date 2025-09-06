@@ -17,7 +17,7 @@ class SpotNavAvoidEnvCfg(NavEnvCfg):
     physcis_dt = 1 / 200
     # Two-level decimation for hierarchical control
     low_level_decimation = 4  # Low-level locomotion policy runs at 50Hz
-    high_level_decimation = 5  # High-level navigation policy runs at 10Hz  
+    high_level_decimation = 5  # High-level navigation policy runs at 10Hz
     decimation = low_level_decimation * high_level_decimation  # Total decimation = 20
     render_interval = 10  # Render at same frequency as env steps (10Hz)
     episode_length_s = 120.0

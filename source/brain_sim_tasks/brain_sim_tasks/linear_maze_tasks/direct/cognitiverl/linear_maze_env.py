@@ -14,8 +14,8 @@ from brain_sim_assets.robots.spot import bsSpotLowLevelPolicyVanilla
 
 
 class LinearMazeEnv(NavEnv):
-    cfg: LinearMazeEnvCfg  
-    ACTION_SCALE = 0.2  
+    cfg: LinearMazeEnvCfg
+    ACTION_SCALE = 0.2
 
     def __init__(
         self,
@@ -346,9 +346,7 @@ class LinearMazeEnv(NavEnv):
 
         # Add wall distance penalty
         min_wall_dist = self._get_distance_to_walls()
-        danger_distance = (
-            0.1
-        )  # Distance at which to start penalizing
+        danger_distance = 0.1  # Distance at which to start penalizing
         wall_penalty = torch.nan_to_num(
             torch.where(
                 min_wall_dist > danger_distance,
