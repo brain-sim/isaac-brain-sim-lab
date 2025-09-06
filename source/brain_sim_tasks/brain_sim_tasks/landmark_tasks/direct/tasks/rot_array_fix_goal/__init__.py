@@ -18,7 +18,7 @@ gym.register(
     entry_point=f"{__name__}.landmark_env_cfg:DerivedLandmarkEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.landmark_env_cfg:LandmarkEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.landmark_env_cfg:DerivedLandmarkEnvCfg",
     },
 )
 
@@ -27,6 +27,6 @@ gym.register(
     entry_point=f"{__name__}.landmark_env_cfg:DerivedLandmarkEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.landmark_env_cfg:LandmarkEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.landmark_env_cfg:DerivedLandmarkEnvCfg",
     },
 )
