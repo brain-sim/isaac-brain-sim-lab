@@ -117,7 +117,7 @@ class LandmarkEnvCfg(DirectRLEnvCfg):
     scene: NavSceneCfg = NavSceneCfg()
     env_spacing = scene.env_spacing
     waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
-        marker0_radius=0.5, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=0.5
+        marker0_radius=0.5, marker1_radius=0.0, marker2_radius=0.0, marker3_radius=0.5
     )
     
     # Wall parameters
@@ -125,7 +125,7 @@ class LandmarkEnvCfg(DirectRLEnvCfg):
     num_goals = 3
     wall_thickness = 1.0
     wall_height = 3.0
-    position_tolerance = waypoint_cfg.markers["marker1"].radius * 2.0
+    position_tolerance = 1.0 if waypoint_cfg.markers["marker1"].radius==0.0 else waypoint_cfg.markers["marker1"].radius * 2.0
     avoid_goal_position_tolerance = waypoint_cfg.markers["marker0"].radius
     position_margin_epsilon = 0.2  # TODO: can be removed needed to be tested
 

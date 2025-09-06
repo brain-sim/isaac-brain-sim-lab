@@ -12,35 +12,41 @@ from isaaclab.envs import DirectRLEnv
 from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
 
-from .landmark_env_cfg import LandmarkEnvCfg
-from .env_component_robot import EnvComponentRobot
-from .env_component_observation import EnvComponentObservation
-from .env_component_reward import EnvComponentReward
-from .env_component_termination import EnvComponentTermination
-from .env_component_waypoint import EnvComponentWaypoint
+from isaaclab.envs import DirectRLEnvCfg
+from .components.env_component_robot import EnvComponentRobot
+from .components.env_component_observation import EnvComponentObservation
+from .components.env_component_termination import EnvComponentTermination
+from .components.env_component_waypoint import EnvComponentWaypoint
+from .components.env_component_reward import EnvComponentReward
 
+from typing import Type
 
 class LandmarkEnv(DirectRLEnv):
-    cfg: LandmarkEnvCfg
+    cfg: DirectRLEnvCfg
     ACTION_SCALE = 0.2
 
     def __init__(
         self,
-        cfg: LandmarkEnvCfg,
-        render_mode: str | None = None,
-        debug: bool = False,
-        max_total_steps: int | None = None,
-        play_mode: bool = False,
+        cfg: DirectRLEnvCfg,
+        render_mode:                str | None = None,
+        debug:                      bool = False,
+        max_total_steps:            int | None = None,
+        play_mode:                  bool = False,
+        component_robot_cls:        Type[EnvComponentRobot]       = EnvComponentRobot,
+        component_observation_cls:  Type[EnvComponentObservation] = EnvComponentObservation,
+        component_reward_cls:       Type[EnvComponentReward]      = EnvComponentReward,
+        component_termination_cls:  Type[EnvComponentTermination] = EnvComponentTermination,
+        component_waypoint_cls:     Type[EnvComponentWaypoint]    = EnvComponentWaypoint,
         **kwargs,
     ):
 
         # Initialize environment components
         self.components = {
-            'robot': EnvComponentRobot(self),
-            'observation': EnvComponentObservation(self),
-            'reward': EnvComponentReward(self),
-            'termination': EnvComponentTermination(self),
-            'waypoint': EnvComponentWaypoint(self)
+            'robot':        component_robot_cls(self),
+            'observation':  component_observation_cls(self),
+            'reward':       component_reward_cls(self),
+            'termination':  component_termination_cls(self),
+            'waypoint':     component_waypoint_cls(self)
         }
         
         for name, component in self.components.items():
@@ -266,7 +272,6 @@ class LandmarkEnv(DirectRLEnv):
     def _get_rewards(self) -> torch.Tensor:
         """Compute and return the rewards for the environment."""
         reward_dict = self.env_component_reward.get_rewards()
-        # return torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
         return reward_dict
 
     def _get_dones(self) -> tuple[torch.Tensor, torch.Tensor]:
