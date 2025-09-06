@@ -38,7 +38,7 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
     wall_height = 3.0
 
     # scene
-    scene: NavSceneCfg = NavSceneCfg(env_spacing=room_size, num_envs=1)
+    scene: NavSceneCfg = NavSceneCfg(env_spacing=room_size)
     env_spacing = scene.env_spacing
     waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
         marker0_radius=0.5, marker1_radius=0.5, marker2_radius=0.0, marker3_radius=0.5

@@ -13,7 +13,7 @@ def launch_app():
         description="This script demonstrates different legged robots."
     )
     parser.add_argument(
-        "--env",
+        "--task",
         type=str,
         default="Train-2ACDC-v0",
         help="Environment ID to run.",
@@ -39,12 +39,9 @@ def launch_app():
     return simulation_app, args_cli
 
 
-try:
-    from isaaclab.app import AppLauncher
+from isaaclab.app import AppLauncher
+simulation_app, args = launch_app()
 
-    simulation_app, args = launch_app()
-except ImportError:
-    raise ImportError("Isaac Lab is not installed. Please install it first.")
 
 # Import carb and omni after simulation app is created
 import carb
@@ -149,16 +146,16 @@ class bsKeyboard:
 
 def main():
     """Main function."""
-    print(f"[INFO]: Creating environment {args.env}...")
+    print(f"[INFO]: Creating environment {args.task}...")
     env = make_isaaclab_env(
-        args.env,
+        args.task,
         "cuda:0",
         1,
         False,
         False,
     )()
-    print(f"[INFO]: Environment {args.env} has been created.")
-    
+    print(f"[INFO]: Environment {args.task} has been created.")
+
     # Initialize keyboard handler
     keyboard_handler = bsKeyboard()
     keyboard_handler.setup()
