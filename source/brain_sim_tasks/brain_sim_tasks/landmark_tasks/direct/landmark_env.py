@@ -13,11 +13,12 @@ from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
 
 from isaaclab.envs import DirectRLEnvCfg
-from .components.env_component_robot import EnvComponentRobot
+from .components.env_component_objective import EnvComponentObjective
 from .components.env_component_observation import EnvComponentObservation
+from .components.env_component_reward import EnvComponentReward
+from .components.env_component_robot import EnvComponentRobot
 from .components.env_component_termination import EnvComponentTermination
 from .components.env_component_waypoint import EnvComponentWaypoint
-from .components.env_component_reward import EnvComponentReward
 
 from typing import Type
 
@@ -33,11 +34,12 @@ class LandmarkEnv(DirectRLEnv):
         debug: bool = False,
         max_total_steps: int | None = None,
         play_mode: bool = False,
-        component_robot_cls: Type[EnvComponentRobot] = EnvComponentRobot,
+        component_objective_cls: Type[EnvComponentObjective] = EnvComponentObjective,
         component_observation_cls: Type[
             EnvComponentObservation
         ] = EnvComponentObservation,
         component_reward_cls: Type[EnvComponentReward] = EnvComponentReward,
+        component_robot_cls: Type[EnvComponentRobot] = EnvComponentRobot,
         component_termination_cls: Type[
             EnvComponentTermination
         ] = EnvComponentTermination,
@@ -47,9 +49,10 @@ class LandmarkEnv(DirectRLEnv):
 
         # Initialize environment components
         self.components = {
-            "robot": component_robot_cls(self),
+            "objective": component_objective_cls(self),
             "observation": component_observation_cls(self),
             "reward": component_reward_cls(self),
+            "robot": component_robot_cls(self),
             "termination": component_termination_cls(self),
             "waypoint": component_waypoint_cls(self),
         }
@@ -121,15 +124,15 @@ class LandmarkEnv(DirectRLEnv):
                 self.episode_length_buf[env_ids].float()
             ).item()
             completion_frac = (
-                self.env_component_waypoint._episode_waypoints_passed[env_ids].float()
-                / self.cfg.num_goals
+                self.env_component_waypoint._episode_groups_passed[env_ids].float()
+                / self.cfg.num_markers
             )
             log_infos["Metrics/success_rate"] = torch.mean(completion_frac).item()
             log_infos["Metrics/episode_reward"] = torch.mean(
                 self._episode_reward_buf[env_ids].float()
             ).item()
             log_infos["Metrics/goals_reached"] = torch.mean(
-                self.env_component_waypoint._episode_waypoints_passed[env_ids].float()
+                self.env_component_waypoint._episode_groups_passed[env_ids].float()
             ).item()
             log_infos["Metrics/max_episode_length"] = torch.mean(
                 self.max_episode_length_buf[env_ids].float()
@@ -138,12 +141,14 @@ class LandmarkEnv(DirectRLEnv):
                 self._episode_reward_buf[env_ids].float().max().item()
             )
 
-            if hasattr(self.env_component_reward, "_episode_avoid_collisions"):
+            if hasattr(self.env_component_objective, "_episode_obstacle_collisions"):
                 log_infos["Metrics/avoid_collisions_per_episode"] = torch.mean(
-                    self.env_component_reward._episode_avoid_collisions[env_ids].float()
+                    self.env_component_objective._episode_obstacle_collisions[
+                        env_ids
+                    ].float()
                 ).item()
                 log_infos["Metrics/max_avoid_collisions_per_episode"] = (
-                    self.env_component_reward._episode_avoid_collisions[env_ids]
+                    self.env_component_objective._episode_obstacle_collisions[env_ids]
                     .float()
                     .max()
                     .item()
@@ -180,7 +185,13 @@ class LandmarkEnv(DirectRLEnv):
         self.common_step_counter += 1
         self.extras["log"] = {}
 
-        reward_dict = self.env_component_reward.get_rewards()
+        # CHECK: Check current step conditions (pure checking without side effects)
+        self.env_component_objective.check_step_conditions()
+        # GET: Calculate rewards based on check results (pure calculation)
+        reward_dict = self._get_rewards()
+        # UPDATE: Update bookkeeping based on check results
+        self.env_component_objective.update_progress_and_bookkeeping()
+
         self.reward_buf = torch.stack(list(reward_dict.values()), dim=0).sum(dim=0)
         self._episode_reward_buf += self.reward_buf
 
@@ -288,7 +299,7 @@ class LandmarkEnv(DirectRLEnv):
         return self.env_component_observation.get_observations()
 
     def _get_rewards(self) -> torch.Tensor:
-        """Compute and return the rewards for the environment."""
+        """Compute and return the rewards for the environment following Check-Get-Update pattern."""
         reward_dict = self.env_component_reward.get_rewards()
         return reward_dict
 
@@ -328,3 +339,4 @@ class LandmarkEnv(DirectRLEnv):
         # Reset other components
         self.env_component_observation.reset(env_ids)
         self.env_component_reward.reset(env_ids)
+        self.env_component_objective.reset(env_ids)

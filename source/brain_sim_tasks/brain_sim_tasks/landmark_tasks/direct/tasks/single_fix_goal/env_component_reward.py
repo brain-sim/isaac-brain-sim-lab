@@ -19,15 +19,14 @@ class DerivedEnvComponentReward(EnvComponentReward):
         self._previous_waypoint_reached_step = torch.zeros(
             (self.env.num_envs,), device=self.env.device, dtype=torch.int32
         )
-        self._episode_avoid_collisions = torch.zeros(
+        self._episode_obstacle_collisions = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.int32
         )
-        self._avoid_goal_hit_this_step = torch.zeros(
+        self._obstacle_hit_this_step = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.bool
         )
 
         # Load reward parameters from config
-        self.position_tolerance = self.env.cfg.position_tolerance
         self.goal_reached_bonus = self.env.cfg.goal_reached_bonus
         self.laziness_penalty_weight = self.env.cfg.laziness_penalty_weight
         self.laziness_decay = self.env.cfg.laziness_decay
@@ -37,42 +36,15 @@ class DerivedEnvComponentReward(EnvComponentReward):
         self.linear_speed_weight = self.env.cfg.linear_speed_weight
         self.avoid_penalty_weight = self.env.cfg.avoid_penalty_weight
         self.fast_goal_reached_bonus = self.env.cfg.fast_goal_reached_weight
-        self.avoid_goal_position_tolerance = self.env.cfg.avoid_goal_position_tolerance
         self.heading_coefficient = self.env.cfg.heading_coefficient
         self.heading_progress_weight = self.env.cfg.heading_progress_weight
-
-    def check_avoid_goal_collision(self) -> torch.Tensor:
-        """Check if robot collides with future waypoints."""
-        robot_positions = self.env.env_component_robot.robot.data.root_pos_w[:, :2]
-
-        goal_indices = torch.arange(
-            self.env.cfg.num_goals, device=self.env.device
-        ).unsqueeze(0)
-        target_indices = self.env.env_component_waypoint._target_index.unsqueeze(1)
-        future_waypoint_mask = goal_indices > target_indices
-
-        robot_pos_expanded = robot_positions.unsqueeze(1)
-        distances = torch.norm(
-            robot_pos_expanded - self.env.env_component_waypoint._target_positions,
-            dim=2,
-        )
-
-        future_distances = distances * future_waypoint_mask.float()
-        future_distances = torch.where(
-            future_waypoint_mask,
-            future_distances,
-            torch.full_like(future_distances, float("inf")),
-        )
-
-        collision_mask = future_distances < self.avoid_goal_position_tolerance
-        env_has_collision = collision_mask.any(dim=1)
-        return env_has_collision
 
     def get_rewards(self) -> dict[str, torch.Tensor]:
         """Calculate all reward components."""
         # Check if goal is reached
         goal_reached = (
-            self.env.env_component_observation._position_error < self.position_tolerance
+            self.env.env_component_observation._position_error
+            < self.approach_position_tolerance
         )
 
         # Target heading reward
@@ -96,26 +68,26 @@ class DerivedEnvComponentReward(EnvComponentReward):
         )
 
         # Avoid goal collision penalty
-        env_has_collision = self.check_avoid_goal_collision()
+        env_has_collision = self.env.env_component_objective.check_obstacle_collision()
         avoid_penalty = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.float32
         )
         avoid_penalty[env_has_collision] = self.avoid_penalty_weight
-        self._avoid_goal_hit_this_step[env_has_collision] = True
-        self._episode_avoid_collisions += env_has_collision.int()
+        self._obstacle_hit_this_step[env_has_collision] = True
+        self._episode_obstacle_collisions += env_has_collision.int()
 
         # Update waypoint progress
         self.env.env_component_waypoint._target_index = (
             self.env.env_component_waypoint._target_index + goal_reached
         )
-        self.env.env_component_waypoint._episode_waypoints_passed += goal_reached.int()
+        self.env.env_component_waypoint._episode_groups_passed += goal_reached.int()
 
         # Check task completion
         self.env.task_completed = self.env.env_component_waypoint._target_index > (
-            self.env.cfg.num_goals - 2
+            self.env.cfg.num_markers - 2
         )
         self.env.env_component_waypoint._target_index = (
-            self.env.env_component_waypoint._target_index % self.env.cfg.num_goals
+            self.env.env_component_waypoint._target_index % self.env.cfg.num_markers
         )
 
         # Fast goal reached reward
@@ -210,7 +182,7 @@ class DerivedEnvComponentReward(EnvComponentReward):
 
     def reset(self, env_ids):
         """Reset reward tracking for specified environments."""
-        if hasattr(self, "_episode_avoid_collisions"):
-            self._episode_avoid_collisions[env_ids] = 0
+        if hasattr(self, "_episode_obstacle_collisions"):
+            self._episode_obstacle_collisions[env_ids] = 0
         if hasattr(self, "_previous_waypoint_reached_step"):
             self._previous_waypoint_reached_step[env_ids] = 0

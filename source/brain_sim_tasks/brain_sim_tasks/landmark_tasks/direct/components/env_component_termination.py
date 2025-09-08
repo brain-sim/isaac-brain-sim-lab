@@ -88,7 +88,7 @@ class EnvComponentTermination:
             and self.termination_on_avoid_goal_collision
         ):
             avoid_goal_termination = (
-                self.env.env_component_reward.check_avoid_goal_collision()
+                self.env.env_component_objective.check_obstacle_collision()
             )
             terminated |= avoid_goal_termination
             termination_infos["Episode_Termination/avoid_goal_termination"] = (

@@ -17,19 +17,19 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
     def post_env_init(self):
         # Initialize waypoint tracking tensors
         self._target_positions = torch.zeros(
-            (self.env.num_envs, self.env.cfg.num_goals, 2),
+            (self.env.num_envs, self.env.cfg.num_markers, 2),
             device=self.env.device,
             dtype=torch.float32,
         )
         self._markers_pos = torch.zeros(
-            (self.env.num_envs, self.env.cfg.num_goals, 3),
+            (self.env.num_envs, self.env.cfg.num_markers, 3),
             device=self.env.device,
             dtype=torch.float32,
         )
         self._target_index = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.int32
         )
-        self._episode_waypoints_passed = torch.zeros(
+        self._episode_groups_passed = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.int32
         )
 
@@ -251,29 +251,29 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
             perpendicular_offset = 2.0
 
         waypoint_positions = torch.zeros(
-            (num_reset, self.env.cfg.num_goals, 2), device=self.env.device
+            (num_reset, self.env.cfg.num_markers, 2), device=self.env.device
         )
 
-        if self.env.cfg.num_goals >= 3:
+        if self.env.cfg.num_markers >= 3:
             first_wp, second_wp, third_wp = self.generate_waypoint_group(
                 env_origins, num_reset, waypoint_offset, perpendicular_offset, robot_xy
             )
             waypoint_positions[:, 0, :] = first_wp
             waypoint_positions[:, 1, :] = second_wp
             waypoint_positions[:, 2, :] = third_wp
-        elif self.env.cfg.num_goals == 2:
+        elif self.env.cfg.num_markers == 2:
             second_wp = self.generate_random_waypoint(env_origins, num_reset, robot_xy)
             third_wp = self.generate_offset_waypoint(
                 env_origins, second_wp, waypoint_offset
             )
             waypoint_positions[:, 0, :] = second_wp
             waypoint_positions[:, 1, :] = third_wp
-        elif self.env.cfg.num_goals == 1:
+        elif self.env.cfg.num_markers == 1:
             first_wp = self.generate_random_waypoint(env_origins, num_reset, robot_xy)
             waypoint_positions[:, 0, :] = first_wp
 
         # Generate additional waypoint groups if needed
-        remaining_goals = self.env.cfg.num_goals - 3
+        remaining_goals = self.env.cfg.num_markers - 3
         num_complete_groups = remaining_goals // 3 if remaining_goals > 0 else 0
 
         for group_idx in range(num_complete_groups):
@@ -304,7 +304,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         """Update waypoint visualization markers."""
         # Create marker indices for visualization
         marker_indices = torch.zeros(
-            (self.env.num_envs, self.env.cfg.num_goals),
+            (self.env.num_envs, self.env.cfg.num_markers),
             device=self.env.device,
             dtype=torch.long,
         )
@@ -315,14 +315,14 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         ] = 1
 
         # Set the next target to 3 (cyan)
-        next_target_idx = (self._target_index + 1) % self.env.cfg.num_goals
+        next_target_idx = (self._target_index + 1) % self.env.cfg.num_markers
         marker_indices[
             torch.arange(self.env.num_envs, device=self.env.device), next_target_idx
         ] = 3
 
         # Set completed targets to 2 (invisible)
         target_mask = (self._target_index.unsqueeze(1) > 0) & (
-            torch.arange(self.env.cfg.num_goals, device=self.env.device)
+            torch.arange(self.env.cfg.num_markers, device=self.env.device)
             < self._target_index.unsqueeze(1)
         )
         marker_indices[target_mask] = 2
@@ -333,7 +333,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         """Reset waypoints for specified environments."""
         self._target_positions[env_ids, :, :] = 0.0
         self._markers_pos[env_ids, :, :] = 0.0
-        self._episode_waypoints_passed[env_ids] = 0
+        self._episode_groups_passed[env_ids] = 0
 
         # Generate new waypoints
         waypoint_positions = self.generate_waypoints(env_ids, robot_poses)

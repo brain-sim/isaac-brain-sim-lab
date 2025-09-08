@@ -17,19 +17,19 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
     def post_env_init(self):
         # Initialize waypoint tracking tensors
         self._target_positions = torch.zeros(
-            (self.env.num_envs, self.env.cfg.num_goals, 2),
+            (self.env.num_envs, self.env.cfg.num_markers, 2),
             device=self.env.device,
             dtype=torch.float32,
         )
         self._markers_pos = torch.zeros(
-            (self.env.num_envs, self.env.cfg.num_goals, 3),
+            (self.env.num_envs, self.env.cfg.num_markers, 3),
             device=self.env.device,
             dtype=torch.float32,
         )
         self._target_index = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.int32
         )
-        self._episode_waypoints_passed = torch.zeros(
+        self._episode_groups_passed = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.int32
         )
 
@@ -332,11 +332,11 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
             fixed_third_position = torch.tensor([-5.0, 0.0], device=self.env.device)
 
         waypoint_positions = torch.zeros(
-            (num_reset, self.env.cfg.num_goals, 2), device=self.env.device
+            (num_reset, self.env.cfg.num_markers, 2), device=self.env.device
         )
 
         # Generate first group of waypoints (indices 0, 1, 2)
-        if self.env.cfg.num_goals >= 3:
+        if self.env.cfg.num_markers >= 3:
             first_wp, second_wp, third_wp = self.generate_waypoint_group(
                 env_origins,
                 num_reset,
@@ -349,7 +349,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
             waypoint_positions[:, 0, :] = first_wp
             waypoint_positions[:, 1, :] = second_wp
             waypoint_positions[:, 2, :] = third_wp
-        elif self.env.cfg.num_goals == 2:
+        elif self.env.cfg.num_markers == 2:
             # Generate two waypoints with fixed positions
             second_wp = self.generate_fixed_waypoint(
                 env_origins, num_reset, fixed_second_position
@@ -359,7 +359,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
             )
             waypoint_positions[:, 0, :] = second_wp
             waypoint_positions[:, 1, :] = third_wp
-        elif self.env.cfg.num_goals == 1:
+        elif self.env.cfg.num_markers == 1:
             # Generate single fixed waypoint
             first_wp = self.generate_fixed_waypoint(
                 env_origins, num_reset, fixed_second_position
@@ -367,7 +367,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
             waypoint_positions[:, 0, :] = first_wp
 
         # Generate remaining waypoints in groups of 3 (4th and onwards)
-        remaining_goals = self.env.cfg.num_goals - 3
+        remaining_goals = self.env.cfg.num_markers - 3
         num_complete_groups = remaining_goals // 3 if remaining_goals > 0 else 0
 
         for group_idx in range(num_complete_groups):
@@ -416,7 +416,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         """Update waypoint visualization markers."""
         # Create marker indices for visualization
         marker_indices = torch.zeros(
-            (self.env.num_envs, self.env.cfg.num_goals),
+            (self.env.num_envs, self.env.cfg.num_markers),
             device=self.env.device,
             dtype=torch.long,
         )
@@ -427,14 +427,14 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         ] = 1
 
         # Set the next target to 3 (cyan)
-        next_target_idx = (self._target_index + 1) % self.env.cfg.num_goals
+        next_target_idx = (self._target_index + 1) % self.env.cfg.num_markers
         marker_indices[
             torch.arange(self.env.num_envs, device=self.env.device), next_target_idx
         ] = 3
 
         # Set completed targets to 2 (invisible)
         target_mask = (self._target_index.unsqueeze(1) > 0) & (
-            torch.arange(self.env.cfg.num_goals, device=self.env.device)
+            torch.arange(self.env.cfg.num_markers, device=self.env.device)
             < self._target_index.unsqueeze(1)
         )
         marker_indices[target_mask] = 2
@@ -445,7 +445,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         """Reset waypoints for specified environments."""
         self._target_positions[env_ids, :, :] = 0.0
         self._markers_pos[env_ids, :, :] = 0.0
-        self._episode_waypoints_passed[env_ids] = 0
+        self._episode_groups_passed[env_ids] = 0
 
         # Generate new waypoints
         waypoint_positions = self.generate_waypoints(env_ids, robot_poses)
