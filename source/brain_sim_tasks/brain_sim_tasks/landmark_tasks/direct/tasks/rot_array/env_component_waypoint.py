@@ -230,17 +230,94 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         perpendicular_offset,
         robot_xy=None,
     ):
-        """Generate a group of three related waypoints."""
-        second_waypoint = self.generate_random_waypoint(
-            env_origins, num_reset, robot_xy
-        )
-        third_waypoint = self.generate_offset_waypoint(
-            env_origins, second_waypoint, waypoint_offset
-        )
-        first_waypoint = self.generate_perpendicular_waypoint(
-            env_origins, second_waypoint, third_waypoint, perpendicular_offset
-        )
-        return first_waypoint, second_waypoint, third_waypoint
+        """Generate a group of three related waypoints with guaranteed correct spatial relationships."""
+        max_group_attempts = 100
+        placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
+        first_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
+        second_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
+        third_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
+
+        for attempt in range(max_group_attempts):
+            unplaced_mask = ~placed
+            num_unplaced = unplaced_mask.sum().item()
+            
+            if num_unplaced == 0:
+                break
+                
+            # Generate second waypoints for unplaced groups
+            unplaced_second = self.generate_random_waypoint(
+                env_origins[unplaced_mask], num_unplaced, 
+                robot_xy[unplaced_mask] if robot_xy is not None else None
+            )
+            
+            # Generate third waypoints with offset from second
+            unplaced_third = self.generate_offset_waypoint(
+                env_origins[unplaced_mask], unplaced_second, waypoint_offset
+            )
+            
+            # Generate first waypoints perpendicular to second-third line
+            unplaced_first = self.generate_perpendicular_waypoint(
+                env_origins[unplaced_mask], unplaced_second, unplaced_third, perpendicular_offset
+            )
+            
+            # Check if all three waypoints are within bounds
+            bound_limit = self.env.cfg.room_size / 3.0
+            
+            first_relative = unplaced_first - env_origins[unplaced_mask]
+            second_relative = unplaced_second - env_origins[unplaced_mask] 
+            third_relative = unplaced_third - env_origins[unplaced_mask]
+            
+            first_valid = (
+                (first_relative[:, 0] >= -bound_limit) &
+                (first_relative[:, 0] <= bound_limit) &
+                (first_relative[:, 1] >= -bound_limit) &
+                (first_relative[:, 1] <= bound_limit)
+            )
+            
+            second_valid = (
+                (second_relative[:, 0] >= -bound_limit) &
+                (second_relative[:, 0] <= bound_limit) &
+                (second_relative[:, 1] >= -bound_limit) &
+                (second_relative[:, 1] <= bound_limit)
+            )
+            
+            third_valid = (
+                (third_relative[:, 0] >= -bound_limit) &
+                (third_relative[:, 0] <= bound_limit) &
+                (third_relative[:, 1] >= -bound_limit) &
+                (third_relative[:, 1] <= bound_limit)
+            )
+            
+            # Only accept groups where all three waypoints are valid
+            group_valid = first_valid & second_valid & third_valid
+            valid_indices = torch.where(unplaced_mask)[0][group_valid]
+            
+            if len(valid_indices) > 0:
+                first_waypoints[valid_indices] = unplaced_first[group_valid]
+                second_waypoints[valid_indices] = unplaced_second[group_valid]
+                third_waypoints[valid_indices] = unplaced_third[group_valid]
+                placed[valid_indices] = True
+        
+        # Handle any remaining unplaced groups with fallback
+        if not placed.all():
+            unplaced_mask = ~placed
+            num_unplaced = unplaced_mask.sum().item()
+            
+            # Generate fallback positions
+            random_positions = self.env.cfg.wall_config.get_random_valid_positions(
+                num_unplaced * 3, device=self.env.device  # Get positions for all three waypoints
+            )
+            
+            unplaced_origins = env_origins[unplaced_mask]
+            fallback_first = random_positions[:num_unplaced, :2] + unplaced_origins
+            fallback_second = random_positions[num_unplaced:2*num_unplaced, :2] + unplaced_origins
+            fallback_third = random_positions[2*num_unplaced:, :2] + unplaced_origins
+            
+            first_waypoints[unplaced_mask] = fallback_first
+            second_waypoints[unplaced_mask] = fallback_second
+            third_waypoints[unplaced_mask] = fallback_third
+        
+        return first_waypoints, second_waypoints, third_waypoints
 
     def generate_waypoints(
         self, env_ids, robot_poses, waypoint_offset=None, perpendicular_offset=None

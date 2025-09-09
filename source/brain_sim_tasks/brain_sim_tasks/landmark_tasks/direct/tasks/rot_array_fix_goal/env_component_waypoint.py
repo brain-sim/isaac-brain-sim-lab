@@ -43,7 +43,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         self, env_origins, num_reset, robot_xy=None, min_distance=2.5
     ):
         """Generate a single random waypoint for each environment."""
-        max_attempts = 100
+        max_attempts = 1000
         placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
         waypoint_positions = torch.zeros((num_reset, 2), device=self.env.device)
 
@@ -108,7 +108,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
     def generate_offset_waypoint(self, env_origins, base_waypoints, offset_distance):
         """Generate waypoints with random offset from base waypoints."""
         num_reset = base_waypoints.shape[0]
-        max_attempts = 100
+        max_attempts = 1000
         placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
         waypoint_positions = torch.zeros((num_reset, 2), device=self.env.device)
 
@@ -166,7 +166,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
     ):
         """Generate waypoint at center of two waypoints with perpendicular offset."""
         num_reset = waypoint1.shape[0]
-        max_attempts = 100
+        max_attempts = 1000
 
         # Calculate center point between two waypoints
         center_point = (waypoint1 + waypoint2) / 2.0
@@ -248,33 +248,104 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         fixed_second_position=None,
         fixed_third_position=None,
     ):
-        """Generate a group of 3 waypoints following the pattern: 2nd→3rd→1st."""
-        # Generate second waypoint (fixed or random)
-        if fixed_second_position is not None:
-            second_waypoint = self.generate_fixed_waypoint(
-                env_origins, num_reset, fixed_second_position
-            )
-        else:
-            second_waypoint = self.generate_random_waypoint(
-                env_origins, num_reset, robot_xy
-            )
+        """Generate a group of 3 waypoints following the pattern: 2nd→3rd→1st with guaranteed spatial relationships."""
+        max_group_attempts = 100
+        placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
+        first_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
+        second_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
+        third_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
 
-        # Generate third waypoint (fixed or with offset from second)
-        if fixed_third_position is not None:
-            third_waypoint = self.generate_fixed_waypoint(
-                env_origins, num_reset, fixed_third_position
-            )
-        else:
-            third_waypoint = self.generate_offset_waypoint(
-                env_origins, second_waypoint, waypoint_offset
-            )
+        for attempt in range(max_group_attempts):
+            unplaced_mask = ~placed
+            num_unplaced = unplaced_mask.sum().item()
+            
+            if num_unplaced == 0:
+                break
+                
+            # Generate second waypoint (fixed or random)
+            if fixed_second_position is not None:
+                unplaced_second = self.generate_fixed_waypoint(
+                    env_origins[unplaced_mask], num_unplaced, fixed_second_position
+                )
+            else:
+                unplaced_second = self.generate_random_waypoint(
+                    env_origins[unplaced_mask], num_unplaced, 
+                    robot_xy[unplaced_mask] if robot_xy is not None else None
+                )
 
-        # Generate first waypoint at center with perpendicular offset
-        first_waypoint = self.generate_perpendicular_waypoint(
-            env_origins, second_waypoint, third_waypoint, perpendicular_offset
-        )
+            # Generate third waypoint (fixed or with offset from second)
+            if fixed_third_position is not None:
+                unplaced_third = self.generate_fixed_waypoint(
+                    env_origins[unplaced_mask], num_unplaced, fixed_third_position
+                )
+            else:
+                unplaced_third = self.generate_offset_waypoint(
+                    env_origins[unplaced_mask], unplaced_second, waypoint_offset
+                )
 
-        return first_waypoint, second_waypoint, third_waypoint
+            # Generate first waypoint at center with perpendicular offset
+            unplaced_first = self.generate_perpendicular_waypoint(
+                env_origins[unplaced_mask], unplaced_second, unplaced_third, perpendicular_offset
+            )
+            
+            # Check if all three waypoints are within bounds
+            bound_limit = self.env.cfg.room_size / 3.0
+            
+            first_relative = unplaced_first - env_origins[unplaced_mask]
+            second_relative = unplaced_second - env_origins[unplaced_mask] 
+            third_relative = unplaced_third - env_origins[unplaced_mask]
+            
+            first_valid = (
+                (first_relative[:, 0] >= -bound_limit) &
+                (first_relative[:, 0] <= bound_limit) &
+                (first_relative[:, 1] >= -bound_limit) &
+                (first_relative[:, 1] <= bound_limit)
+            )
+            
+            second_valid = (
+                (second_relative[:, 0] >= -bound_limit) &
+                (second_relative[:, 0] <= bound_limit) &
+                (second_relative[:, 1] >= -bound_limit) &
+                (second_relative[:, 1] <= bound_limit)
+            )
+            
+            third_valid = (
+                (third_relative[:, 0] >= -bound_limit) &
+                (third_relative[:, 0] <= bound_limit) &
+                (third_relative[:, 1] >= -bound_limit) &
+                (third_relative[:, 1] <= bound_limit)
+            )
+            
+            # Only accept groups where all three waypoints are valid
+            group_valid = first_valid & second_valid & third_valid
+            valid_indices = torch.where(unplaced_mask)[0][group_valid]
+            
+            if len(valid_indices) > 0:
+                first_waypoints[valid_indices] = unplaced_first[group_valid]
+                second_waypoints[valid_indices] = unplaced_second[group_valid]
+                third_waypoints[valid_indices] = unplaced_third[group_valid]
+                placed[valid_indices] = True
+        
+        # Handle any remaining unplaced groups with fallback
+        if not placed.all():
+            unplaced_mask = ~placed
+            num_unplaced = unplaced_mask.sum().item()
+            
+            # Generate fallback positions
+            random_positions = self.env.cfg.wall_config.get_random_valid_positions(
+                num_unplaced * 3, device=self.env.device  # Get positions for all three waypoints
+            )
+            
+            unplaced_origins = env_origins[unplaced_mask]
+            fallback_first = random_positions[:num_unplaced, :2] + unplaced_origins
+            fallback_second = random_positions[num_unplaced:2*num_unplaced, :2] + unplaced_origins
+            fallback_third = random_positions[2*num_unplaced:, :2] + unplaced_origins
+            
+            first_waypoints[unplaced_mask] = fallback_first
+            second_waypoints[unplaced_mask] = fallback_second
+            third_waypoints[unplaced_mask] = fallback_third
+
+        return first_waypoints, second_waypoints, third_waypoints
 
     def generate_fixed_waypoint(self, env_origins, num_reset, fixed_position):
         """Generate fixed waypoint at specified position for all environments."""
@@ -321,14 +392,14 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         robot_xy = robot_poses[:, :2]
 
         if waypoint_offset is None:
-            waypoint_offset = 4.0
+            waypoint_offset = 5.0
 
         if perpendicular_offset is None:
-            perpendicular_offset = 2.0
+            perpendicular_offset = 3.0
 
         # Use fixed positions for second and third waypoints
-        fixed_second_position = torch.tensor([5.0, 0.0], device=self.env.device)
-        fixed_third_position = torch.tensor([-5.0, 0.0], device=self.env.device)
+        fixed_second_position = torch.tensor([5.0, 1.0], device=self.env.device)
+        fixed_third_position = torch.tensor([1.0, 2.0], device=self.env.device)
 
         # Generate one group of waypoints (3 markers)
         first_wp, second_wp, third_wp = self.generate_waypoint_group(

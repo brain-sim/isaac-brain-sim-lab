@@ -32,7 +32,7 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
     steering_max = 3.0
 
     room_size = 30.0
-    num_groups = 1  # Total number of groups to complete the task
+    num_groups = 10  # Total number of groups to complete the task
     num_markers_per_group = 2  # Single fix goal: 1 target + 1 obstacle
     wall_thickness = 1.0
     wall_height = 3.0
@@ -41,7 +41,7 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
     scene: NavSceneCfg = NavSceneCfg(env_spacing=room_size)
     env_spacing = scene.env_spacing
     waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
-        marker0_radius=0.5, marker1_radius=0.5, marker2_radius=0.0
+        marker0_radius=1.0, marker1_radius=0.0, marker2_radius=0.0
     )
 
     approach_position_tolerance = (

@@ -102,12 +102,24 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
 
         return waypoint_positions
 
-    def generate_offset_waypoint(self, env_origins, base_waypoints, offset_distance):
-        """Generate waypoint at offset distance from base waypoint."""
+    def generate_offset_waypoint(self, env_origins, base_waypoints, offset_vector):
+        """Generate waypoint with fixed vector offset from base waypoint."""
         num_reset = base_waypoints.shape[0]
         max_attempts = 1000
         placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
         waypoint_positions = torch.zeros((num_reset, 2), device=self.env.device)
+
+        # Ensure offset_vector is a tensor on the correct device
+        if isinstance(offset_vector, (list, tuple)):
+            offset_vector = torch.tensor(offset_vector, device=self.env.device, dtype=torch.float32)
+        elif not isinstance(offset_vector, torch.Tensor):
+            offset_vector = torch.tensor([offset_vector, 0.0], device=self.env.device, dtype=torch.float32)
+        
+        # If offset_vector is 1D, ensure it has shape [2]
+        if offset_vector.dim() == 0:
+            offset_vector = torch.tensor([offset_vector.item(), 0.0], device=self.env.device, dtype=torch.float32)
+        elif offset_vector.shape[0] == 1:
+            offset_vector = torch.cat([offset_vector, torch.zeros(1, device=self.env.device)])
 
         for _ in range(max_attempts):
             unplaced_mask = ~placed
@@ -116,16 +128,9 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
             if num_unplaced == 0:
                 break
 
-            random_angles = (
-                torch.rand((num_unplaced,), device=self.env.device) * 2 * torch.pi
-            )
-
-            offset_x = offset_distance * torch.cos(random_angles)
-            offset_y = offset_distance * torch.sin(random_angles)
-            random_offsets = torch.stack([offset_x, offset_y], dim=1)
-
+            # Apply the fixed vector offset directly to base waypoints
             unplaced_base = base_waypoints[unplaced_mask, :]
-            candidate_positions = unplaced_base + random_offsets
+            candidate_positions = unplaced_base + offset_vector.unsqueeze(0).expand(num_unplaced, -1)
             relative_positions = candidate_positions - env_origins[unplaced_mask]
 
             bound_limit = self.env.cfg.room_size / 3.0
@@ -197,20 +202,93 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         robot_xy=None,
         fixed_second_position=None,
     ):
-        """Generate a group of two related waypoints."""
-        if fixed_second_position is not None:
-            second_waypoint = self.generate_fixed_waypoint(
-                env_origins, num_reset, fixed_second_position
-            )
+        """Generate a group of two related waypoints with guaranteed correct offset."""
+        max_group_attempts = 100
+        placed = torch.zeros(num_reset, dtype=torch.bool, device=self.env.device)
+        first_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
+        second_waypoints = torch.zeros((num_reset, 2), device=self.env.device)
+        
+        # Ensure offset_vector is a tensor on the correct device
+        if isinstance(waypoint_offset, (list, tuple)):
+            offset_vector = torch.tensor(waypoint_offset, device=self.env.device, dtype=torch.float32)
+        elif not isinstance(waypoint_offset, torch.Tensor):
+            offset_vector = torch.tensor([waypoint_offset, 0.0], device=self.env.device, dtype=torch.float32)
         else:
-            second_waypoint = self.generate_random_waypoint(
-                env_origins, num_reset, robot_xy
-            )
+            offset_vector = waypoint_offset
+            
+        # If offset_vector is 1D, ensure it has shape [2]
+        if offset_vector.dim() == 0:
+            offset_vector = torch.tensor([offset_vector.item(), 0.0], device=self.env.device, dtype=torch.float32)
+        elif offset_vector.shape[0] == 1:
+            offset_vector = torch.cat([offset_vector, torch.zeros(1, device=self.env.device)])
 
-        first_waypoint = self.generate_offset_waypoint(
-            env_origins, second_waypoint, waypoint_offset
-        )
-        return first_waypoint, second_waypoint
+        for attempt in range(max_group_attempts):
+            unplaced_mask = ~placed
+            num_unplaced = unplaced_mask.sum().item()
+            
+            if num_unplaced == 0:
+                break
+                
+            # Generate second waypoints for unplaced groups
+            if fixed_second_position is not None:
+                unplaced_second = self.generate_fixed_waypoint(
+                    env_origins[unplaced_mask], num_unplaced, fixed_second_position
+                )
+            else:
+                unplaced_second = self.generate_random_waypoint(
+                    env_origins[unplaced_mask], num_unplaced, 
+                    robot_xy[unplaced_mask] if robot_xy is not None else None
+                )
+            
+            # Generate first waypoints with exact offset
+            unplaced_first = unplaced_second + offset_vector.unsqueeze(0).expand(num_unplaced, -1)
+            
+            # Check if both waypoints are within bounds
+            bound_limit = self.env.cfg.room_size / 3.0
+            first_relative = unplaced_first - env_origins[unplaced_mask]
+            second_relative = unplaced_second - env_origins[unplaced_mask]
+            
+            first_valid = (
+                (first_relative[:, 0] >= -bound_limit)
+                & (first_relative[:, 0] <= bound_limit)
+                & (first_relative[:, 1] >= -bound_limit)
+                & (first_relative[:, 1] <= bound_limit)
+            )
+            
+            second_valid = (
+                (second_relative[:, 0] >= -bound_limit)
+                & (second_relative[:, 0] <= bound_limit)
+                & (second_relative[:, 1] >= -bound_limit)
+                & (second_relative[:, 1] <= bound_limit)
+            )
+            
+            # Only accept groups where both waypoints are valid
+            group_valid = first_valid & second_valid
+            valid_indices = torch.where(unplaced_mask)[0][group_valid]
+            
+            if len(valid_indices) > 0:
+                first_waypoints[valid_indices] = unplaced_first[group_valid]
+                second_waypoints[valid_indices] = unplaced_second[group_valid]
+                placed[valid_indices] = True
+        
+        # Handle any remaining unplaced groups with fallback
+        if not placed.all():
+            unplaced_mask = ~placed
+            num_unplaced = unplaced_mask.sum().item()
+            
+            # Generate fallback positions
+            random_positions = self.env.cfg.wall_config.get_random_valid_positions(
+                num_unplaced * 2, device=self.env.device  # Get positions for both waypoints
+            )
+            
+            unplaced_origins = env_origins[unplaced_mask]
+            fallback_second = random_positions[:num_unplaced, :2] + unplaced_origins
+            fallback_first = random_positions[num_unplaced:, :2] + unplaced_origins
+            
+            first_waypoints[unplaced_mask] = fallback_first
+            second_waypoints[unplaced_mask] = fallback_second
+        
+        return first_waypoints, second_waypoints
 
     def generate_waypoints(self, env_ids, robot_poses, waypoint_offset=None):
         """Generate one group of waypoints for reset environments."""
@@ -219,7 +297,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         robot_xy = robot_poses[:, :2]
 
         if waypoint_offset is None:
-            waypoint_offset = 4.0
+            waypoint_offset = torch.tensor([3.0, 1.0], device=self.env.device)  # Fixed vector [x, y]
 
         # Use fixed position for second waypoint
         fixed_second_position = torch.tensor([5.0, 5.0], device=self.env.device)

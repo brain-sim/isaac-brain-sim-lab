@@ -101,6 +101,9 @@ class DerivedEnvComponentObjective:
                 self.env.env_component_waypoint.generate_new_group(
                     envs_needing_new_group, robot_poses
                 )
+            
+            # Teleport robot to new start position for the new group with collision avoidance
+            self._reset_robot_with_collision_check(goal_reached_envs)
 
         # Track collision state
         self._obstacle_hit_this_step[self.check_results["env_has_collision"]] = True
@@ -155,3 +158,33 @@ class DerivedEnvComponentObjective:
             self._previous_waypoint_reached_step[env_ids] = 0
         if hasattr(self, "_accumulated_laziness"):
             self._accumulated_laziness[env_ids] = 0.0
+
+    def _reset_robot_with_collision_check(self, env_ids):
+        """Reset robot positions while ensuring they don't collide with waypoints."""
+        max_reset_attempts = 1000  # Maximum attempts to find valid positions
+        
+        for attempt in range(max_reset_attempts):
+            
+            self.env.env_component_robot.reset(env_ids)
+            robot_positions = self.env.env_component_robot.robot.data.root_pos_w[env_ids, :2]
+            waypoint_positions = self.env.env_component_waypoint._target_positions[env_ids]  # Shape: (num_envs, num_markers, 2)
+            
+            robot_pos_expanded = robot_positions.unsqueeze(1)  # Shape: (num_envs, 1, 2)
+            distances = torch.norm(robot_pos_expanded - waypoint_positions, dim=2)  # Shape: (num_envs, num_markers)
+            
+            safety_margin = 1.0  # Additional safety distance
+            min_distance_per_env = distances.min(dim=1)[0]  # Minimum distance for each environment
+            collision_mask = min_distance_per_env < (self.avoid_position_tolerance + safety_margin)
+            
+            if not collision_mask.any():
+                break
+                
+            if attempt == max_reset_attempts - 1:
+                num_colliding = collision_mask.sum().item()
+                print(f"Warning: After {max_reset_attempts} attempts, {num_colliding} robots still too close to waypoints")
+                break
+                
+            # Otherwise, only retry for environments that still have collisions
+            env_ids = env_ids[collision_mask]
+            if len(env_ids) == 0:
+                break
