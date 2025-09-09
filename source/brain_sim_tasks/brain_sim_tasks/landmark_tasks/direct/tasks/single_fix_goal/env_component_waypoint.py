@@ -206,15 +206,13 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
             second_waypoint = self.generate_random_waypoint(
                 env_origins, num_reset, robot_xy
             )
-        
+
         first_waypoint = self.generate_offset_waypoint(
             env_origins, second_waypoint, waypoint_offset
         )
         return first_waypoint, second_waypoint
 
-    def generate_waypoints(
-        self, env_ids, robot_poses, waypoint_offset=None
-    ):
+    def generate_waypoints(self, env_ids, robot_poses, waypoint_offset=None):
         """Generate one group of waypoints for reset environments."""
         num_reset = len(env_ids)
         env_origins = self.env.scene.env_origins[env_ids, :2]
@@ -230,7 +228,7 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         first_wp, second_wp = self.generate_waypoint_group(
             env_origins, num_reset, waypoint_offset, robot_xy, fixed_second_position
         )
-        
+
         waypoint_positions = torch.zeros(
             (num_reset, self.env.cfg.num_markers_per_group, 2), device=self.env.device
         )
@@ -278,12 +276,12 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         """Generate a new group of waypoints for environments that completed a group."""
         if len(env_ids) == 0:
             return
-            
+
         waypoint_positions = self.generate_waypoints(env_ids, robot_poses)
         self._target_positions[env_ids] = waypoint_positions
         self._target_index[env_ids] = 0
         self._markers_pos[env_ids, :, :2] = self._target_positions[env_ids]
-        
+
         # Update visualization for all environments
         visualize_pos = self._markers_pos.view(-1, 3)
         self.waypoints.visualize(translations=visualize_pos)

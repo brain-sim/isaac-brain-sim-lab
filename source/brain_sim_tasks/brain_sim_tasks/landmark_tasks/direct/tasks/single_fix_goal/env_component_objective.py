@@ -41,15 +41,20 @@ class DerivedEnvComponentObjective:
         robot_positions = self.env.env_component_robot.robot.data.root_pos_w[:, :2]
 
         # Get obstacle position (index 1 in current group)
-        obstacle_positions = self.env.env_component_waypoint._target_positions[:, 1, :]  # Index 1
-        
+        obstacle_positions = self.env.env_component_waypoint._target_positions[
+            :, 1, :
+        ]  # Index 1
+
         distances = torch.norm(robot_positions - obstacle_positions, dim=1)
         env_has_collision = distances < self.avoid_position_tolerance
         return env_has_collision
 
     def check_task_completed(self) -> torch.Tensor:
         """Check if all groups have been completed."""
-        return self.env.env_component_waypoint._target_group_index >= self.env.cfg.num_groups
+        return (
+            self.env.env_component_waypoint._target_group_index
+            >= self.env.cfg.num_groups
+        )
 
     def check_step_conditions(self):
         """Check all conditions for the current step - pure checking without side effects."""
@@ -67,23 +72,32 @@ class DerivedEnvComponentObjective:
         """Update waypoint progress and collision tracking based on check results."""
 
         goal_reached = self.check_results["goal_reached"]
-        
+
         # When goal is reached, increment group index and generate new group if not completed
         if goal_reached.any():
             goal_reached_envs = torch.where(goal_reached)[0]
-            
+
             # Increment group index for environments that reached the goal
             self.env.env_component_waypoint._target_group_index[goal_reached_envs] += 1
-            self.env.env_component_waypoint._episode_groups_passed[goal_reached_envs] += 1
-            
+            self.env.env_component_waypoint._episode_groups_passed[
+                goal_reached_envs
+            ] += 1
+
             # Check which environments need new groups (haven't completed all groups yet)
-            incomplete_mask = self.env.env_component_waypoint._target_group_index[goal_reached_envs] < self.env.cfg.num_groups
+            incomplete_mask = (
+                self.env.env_component_waypoint._target_group_index[goal_reached_envs]
+                < self.env.cfg.num_groups
+            )
             envs_needing_new_group = goal_reached_envs[incomplete_mask]
-            
+
             if len(envs_needing_new_group) > 0:
                 # For fixed goal task, generate same positions
-                robot_poses = self.env.env_component_robot.robot.data.root_pos_w[envs_needing_new_group]
-                self.env.env_component_waypoint.generate_new_group(envs_needing_new_group, robot_poses)
+                robot_poses = self.env.env_component_robot.robot.data.root_pos_w[
+                    envs_needing_new_group
+                ]
+                self.env.env_component_waypoint.generate_new_group(
+                    envs_needing_new_group, robot_poses
+                )
 
         # Track collision state
         self._obstacle_hit_this_step[self.check_results["env_has_collision"]] = True

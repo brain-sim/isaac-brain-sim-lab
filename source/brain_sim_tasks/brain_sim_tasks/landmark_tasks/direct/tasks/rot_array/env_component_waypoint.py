@@ -260,13 +260,13 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         first_wp, second_wp, third_wp = self.generate_waypoint_group(
             env_origins, num_reset, waypoint_offset, perpendicular_offset, robot_xy
         )
-        
+
         waypoint_positions = torch.zeros(
             (num_reset, self.env.cfg.num_markers_per_group, 2), device=self.env.device
         )
         waypoint_positions[:, 0, :] = first_wp  # Target waypoint
         waypoint_positions[:, 1, :] = second_wp  # Obstacle waypoint
-        waypoint_positions[:, 2, :] = third_wp   # Obstacle waypoint
+        waypoint_positions[:, 2, :] = third_wp  # Obstacle waypoint
 
         return waypoint_positions
 
@@ -310,12 +310,12 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         """Generate a new group of waypoints for environments that completed a group."""
         if len(env_ids) == 0:
             return
-            
+
         waypoint_positions = self.generate_waypoints(env_ids, robot_poses)
         self._target_positions[env_ids] = waypoint_positions
         self._target_index[env_ids] = 0
         self._markers_pos[env_ids, :, :2] = self._target_positions[env_ids]
-        
+
         # Update visualization for all environments
         visualize_pos = self._markers_pos.view(-1, 3)
         self.waypoints.visualize(translations=visualize_pos)

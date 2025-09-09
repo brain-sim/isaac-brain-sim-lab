@@ -42,7 +42,7 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
     scene: NavSceneCfg = NavSceneCfg(env_spacing=room_size)
     env_spacing = scene.env_spacing
     waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
-        marker0_radius=1.0, marker1_radius=1.0, marker2_radius=0.0, marker3_radius=1.2
+        marker0_radius=1.0, marker1_radius=0.0, marker2_radius=0.0, marker3_radius=1.2
     )
 
     approach_position_tolerance = (
