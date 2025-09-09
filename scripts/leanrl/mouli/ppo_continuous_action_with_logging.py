@@ -199,13 +199,13 @@ def make_env(env_id, idx, capture_video, run_name, gamma):
 
 class CompatibilityWrapper(gym.Wrapper):
     """Wrapper to handle API compatibility with IsaacLabVecEnvWrapper."""
-    
+
     def reset(self, **kwargs):
         # Remove arguments that IsaacLabVecEnvWrapper doesn't accept
-        kwargs.pop('seed', None)
-        kwargs.pop('options', None)
+        kwargs.pop("seed", None)
+        kwargs.pop("options", None)
         return self.env.reset(**kwargs)
-    
+
     def step(self, action):
         # IsaacLabVecEnvWrapper returns (obs, reward, done, info)
         # but RecordVideo expects (obs, reward, terminated, truncated, info)
@@ -235,7 +235,7 @@ def make_isaaclab_env(
     from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
     from wrappers import IsaacLabVecEnvWrapper
 
-    import brain_sim_tasks    # noqa: F401
+    import brain_sim_tasks  # noqa: F401
 
     def thunk():
         cfg = parse_env_cfg(
@@ -244,9 +244,9 @@ def make_isaaclab_env(
         env = gym.make(
             task,
             cfg=cfg,
-            render_mode="rgb_array"
-            if (capture_video and video_kwargs is not None)
-            else None,
+            render_mode=(
+                "rgb_array" if (capture_video and video_kwargs is not None) else None
+            ),
             max_total_steps=max_total_steps,
         )
         print_dict(
@@ -318,12 +318,7 @@ def main(args):
     # Get video kwargs if video recording is enabled
     video_kwargs = None
     if args.video:
-        video_kwargs = get_video_kwargs(
-            log_dir, 
-            args.video_interval,
-            args.video_length
-        )
-
+        video_kwargs = get_video_kwargs(log_dir, args.video_interval, args.video_length)
 
     # initialize wandb run
     run = wandb.init(
@@ -366,20 +361,20 @@ def main(args):
         max_total_steps=args.total_timesteps,
         seed=args.seed,  # Pass seed to environment creation
     )()
-    
+
     # Save configurations after env is created
     env_cfg = envs.unwrapped.cfg if hasattr(envs.unwrapped, "cfg") else None
     save_configs(log_dir, args, env_cfg)
-    
+
     args.img_size = envs.unwrapped.cfg.img_size
     print_dict(colored(args, "green", attrs=["bold"]), nesting=4)
     n_obs = int(np.prod(envs.observation_space.shape[1:]))
     n_act = int(np.prod(envs.action_space.shape[1:]))
     print("n_obs:", n_obs)
     print("n_act:", n_act)
-    assert isinstance(envs.action_space, gym.spaces.Box), (
-        "only continuous action space is supported"
-    )
+    assert isinstance(
+        envs.action_space, gym.spaces.Box
+    ), "only continuous action space is supported"
 
     if args.agent_type == "CNNPPOAgent":
         agent = CNNPPOAgent(n_obs, n_act, img_size=args.img_size)
@@ -455,7 +450,7 @@ def main(args):
     if args.log_video:
         video_frames = []
         # Randomly choose minimum of 9 environments or all environments
-        indices = torch.randperm(args.num_envs)[:min(1, args.num_envs)].to(device)
+        indices = torch.randperm(args.num_envs)[: min(1, args.num_envs)].to(device)
 
     # Add these buffers before the training loop starts
     reward_info_buffer = {}
@@ -508,7 +503,7 @@ def main(args):
                 except Exception:
                     action = action.nan_to_num(nan=0.0, posinf=0.0, neginf=0.0)
                     step_output = envs.step(action)
-                
+
                 # Handle both 4 and 5 value returns
                 if len(step_output) == 5:
                     next_obs, reward, terminated, truncated, infos = step_output
@@ -567,7 +562,6 @@ def main(args):
                         * 255.0
                     )
                     video_frames.append(frame)
-
 
                 # Update step progress bar
                 step_pbar.update(1)
@@ -841,7 +835,7 @@ def main(args):
                 "max_ep_ret": max_ep_ret,
                 "max_step_reward": max_step_reward,
             }
-            
+
             ckpt_path = save_checkpoint(
                 log_dir=log_dir,
                 agent=agent,
@@ -859,7 +853,6 @@ def main(args):
                 best_return = mean_return
                 best_step = global_step
                 best_ckpt = ckpt_path
-
 
         avg_returns, ep_ret, max_ep_ret, max_step_reward = 0.0, 0.0, 0.0, 0.0
         # Update iteration progress bar
@@ -881,7 +874,7 @@ def main(args):
         )
         artifact.add_file(best_ckpt)
         run.log_artifact(artifact)
-        
+
         print(
             colored(
                 f"Training complete! Best model saved at: {best_ckpt}",
@@ -890,7 +883,7 @@ def main(args):
             )
         )
         print(colored(f"All logs saved to: {log_dir}", "green", attrs=["bold"]))
-        
+
     wandb.finish()
 
 

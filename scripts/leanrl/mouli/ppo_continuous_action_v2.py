@@ -32,7 +32,9 @@ class EnvArgs:
     )
     num_envs: int = 4096  # """the number of parallel environments to simulate"""
     seed: int = 1  # """seed of the environment"""
-    capture_video: bool = True  # """whether to capture videos of the agent performances (check out `videos` folder)"""
+    capture_video: bool = (
+        True  # """whether to capture videos of the agent performances (check out `videos` folder)"""
+    )
     video: bool = False  # """record videos during training"""
     video_length: int = 200  # """length of the recorded video (in steps)"""
     video_interval: int = 2000  # """interval between video recordings (in steps)"""
@@ -77,7 +79,9 @@ class ExperimentArgs:
     update_epochs: int = 10  # 10 """the K epochs to update the policy"""
     norm_adv: bool = False  # """Toggles advantages normalization"""
     clip_coef: float = 0.2  # """the surrogate clipping coefficient"""
-    clip_vloss: bool = True  # """Toggles whether or not to use a clipped loss for the value function, as per the paper."""
+    clip_vloss: bool = (
+        True  # """Toggles whether or not to use a clipped loss for the value function, as per the paper."""
+    )
     ent_coef: float = 0.0  # 0.0 """coefficient of the entropy"""
     vf_coef: float = 0.5  # 0.5 """coefficient of the value function"""
     max_grad_norm: float = 1.0  # """the maximum norm for the gradient clipping"""
@@ -693,7 +697,7 @@ def make_isaaclab_env(
     from isaaclab_rl.torchrl import IsaacLabVecEnvWrapper
     from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
-    import brain_sim_tasks    # noqa: F401
+    import brain_sim_tasks  # noqa: F401
 
     def thunk():
         cfg = parse_env_cfg(
@@ -702,9 +706,9 @@ def make_isaaclab_env(
         env = gym.make(
             task,
             cfg=cfg,
-            render_mode="rgb_array"
-            if (capture_video and log_dir is not None)
-            else None,
+            render_mode=(
+                "rgb_array" if (capture_video and log_dir is not None) else None
+            ),
             max_total_steps=max_total_steps,
         )
         print_dict(

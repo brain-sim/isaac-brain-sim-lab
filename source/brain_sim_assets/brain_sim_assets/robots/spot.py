@@ -3,6 +3,7 @@ import io
 import torch
 from isaaclab.utils.math import matrix_from_quat
 
+
 class bsSpotLowLevelPolicy:
 
     def __init__(self, policy_file_path: str):
@@ -30,7 +31,7 @@ class bsSpotLowLevelPolicy:
         Abstract method to compute the observation vector for the policy.
         This method should be implemented by subclasses to define how to
         transform robot state into the observation format expected by the policy.
-        
+
         Returns:
             torch.Tensor: [num_envs, obs_dim] observation vector for the policy.
         """
@@ -42,7 +43,7 @@ class bsSpotLowLevelPolicy:
         """
         Generic method to compute action from robot state.
         Computes observation using compute_observation and then runs the policy.
-        
+
         Returns:
             torch.Tensor: [num_envs, action_dim] policy output (actions).
         """
@@ -50,11 +51,13 @@ class bsSpotLowLevelPolicy:
         actions = self(obs)
         return actions
 
+
 #####################################################
 
 """
 Derived classes below
 """
+
 
 class bsSpotLowLevelPolicyVanilla(bsSpotLowLevelPolicy):
 
@@ -110,6 +113,7 @@ class bsSpotLowLevelPolicyVanilla(bsSpotLowLevelPolicy):
         obs[:, 36:48] = previous_action
         return obs
 
+
 class bsSpotLowLevelPolicyRough(bsSpotLowLevelPolicy):
 
     def compute_observation(
@@ -138,7 +142,9 @@ class bsSpotLowLevelPolicyRough(bsSpotLowLevelPolicy):
             obs: [num_envs, 48] torch.Tensor
         """
         obs = torch.zeros(
-            (base_lin_vel.shape[0], 48), device=base_lin_vel.device, dtype=base_lin_vel.dtype
+            (base_lin_vel.shape[0], 48),
+            device=base_lin_vel.device,
+            dtype=base_lin_vel.dtype,
         )
         obs[:, 0:3] = base_lin_vel
         obs[:, 3:6] = base_ang_vel
@@ -148,6 +154,7 @@ class bsSpotLowLevelPolicyRough(bsSpotLowLevelPolicy):
         obs[:, 24:36] = joint_vel
         obs[:, 36:48] = previous_action
         return obs
+
 
 class bsSpotLowLevelPolicyRoughHeight(bsSpotLowLevelPolicy):
 
@@ -178,7 +185,9 @@ class bsSpotLowLevelPolicyRoughHeight(bsSpotLowLevelPolicy):
             obs: [num_envs, 48] torch.Tensor
         """
         obs = torch.zeros(
-            (base_lin_vel.shape[0], 57), device=base_lin_vel.device, dtype=base_lin_vel.dtype
+            (base_lin_vel.shape[0], 57),
+            device=base_lin_vel.device,
+            dtype=base_lin_vel.dtype,
         )
         obs[:, 0:3] = base_lin_vel
         obs[:, 3:6] = base_ang_vel

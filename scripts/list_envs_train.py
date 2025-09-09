@@ -29,6 +29,7 @@ from prettytable import PrettyTable
 
 import brain_sim_tasks
 
+
 def main():
     """Print all environments registered in `brain_sim` extension."""
     # print all the available environments
@@ -45,7 +46,14 @@ def main():
     for task_spec in gym.registry.values():
         if "Train" in task_spec.id:
             # add details to table
-            table.add_row([index + 1, task_spec.id, task_spec.entry_point, task_spec.kwargs["env_cfg_entry_point"]])
+            table.add_row(
+                [
+                    index + 1,
+                    task_spec.id,
+                    task_spec.entry_point,
+                    task_spec.kwargs["env_cfg_entry_point"],
+                ]
+            )
             # increment count
             index += 1
 

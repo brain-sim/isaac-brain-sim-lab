@@ -67,12 +67,10 @@ class CNNPPOAgent(BaseAgent):
 
         # Add ImageNet normalization constants as buffers
         self.register_buffer(
-            "imagenet_mean", 
-            torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+            "imagenet_mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
         )
         self.register_buffer(
-            "imagenet_std", 
-            torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+            "imagenet_std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
         )
 
         # Move to device and set precision
@@ -103,18 +101,18 @@ class CNNPPOAgent(BaseAgent):
         """Extract features from image input."""
         batch_size = x.size(0)
         c, h, w = self.img_size
-        
+
         # Reshape to image format
         imgs = x[:, : c * h * w].view(batch_size, c, h, w)
-        
+
         # Images are already in [0, 1] from environment
         # Apply ImageNet normalization for MobileNetV3
         imgs = (imgs - self.imagenet_mean) / self.imagenet_std
-        
+
         # Extract features
         with torch.no_grad():
             features = self.backbone(imgs)
-        
+
         return features.view(batch_size, -1)
 
     def get_action(self, x: torch.Tensor) -> torch.Tensor:
@@ -203,7 +201,7 @@ class CNNPPOAgent(BaseAgent):
             if key in skip_keys:
                 skipped_layers.append(key)
                 print(f"Skipping size-dependent layer: {key}")
-                continue # ← THIS SKIPS ADDING TO new_state_dict!
+                continue  # ← THIS SKIPS ADDING TO new_state_dict!
 
             # All other layers must match exactly
             if key not in current_state_dict:

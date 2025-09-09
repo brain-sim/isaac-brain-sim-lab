@@ -227,7 +227,7 @@ def make_isaaclab_env(
     )
     from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
-    import brain_sim_tasks    # noqa: F401
+    import brain_sim_tasks  # noqa: F401
 
     def thunk():
         cfg = parse_env_cfg(
@@ -236,9 +236,9 @@ def make_isaaclab_env(
         env = gym.make(
             task,
             cfg=cfg,
-            render_mode="rgb_array"
-            if (capture_video and log_dir is not None)
-            else None,
+            render_mode=(
+                "rgb_array" if (capture_video and log_dir is not None) else None
+            ),
         )
         env = IsaacLabRecordEpisodeStatistics(env)
         env = IsaacLabVecEnvWrapper(env, clip_actions=1.0)
@@ -335,9 +335,9 @@ def main_worker(local_rank, args):
 
     n_obs = int(np.prod(envs.observation_space.shape[1:]))
     n_act = int(np.prod(envs.action_space.shape[1:]))
-    assert isinstance(envs.action_space, gym.spaces.Box), (
-        "Only continuous action spaces are supported."
-    )
+    assert isinstance(
+        envs.action_space, gym.spaces.Box
+    ), "Only continuous action spaces are supported."
 
     # -------------------- F. AGENT & OPTIMIZER --------------------
     if args.agent_type == "CNNPPOAgent":

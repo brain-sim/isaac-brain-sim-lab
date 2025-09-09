@@ -24,6 +24,7 @@ TASKS_BRAIN_SIM = {
     "task2": "",
 }
 
+
 @configclass
 class EnvArgs:
     task: str = "Spot-Nav-v0"
@@ -223,9 +224,9 @@ def make_isaaclab_env(
         env = gym.make(
             task,
             cfg=cfg,
-            render_mode="rgb_array"
-            if (capture_video and log_dir is not None)
-            else None,
+            render_mode=(
+                "rgb_array" if (capture_video and log_dir is not None) else None
+            ),
             max_total_steps=max_total_steps,
         )
         print_dict(
@@ -335,9 +336,9 @@ def main(args):
     n_act = int(np.prod(envs.action_space.shape[1:]))
     print("n_obs:", n_obs)
     print("n_act:", n_act)
-    assert isinstance(envs.action_space, gym.spaces.Box), (
-        "only continuous action space is supported"
-    )
+    assert isinstance(
+        envs.action_space, gym.spaces.Box
+    ), "only continuous action space is supported"
 
     if args.agent_type == "CNNPPOAgent":
         agent = CNNPPOAgent(n_obs, n_act, img_size=args.img_size)

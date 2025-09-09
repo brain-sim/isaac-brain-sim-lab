@@ -4,6 +4,7 @@ from isaaclab.assets import RigidObjectCfg
 from brain_sim_assets.props.goal_marker import bsGoalMarkerGenerator
 from brain_sim_assets.props.obstacle_marker import bsObstacleMarkerGenerator
 
+
 class bsMarkersGenerator:
 
     def __init__(self, num_goals: int, num_obstacles: int):
@@ -14,7 +15,6 @@ class bsMarkersGenerator:
         if num_goals and num_obstacles:
             self.create_markers()
 
-    
     def create_markers(self):
         for i in range(self._num_goals):
             marker_cfg = bsGoalMarkerGenerator.get_goal_marker_object(
