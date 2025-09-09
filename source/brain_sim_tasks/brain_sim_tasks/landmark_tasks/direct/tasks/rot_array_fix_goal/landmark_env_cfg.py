@@ -6,7 +6,6 @@ from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 from ...landmark_env import LandmarkEnv
 from ...landmark_env_cfg import LandmarkEnvCfg, NavSceneCfg
 from .env_component_objective import DerivedEnvComponentObjective
-from .env_component_reward import DerivedEnvComponentReward
 from .env_component_waypoint import DerivedEnvComponentWaypoint
 
 
@@ -65,7 +64,6 @@ class DerivedLandmarkEnv(LandmarkEnv):
         super().__init__(
             cfg,
             component_objective_cls=DerivedEnvComponentObjective,
-            component_reward_cls=DerivedEnvComponentReward,
             component_waypoint_cls=DerivedEnvComponentWaypoint,
             **kwargs
         )
