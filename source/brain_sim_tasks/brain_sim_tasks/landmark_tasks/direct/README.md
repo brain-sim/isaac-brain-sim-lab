@@ -1,6 +1,6 @@
 # Isaac Maze Navigation Lab
 
-A reinforcement learning environment for robotic navigation tasks using NVIDIA Isaac Lab, featuring waypoint-based navigation with obstacle avoidance in maze-like environments.
+A reinforcement learning environment for robotic navigation tasks using NVIDIA Isaac Lab, featuring landmark-based navigation with obstacle avoidance in maze-like environments.
 
 ## Overview
 
@@ -9,35 +9,35 @@ This project provides a simulation environment for training and testing robotic 
 ## Features
 
 - **Multiple Task Variants**: Four distinct navigation tasks with varying complexity
-- **Waypoint-based Navigation**: Target and obstacle waypoint systems
+- **Landmark-based Navigation**: Target and obstacle landmark systems
 - **Collision Detection**: Real-time collision checking with configurable tolerances
-- **Vector-based Offsets**: Deterministic spatial relationships between waypoints
+- **Vector-based Offsets**: Deterministic spatial relationships between landmarks
 - **Dynamic Bounds**: Room-size-relative boundary constraints
-- **Visualization**: Real-time waypoint and robot visualization
-- **Collision-aware Reset**: Robot repositioning to avoid waypoint conflicts
+- **Visualization**: Real-time landmark and robot visualization
+- **Collision-aware Reset**: Robot repositioning to avoid landmark conflicts
 
 ## Task Variants
 
 ### 1. Single (`single`)
-- **Markers**: 2 waypoints per group (1 target + 1 obstacle)
-- **Behavior**: Random waypoint generation with vector-based spatial relationships
-- **Reset**: Waypoint-only reset (robot maintains position)
+- **Markers**: 2 landmarks per group (1 target + 1 obstacle)
+- **Behavior**: Random landmark generation with vector-based spatial relationships
+- **Reset**: Landmark-only reset (robot maintains position)
 - **Trials**: A session of configurable trials
 
 ### 2. Single Fixed Goal (`single_fix_goal`)
-- **Markers**: 2 waypoints per group (1 target + 1 obstacle)
+- **Markers**: 2 landmarks per group (1 target + 1 obstacle)
 - **Behavior**: Fixed obstacle position at [5.0, 5.0], target with vector offset
 - **Reset**: Full robot reset with collision checking
 - **Trials**: A session of configurable trials
 
 ### 3. Rotation Array (`rot_array`)
-- **Markers**: 3 waypoints per group (1 target + 2 obstacles)
-- **Behavior**: Perpendicular waypoint arrangement with random generation
-- **Reset**: Waypoint-only reset (robot maintains position)
+- **Markers**: 3 landmarks per group (1 target + 2 obstacles)
+- **Behavior**: Perpendicular landmark arrangement with random generation
+- **Reset**: Landmark-only reset (robot maintains position)
 - **Trials**: A session of configurable trials
 
 ### 4. Rotation Array Fixed Goal (`rot_array_fix_goal`)
-- **Markers**: 3 waypoints per group (1 target + 2 obstacles)
+- **Markers**: 3 landmarks per group (1 target + 2 obstacles)
 - **Behavior**: Fixed obstacle positions at [5.0, 0.0] and [-5.0, 0.0]
 - **Reset**: Full robot reset with collision checking
 - **Trials**: A session of configurable trials
@@ -52,7 +52,7 @@ landmark_tasks/direct/
 │   ├── env_component_reward.py       # Reward function logic
 │   ├── env_component_robot.py        # Robot control and actions
 │   ├── env_component_termination.py  # Episode termination logic
-│   └── env_component_waypoint.py     # Waypoint generation base
+│   └── env_component_waypoint.py     # Landmark generation base
 ├── tasks/                      # Task-specific implementations
 │   ├── single/                 # Single waypoint task
 │   ├── single_fix_goal/        # Single waypoint with fixed goal
@@ -69,7 +69,7 @@ The project uses a component-based inheritance system where each task variant ca
 ### Base Components (in `components/`)
 All base components provide default implementations that can be inherited by task-specific variants:
 
-- **`EnvComponentWaypoint`**: Base waypoint generation logic
+- **`EnvComponentWaypoint`**: Base landmark generation logic
 - **`EnvComponentObjective`**: Base goal detection and collision checking
 - **`EnvComponentObservation`**: Base sensor data processing
 - **`EnvComponentReward`**: Base reward calculation logic
@@ -80,14 +80,14 @@ All base components provide default implementations that can be inherited by tas
 Each task directory contains derived components that override specific methods:
 
 ```python
-# Example: Derived waypoint component
+# Example: Derived landmark component
 from ...components.env_component_waypoint import EnvComponentWaypoint
 
 class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
-    """Task-specific waypoint generation."""
+    """Task-specific landmark generation."""
     
     def generate_waypoints(self, env_ids, robot_poses, waypoint_offset=None):
-        # Override with task-specific waypoint generation logic
+        # Override with task-specific landmark generation logic
         pass
 ```
 
@@ -111,24 +111,24 @@ env = LandmarkEnv(
 ### Inheritance Patterns by Task
 
 #### Single Tasks (`single`, `single_fix_goal`)
-- **Waypoint Component**: Override `generate_waypoint_group()` for 2-waypoint logic
+- **Landmark Component**: Override `generate_waypoint_group()` for 2-landmark logic
 - **Objective Component**: Override collision detection for single obstacle
 - **Other Components**: Inherit base implementations
 
 #### Rotation Array Tasks (`rot_array`, `rot_array_fix_goal`)
-- **Waypoint Component**: Override `generate_waypoint_group()` for 3-waypoint perpendicular logic
+- **Landmark Component**: Override `generate_waypoint_group()` for 3-landmark perpendicular logic
 - **Objective Component**: Override collision detection for multiple obstacles
 - **Other Components**: Inherit base implementations
 
 #### Fixed Goal Variants (`single_fix_goal`, `rot_array_fix_goal`)
-- **Waypoint Component**: Override waypoint generation with fixed positions
+- **Landmark Component**: Override landmark generation with fixed positions
 - **Objective Component**: Add collision-aware robot reset logic
 - **Other Components**: Inherit base implementations
 
 ### Method Override Examples
 
 ```python
-# Base waypoint component
+# Base landmark component
 class EnvComponentWaypoint:
     def generate_waypoint_group(self, env_origins, num_reset, ...):
         # Default implementation
@@ -144,9 +144,9 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
 
 ## Key Components
 
-### Waypoint Generation
+### Landmark Generation
 - **Vector-based Offsets**: Deterministic spatial relationships using fixed [x, y] vectors
-- **Group Regeneration**: Complete waypoint group regeneration when spatial constraints fail
+- **Group Regeneration**: Complete landmark group regeneration when spatial constraints fail
 - **Bounds Checking**: Dynamic boundary validation using `room_size/3` limits
 - **Collision Avoidance**: Automatic fallback to random positions when constraints cannot be met
 
@@ -165,38 +165,38 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
 ## Configuration Parameters
 
 ### Environment Settings
-- `num_groups`: Number of waypoint groups per episode
-- `num_markers_per_group`: Waypoints per group (2 for single, 3 for rot_array)
+- `num_groups`: Number of landmark groups per episode
+- `num_markers_per_group`: Landmarks per group (2 for single, 3 for rot_array)
 
 ### Tolerance Settings
 - `approach_position_tolerance`: Distance threshold for goal reaching
 - `avoid_position_tolerance`: Distance threshold for collision detection
 - Safety margin: Additional 1.0 unit buffer for robot reset
 
-### Waypoint Configuration
+### Landmark Configuration
 - Default offset vector: [3.0, 1.0] for deterministic spatial relationships
 - Fixed positions: Configurable per task variant
 - Bounds: ±(room_size/3) for dynamic constraint validation
 
 ## Key Features
 
-### Vector-based Waypoint System
+### Vector-based Landmark System
 The environment uses deterministic vector offsets instead of random angular relationships:
 ```python
-# Example: Target waypoint offset from obstacle
+# Example: Target landmark offset from obstacle
 offset_vector = [3.0, 1.0]  # Fixed [x, y] relationship
 target_position = obstacle_position + offset_vector
 ```
 
 ### Group Regeneration Logic
-When spatial constraints cannot be satisfied, the entire waypoint group is regenerated:
+When spatial constraints cannot be satisfied, the entire landmark group is regenerated:
 ```python
-# Attempt to place valid waypoint group
+# Attempt to place valid landmark group
 for attempt in range(max_group_attempts):
-    # Generate all waypoints in group
+    # Generate all landmarks in group
     # Validate all spatial relationships
-    # Accept only if all waypoints are valid
-    if all_waypoints_valid:
+    # Accept only if all landmarks are valid
+    if all_landmarks_valid:
         break
     # Otherwise, regenerate entire group
 ```
@@ -207,7 +207,7 @@ Intelligent robot repositioning prevents immediate collisions:
 # Reset robot with collision checking
 for attempt in range(max_reset_attempts):
     robot_pose = reset_robot_randomly()
-    if no_collision_with_waypoints(robot_pose):
+    if no_collision_with_landmarks(robot_pose):
         break
     # Otherwise, try new position
 ```
