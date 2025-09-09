@@ -2,7 +2,7 @@ import torch
 
 
 class DerivedEnvComponentObjective:
-    """Component responsible for objective management."""
+    """Component responsible for objective management for single_fix_goal task."""
 
     def __init__(self, env):
         self.env = env
@@ -37,17 +37,14 @@ class DerivedEnvComponentObjective:
         )
 
     def check_obstacle_collision(self) -> torch.Tensor:
-        """Check if robot collides with obstacle waypoints (indices 1 and 2 in current group)."""
+        """Check if robot collides with obstacle waypoint (index 1 in current group)."""
         robot_positions = self.env.env_component_robot.robot.data.root_pos_w[:, :2]
 
-        # Get obstacle positions (indices 1 and 2 in current group)
-        obstacle_positions = self.env.env_component_waypoint._target_positions[:, 1:, :]  # Indices 1 and 2
+        # Get obstacle position (index 1 in current group)
+        obstacle_positions = self.env.env_component_waypoint._target_positions[:, 1, :]  # Index 1
         
-        robot_pos_expanded = robot_positions.unsqueeze(1)
-        distances = torch.norm(robot_pos_expanded - obstacle_positions, dim=2)
-        
-        collision_mask = distances < self.avoid_position_tolerance
-        env_has_collision = collision_mask.any(dim=1)
+        distances = torch.norm(robot_positions - obstacle_positions, dim=1)
+        env_has_collision = distances < self.avoid_position_tolerance
         return env_has_collision
 
     def check_task_completed(self) -> torch.Tensor:
@@ -84,7 +81,7 @@ class DerivedEnvComponentObjective:
             envs_needing_new_group = goal_reached_envs[incomplete_mask]
             
             if len(envs_needing_new_group) > 0:
-                # Generate new groups for environments that haven't completed all groups
+                # For fixed goal task, generate same positions
                 robot_poses = self.env.env_component_robot.robot.data.root_pos_w[envs_needing_new_group]
                 self.env.env_component_waypoint.generate_new_group(envs_needing_new_group, robot_poses)
 

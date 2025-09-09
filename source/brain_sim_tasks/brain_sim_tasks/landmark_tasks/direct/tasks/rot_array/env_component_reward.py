@@ -44,7 +44,7 @@ class DerivedEnvComponentReward(EnvComponentReward):
             torch.where(
                 goal_reached,
                 1.0,
-                torch.zeros_like(self.env.env_component_observation._position_error),
+                torch.zeros(self.env.num_envs, device=self.env.device),
             ),
             posinf=0.0,
             neginf=0.0,

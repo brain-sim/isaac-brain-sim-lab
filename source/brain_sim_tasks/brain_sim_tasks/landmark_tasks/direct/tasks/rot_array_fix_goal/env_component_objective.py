@@ -2,7 +2,7 @@ import torch
 
 
 class DerivedEnvComponentObjective:
-    """Component responsible for objective management."""
+    """Component responsible for objective management for rot_array_fix_goal task."""
 
     def __init__(self, env):
         self.env = env
@@ -84,7 +84,7 @@ class DerivedEnvComponentObjective:
             envs_needing_new_group = goal_reached_envs[incomplete_mask]
             
             if len(envs_needing_new_group) > 0:
-                # Generate new groups for environments that haven't completed all groups
+                # For fixed goal task, generate same positions
                 robot_poses = self.env.env_component_robot.robot.data.root_pos_w[envs_needing_new_group]
                 self.env.env_component_waypoint.generate_new_group(envs_needing_new_group, robot_poses)
 

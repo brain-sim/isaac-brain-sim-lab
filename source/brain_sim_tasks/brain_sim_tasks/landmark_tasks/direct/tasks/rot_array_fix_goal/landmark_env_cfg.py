@@ -5,6 +5,7 @@ from brain_sim_assets.props.maze_runtime import bsMazeRuntime
 
 from ...landmark_env import LandmarkEnv
 from ...landmark_env_cfg import LandmarkEnvCfg, NavSceneCfg
+from .env_component_objective import DerivedEnvComponentObjective
 from .env_component_reward import DerivedEnvComponentReward
 from .env_component_waypoint import DerivedEnvComponentWaypoint
 
@@ -32,7 +33,8 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
     steering_max = 3.0
 
     room_size = 30.0
-    num_markers = 3
+    num_groups = 10  # Total number of groups to complete the task
+    num_markers_per_group = 3  # Fixed goal rot_array: 1 target + 2 obstacles
     wall_thickness = 1.0
     wall_height = 3.0
 

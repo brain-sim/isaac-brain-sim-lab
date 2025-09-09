@@ -125,7 +125,7 @@ class LandmarkEnv(DirectRLEnv):
             ).item()
             completion_frac = (
                 self.env_component_waypoint._episode_groups_passed[env_ids].float()
-                / self.cfg.num_markers
+                / self.cfg.num_groups
             )
             log_infos["Metrics/success_rate"] = torch.mean(completion_frac).item()
             log_infos["Metrics/episode_reward"] = torch.mean(

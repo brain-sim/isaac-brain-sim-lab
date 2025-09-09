@@ -12,26 +12,9 @@ class DerivedEnvComponentReward(EnvComponentReward):
         self.env = env
 
     def post_env_init(self):
-
-        self._accumulated_laziness = torch.zeros(
-            (self.env.num_envs), device=self.env.device, dtype=torch.float32
-        )
-        self._previous_waypoint_reached_step = torch.zeros(
-            (self.env.num_envs,), device=self.env.device, dtype=torch.int32
-        )
-        self._episode_obstacle_collisions = torch.zeros(
-            (self.env.num_envs), device=self.env.device, dtype=torch.int32
-        )
-        self._obstacle_hit_this_step = torch.zeros(
-            (self.env.num_envs), device=self.env.device, dtype=torch.bool
-        )
-
         # Load reward parameters from config
         self.goal_reached_bonus = self.env.cfg.goal_reached_bonus
         self.laziness_penalty_weight = self.env.cfg.laziness_penalty_weight
-        self.laziness_decay = self.env.cfg.laziness_decay
-        self.laziness_threshold = self.env.cfg.laziness_threshold
-        self.max_laziness = self.env.cfg.max_laziness
         self.wall_penalty_weight = self.env.cfg.wall_penalty_weight
         self.linear_speed_weight = self.env.cfg.linear_speed_weight
         self.avoid_penalty_weight = self.env.cfg.avoid_penalty_weight
@@ -40,12 +23,12 @@ class DerivedEnvComponentReward(EnvComponentReward):
         self.heading_progress_weight = self.env.cfg.heading_progress_weight
 
     def get_rewards(self) -> dict[str, torch.Tensor]:
-        """Calculate all reward components."""
-        # Check if goal is reached
-        goal_reached = (
-            self.env.env_component_observation._position_error
-            < self.approach_position_tolerance
-        )
+        """Calculate all reward components based on check results."""
+
+        goal_reached = self.env.env_component_objective.check_results["goal_reached"]
+        env_has_collision = self.env.env_component_objective.check_results[
+            "env_has_collision"
+        ]
 
         # Target heading reward
         target_heading_rew = self.heading_progress_weight * torch.exp(
@@ -56,92 +39,53 @@ class DerivedEnvComponentReward(EnvComponentReward):
             target_heading_rew, posinf=0.0, neginf=0.0
         )
 
-        # Goal reached reward
+        # Goal reached reward (using passed check result)
         goal_reached_reward = self.goal_reached_bonus * torch.nan_to_num(
             torch.where(
                 goal_reached,
                 1.0,
-                torch.zeros_like(self.env.env_component_observation._position_error),
+                torch.zeros(self.env.num_envs, device=self.env.device),
             ),
             posinf=0.0,
             neginf=0.0,
         )
 
-        # Avoid goal collision penalty
-        env_has_collision = self.env.env_component_objective.check_obstacle_collision()
+        # Avoid collision penalty (using passed check result)
         avoid_penalty = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.float32
         )
         avoid_penalty[env_has_collision] = self.avoid_penalty_weight
-        self._obstacle_hit_this_step[env_has_collision] = True
-        self._episode_obstacle_collisions += env_has_collision.int()
 
-        # Update waypoint progress
-        self.env.env_component_waypoint._target_index = (
-            self.env.env_component_waypoint._target_index + goal_reached
-        )
-        self.env.env_component_waypoint._episode_groups_passed += goal_reached.int()
-
-        # Check task completion
-        self.env.task_completed = self.env.env_component_waypoint._target_index > (
-            self.env.cfg.num_markers - 2
-        )
-        self.env.env_component_waypoint._target_index = (
-            self.env.env_component_waypoint._target_index % self.env.cfg.num_markers
-        )
-
-        # Fast goal reached reward
+        # Fast goal reached reward (using data from objective component)
         assert (
-            self._previous_waypoint_reached_step[goal_reached]
+            self.env.env_component_objective._previous_waypoint_reached_step[
+                goal_reached
+            ]
             < self.env.episode_length_buf[goal_reached]
         ).all(), "Previous waypoint reached step is greater than episode length"
 
         k = torch.log(
             torch.tensor(self.fast_goal_reached_bonus, device=self.env.device)
         ) / (self.env.max_episode_length - 1)
-        steps_taken = self.env.episode_length_buf - self._previous_waypoint_reached_step
+        steps_taken = (
+            self.env.episode_length_buf
+            - self.env.env_component_objective._previous_waypoint_reached_step
+        )
         fast_goal_reached_reward = torch.where(
             goal_reached,
             self.fast_goal_reached_bonus * torch.exp(-k * (steps_taken - 1)),
-            torch.zeros_like(self._previous_waypoint_reached_step),
+            torch.zeros_like(
+                self.env.env_component_objective._previous_waypoint_reached_step
+            ),
         )
         fast_goal_reached_reward = torch.clamp(
             fast_goal_reached_reward, min=0.0, max=self.fast_goal_reached_bonus
         )
-        self._previous_waypoint_reached_step = torch.where(
-            goal_reached,
-            self.env.episode_length_buf,
-            self._previous_waypoint_reached_step,
-        )
 
-        # Laziness penalty
-        linear_speed = torch.norm(
-            self.env.env_component_robot.robot.data.root_lin_vel_b[:, :2], dim=-1
-        )
-        current_laziness = torch.where(
-            linear_speed < self.laziness_threshold,
-            torch.ones_like(linear_speed),
-            torch.zeros_like(linear_speed),
-        )
-
-        # Update accumulated laziness with decay
-        self._accumulated_laziness = (
-            self._accumulated_laziness * self.laziness_decay
-            + current_laziness * (1 - self.laziness_decay)
-        )
-        self._accumulated_laziness = torch.clamp(
-            self._accumulated_laziness, 0.0, self.max_laziness
-        )
-
-        # Reset accumulated laziness when reaching waypoint
-        self._accumulated_laziness = torch.where(
-            goal_reached,
-            torch.zeros_like(self._accumulated_laziness),
-            self._accumulated_laziness,
-        )
-
+        # Laziness penalty (using accumulated laziness from objective)
         laziness_penalty = torch.nan_to_num(
-            -self.laziness_penalty_weight * torch.log1p(self._accumulated_laziness),
+            -self.laziness_penalty_weight
+            * torch.log1p(self.env.env_component_objective._accumulated_laziness),
             posinf=0.0,
             neginf=0.0,
         )
@@ -161,14 +105,14 @@ class DerivedEnvComponentReward(EnvComponentReward):
         )
 
         # Linear speed reward
+        linear_speed = torch.norm(
+            self.env.env_component_robot.robot.data.root_lin_vel_b[:, :2], dim=-1
+        )
         linear_speed_reward = self.linear_speed_weight * torch.nan_to_num(
             linear_speed,
             posinf=0.0,
             neginf=0.0,
         )
-
-        # Update waypoint visualization
-        self.env.env_component_waypoint.update_waypoint_visualization()
 
         return {
             "Episode_Reward/goal_reached_reward": goal_reached_reward,
@@ -182,7 +126,5 @@ class DerivedEnvComponentReward(EnvComponentReward):
 
     def reset(self, env_ids):
         """Reset reward tracking for specified environments."""
-        if hasattr(self, "_episode_obstacle_collisions"):
-            self._episode_obstacle_collisions[env_ids] = 0
-        if hasattr(self, "_previous_waypoint_reached_step"):
-            self._previous_waypoint_reached_step[env_ids] = 0
+        # No state to reset - all tracking moved to objective component
+        pass

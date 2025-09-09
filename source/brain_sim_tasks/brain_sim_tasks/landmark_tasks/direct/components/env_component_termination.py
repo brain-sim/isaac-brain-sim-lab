@@ -40,7 +40,7 @@ class EnvComponentTermination:
         """Check if robot is stuck for too long."""
         steps_since_goal = (
             self.env.episode_length_buf
-            - self.env.env_component_reward._previous_waypoint_reached_step
+            - self.env.env_component_objective._previous_waypoint_reached_step
         )
         stuck_too_long = steps_since_goal > max_steps
         return stuck_too_long

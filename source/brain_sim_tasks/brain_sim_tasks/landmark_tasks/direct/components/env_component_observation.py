@@ -11,13 +11,13 @@ class EnvComponentObservation:
 
     def post_env_init(self):
 
-        self._position_error = torch.zeros(
+        self._robot_target_distance = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.float32
         )
-        self._position_error_vector = torch.zeros(
+        self._robot_target_distance_vector = torch.zeros(
             (self.env.num_envs, 2), device=self.env.device, dtype=torch.float32
         )
-        self._previous_position_error = torch.zeros(
+        self._previous_robot_target_distance = torch.zeros(
             (self.env.num_envs), device=self.env.device, dtype=torch.float32
         )
         self.target_heading_error = torch.zeros(
@@ -50,32 +50,21 @@ class EnvComponentObservation:
 
     def get_observations(self) -> dict:
         """Get full observations dictionary."""
-        # Update position and heading errors
-        current_target_positions = self.env.env_component_waypoint._target_positions[
-            self.env.env_component_robot.robot._ALL_INDICES,
-            self.env.env_component_waypoint._target_index,
-        ]
-        self._position_error_vector = (
+        # Update position and heading errors (target is always at index 0)
+        current_target_positions = self.env.env_component_waypoint._target_positions[:, 0, :]
+        self._robot_target_distance_vector = (
             current_target_positions
             - self.env.env_component_robot.robot.data.root_pos_w[:, :2]
         )
-        self._previous_position_error = self._position_error.clone()
-        self._position_error = torch.norm(self._position_error_vector, dim=-1)
+        self._previous_robot_target_distance = self._robot_target_distance.clone()
+        self._robot_target_distance = torch.norm(self._robot_target_distance_vector, dim=-1)
 
         # Calculate heading error
         heading = self.env.env_component_robot.robot.data.heading_w
         target_heading_w = torch.atan2(
-            self.env.env_component_waypoint._target_positions[
-                self.env.env_component_robot.robot._ALL_INDICES,
-                self.env.env_component_waypoint._target_index,
-                1,
-            ]
+            self.env.env_component_waypoint._target_positions[:, 0, 1]
             - self.env.env_component_robot.robot.data.root_link_pos_w[:, 1],
-            self.env.env_component_waypoint._target_positions[
-                self.env.env_component_robot.robot._ALL_INDICES,
-                self.env.env_component_waypoint._target_index,
-                0,
-            ]
+            self.env.env_component_waypoint._target_positions[:, 0, 0]
             - self.env.env_component_robot.robot.data.root_link_pos_w[:, 0],
         )
         self.target_heading_error = torch.atan2(
@@ -94,17 +83,14 @@ class EnvComponentObservation:
 
     def reset(self, env_ids):
         """Reset observations for specified environments."""
-        # Reset position and heading errors
-        current_target_positions = self.env.env_component_waypoint._target_positions[
-            self.env.env_component_robot.robot._ALL_INDICES,
-            self.env.env_component_waypoint._target_index,
-        ]
-        self._position_error_vector = (
+        # Reset position and heading errors (target is always at index 0)
+        current_target_positions = self.env.env_component_waypoint._target_positions[:, 0, :]
+        self._robot_target_distance_vector = (
             current_target_positions[:, :2]
             - self.env.env_component_robot.robot.data.root_pos_w[:, :2]
         )
-        self._position_error = torch.norm(self._position_error_vector, dim=-1)
-        self._previous_position_error = self._position_error.clone()
+        self._robot_target_distance = torch.norm(self._robot_target_distance_vector, dim=-1)
+        self._previous_robot_target_distance = self._robot_target_distance.clone()
 
         # Reset heading error
         heading = self.env.env_component_robot.robot.data.heading_w[:]
