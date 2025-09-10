@@ -401,6 +401,26 @@ class DerivedEnvComponentWaypoint(EnvComponentWaypoint):
         fixed_second_position = torch.tensor([5.0, 1.0], device=self.env.device)
         fixed_third_position = torch.tensor([1.0, 2.0], device=self.env.device)
 
+        # # Scaled
+        # perpendicular_offset = 6.0
+        # fixed_second_position = torch.tensor([5.0, 1.0], device=self.env.device)
+        # fixed_third_position = torch.tensor([-3.0, 3.0], device=self.env.device)
+
+        # # Translated
+        # perpendicular_offset = 3.0
+        # fixed_second_position = torch.tensor([-1.0, 3.0], device=self.env.device)
+        # fixed_third_position = torch.tensor([-5.0, 4.0], device=self.env.device)
+
+        # # Rotated (90 degrees clockwise)
+        # perpendicular_offset = 3.0
+        # fixed_second_position = torch.tensor([1.0, -5.0], device=self.env.device)
+        # fixed_third_position = torch.tensor([2.0, -1.0], device=self.env.device)
+
+        # # Rotated (45 degrees clockwise) and scaled
+        # perpendicular_offset = 6.0
+        # fixed_second_position = torch.tensor([1.0, -5.0], device=self.env.device)
+        # fixed_third_position = torch.tensor([3.0, 3.0], device=self.env.device)
+
         # Generate one group of waypoints (3 markers)
         first_wp, second_wp, third_wp = self.generate_waypoint_group(
             env_origins,
