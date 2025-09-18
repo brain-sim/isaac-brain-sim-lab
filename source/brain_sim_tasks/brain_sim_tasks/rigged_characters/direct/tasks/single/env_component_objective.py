@@ -38,16 +38,24 @@ class DerivedEnvComponentObjective(EnvComponentObjective):
         )
 
     def check_obstacle_collision(self) -> torch.Tensor:
-        """Check if robot collides with obstacle waypoint (index 1 in current group)."""
+        """Check if robot collides with obstacle waypoint (index 1 in current group) and characters."""
         robot_positions = self.env.env_component_robot.robot.data.root_pos_w[:, :2]
 
         # Get obstacle position (index 1 in current group)
         obstacle_positions = self.env.env_component_waypoint._target_positions[
             :, 1, :
         ]  # Index 1
+        waypoint_distances = torch.norm(robot_positions - obstacle_positions, dim=1)
+        waypoint_collision = waypoint_distances < self.avoid_position_tolerance
+        
+        character_positions = self.env.env_component_character._characters_poses[:, :, :2]  # x, y positions
+        # robot_positions: [num_envs, 2]
+        # character_positions: [num_envs, num_characters, 2]
+        robot_pos_expanded = robot_positions.unsqueeze(1)  # [num_envs, 1, 2]
+        character_distances = torch.norm(robot_pos_expanded - character_positions, dim=2)  # [num_envs, num_characters]
+        character_collision = (character_distances < self.avoid_position_tolerance).any(dim=1)  # [num_envs]
+        env_has_collision = waypoint_collision | character_collision
 
-        distances = torch.norm(robot_positions - obstacle_positions, dim=1)
-        env_has_collision = distances < self.avoid_position_tolerance
         return env_has_collision
 
     def check_task_completed(self) -> torch.Tensor:
