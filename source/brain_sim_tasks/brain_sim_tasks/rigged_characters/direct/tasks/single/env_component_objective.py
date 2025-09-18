@@ -1,7 +1,8 @@
 import torch
 
+from ...components.env_component_objective import EnvComponentObjective
 
-class DerivedEnvComponentObjective:
+class DerivedEnvComponentObjective(EnvComponentObjective):
     """Component responsible for objective management for single task."""
 
     def __init__(self, env):

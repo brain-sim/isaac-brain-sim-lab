@@ -10,7 +10,6 @@ import numpy as np
 import torch
 from isaaclab.envs import DirectRLEnv
 from isaaclab.envs.common import VecEnvStepReturn
-from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
 
 from isaaclab.envs import DirectRLEnvCfg
 from .components.env_component_character import EnvComponentCharacter
@@ -116,8 +115,6 @@ class LandmarkEnv(DirectRLEnv):
         self.scene.clone_environments(copy_from_source=False)
         self.scene.filter_collisions(global_prim_paths=[])
         self.scene.articulations["robot"] = self.robot
-        for name, obj in self.env_component_character.characters.items():
-            self.scene.rigid_objects[name] = obj
 
         self.wall_height = self.cfg.wall_height
         self.wall_position = (self.cfg.room_size - self.cfg.wall_thickness) / 2
@@ -174,7 +171,6 @@ class LandmarkEnv(DirectRLEnv):
         for _ in range(self.cfg.decimation):
             self._sim_step_counter += 1
             self._apply_action()
-            self.env_component_character.step()
             self.scene.write_data_to_sim()
             self.sim.step(render=False)
             if (
@@ -183,7 +179,8 @@ class LandmarkEnv(DirectRLEnv):
             ):
                 self.sim.render()
             self.scene.update(dt=self.physics_dt)
-
+        # Update character positions with random movement
+        self.env_component_character.step(dt=self.step_dt)
         self.env_component_robot.update_camera(dt=self.step_dt)
         if hasattr(self, "height_scanner"):
             self.height_scanner.update(dt=self.step_dt)
@@ -340,11 +337,12 @@ class LandmarkEnv(DirectRLEnv):
         # Reset robot and get pose
         robot_pose = self.env_component_robot.reset(env_ids)
 
-        # Reset waypoints
+        # Reset waypoints and character
         self.env_component_waypoint.reset(env_ids, robot_pose)
+        self.env_component_character.reset(env_ids, robot_pose)
 
         # Reset other components
         self.env_component_observation.reset(env_ids)
         self.env_component_reward.reset(env_ids)
         self.env_component_objective.reset(env_ids)
-        self.env_component_character.reset(env_ids)
+        

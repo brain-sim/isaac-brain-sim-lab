@@ -1,8 +1,8 @@
 from isaaclab.utils import configclass
 
 from brain_sim_assets.props.waypoint import bsWaypointGenerator
+from brain_sim_assets.props.character import bsCharacterGenerator
 from brain_sim_assets.props.maze_runtime import bsMazeRuntime
-from brain_sim_assets.props.character_runtime import bsCharacterRuntime
 
 from ...landmark_env import LandmarkEnv
 from ...landmark_env_cfg import LandmarkEnvCfg, NavSceneCfg
@@ -39,12 +39,15 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
     wall_thickness = 1.0
     wall_height = 3.0
 
+    num_characters = 5
+
     # scene
     scene: NavSceneCfg = NavSceneCfg(env_spacing=room_size)
     env_spacing = scene.env_spacing
     waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
         marker0_radius=1.0, marker1_radius=0.0, marker2_radius=0.0
     )
+    character_cfg = bsCharacterGenerator.get_character_object()
 
     approach_position_tolerance = (
         1.0
@@ -59,15 +62,6 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
         room_size, maze_file="landmark_30.txt", maze_config="maze_cell_1.json"
     )
     wall_config.apply_to_scene_cfg(scene)
-
-    # Initialize character configuration and apply to scene
-    character_config = bsCharacterRuntime(
-        room_size=room_size,
-        character_usd_path="worker/test2.usd",
-        num_characters=1,
-        boundary_limit=room_size * 0.4,  # Keep characters within 80% of room size
-        device="cuda",
-    )
 
 class DerivedLandmarkEnv(LandmarkEnv):
     def __init__(self, cfg: DerivedLandmarkEnvCfg, **kwargs):

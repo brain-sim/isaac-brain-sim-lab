@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import torch
-from collections.abc import Sequence
 from isaaclab.markers import VisualizationMarkers
 
 from ...components.env_component_waypoint import EnvComponentWaypoint
