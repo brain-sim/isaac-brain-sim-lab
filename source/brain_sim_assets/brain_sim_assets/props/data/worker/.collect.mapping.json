@@ -1,0 +1,587 @@
+{
+    "version": "1.0",
+    "file_records": [
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_BaseColor.png",
+            "source_hash": "0c1bfb3144e5e34141d442f2b3383f36da8b13d4",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_BaseColor.png",
+            "target_hash": "1445bc8955bc80224fad5100b08521aefc658ecf"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_Metal.png",
+            "source_hash": "2f5695e8d7fec7222884ce86fcdae372ede42180",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_Metal.png",
+            "target_hash": "838ced2be6efc65388af82b83b92a276c4d31ba8"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_Normal.png",
+            "source_hash": "3a47c6aa5dad0540ee335dfada59c11f36c929b1",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_Normal.png",
+            "target_hash": "730e3b25d779b31b2135ab53fbdce0dc41565575"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_Rough.png",
+            "source_hash": "75d8c53d41b33a91a276d5df42082f8e1155764a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Baseball_Cap/Baseball_Cap_Rough.png",
+            "target_hash": "bdd214d660b41d9249a6be65e10a5db3185ffb65"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_BaseColor.jpg",
+            "source_hash": "e9539cc5cf565e64bb807b6f5350d9c1fcec2ca2",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_BaseColor.jpg",
+            "target_hash": "28a0e28af0434d659006c695ddf5e9cb518de860"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_Normal.jpg",
+            "source_hash": "a020860c031b534c332ba3e87f81ef188efba32e",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_Normal.jpg",
+            "target_hash": "a2161b84048dbce7b2667af08bba9fcf30624dd0"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_Opacity.jpg",
+            "source_hash": "ed82be62e74118538c1056d624919cc0a3687b55",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_Opacity.jpg",
+            "target_hash": "f8f421b6ac56f02065ce2add0bee1851be42cd64"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_Rough.png",
+            "source_hash": "1aeab1a9c9570c8cd413a031a839d9a5241a1bac",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/V_Neck_Scrub_Shirt/V_Neck_Scrub_Shirt_Rough.png",
+            "target_hash": "062be010d9a68fdf8e230d7f7321507135141355"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_AO.jpg",
+            "source_hash": "4923ebe68205aa59e8c411feb878e194f19fb774",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_AO.jpg",
+            "target_hash": "58f9d7b4ab254e4fb267511aee247e74f7a10f35"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_BaseColor.jpg",
+            "source_hash": "c307d33c7b8b95ff47cecae1bdc05f967fad71d4",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_BaseColor.jpg",
+            "target_hash": "bc4faf76831fdf40ebff2580f1261e1f6e69022e"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_Metal.jpg",
+            "source_hash": "74f89129b6558148b98dc9ab936244768adc7070",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_Metal.jpg",
+            "target_hash": "0887d3985dde4f76faac24a05e0787afe1ad2b4c"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_Normal.png",
+            "source_hash": "47693d7f059fc2cae9c3417308ba497d76974c6f",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_Normal.png",
+            "target_hash": "16c8c39af1dbf9562417293c0c3d46f63f36c034"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_Rough.jpg",
+            "source_hash": "0a5a70f6523378f195929805da920e3a71133d51",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Body/Std_Skin_Body_Rough.jpg",
+            "target_hash": "5009d0fb7310a02d57fabf0073c6671ce38cb037"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_AO.jpg",
+            "source_hash": "a531337eb673c955c52fa05a3c127e5c524ba990",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_AO.jpg",
+            "target_hash": "5f3c88b77641b97de2693b1748730393b4f865c9"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_BaseColor.jpg",
+            "source_hash": "9a9961fc76b0b918b004e713904d73a995d5b861",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_BaseColor.jpg",
+            "target_hash": "7fbbd4f2c984e052e4ea6ea2e898a687b7122a43"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_Metal.jpg",
+            "source_hash": "b322bd23ddda9abd3395502660d245661cc2aa2a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_Metal.jpg",
+            "target_hash": "309bec9446d45c9a0bc5c424de405be913eea14d"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_Rough.jpg",
+            "source_hash": "b322bd23ddda9abd3395502660d245661cc2aa2a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_R/Std_Cornea_R_Rough.jpg",
+            "target_hash": "0cc5bb4fb74a4fdc6cb374a98bf632ec4e402234"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_AO.jpg",
+            "source_hash": "4451c3b1b1419fa4c192b7f6655998d186e34d3d",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_AO.jpg",
+            "target_hash": "44a9cab096bbdb80cd464b4919456c5763c4eb0c"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_BaseColor.png",
+            "source_hash": "64fa7b3367fd48fabae5123c7995cea654c8ad87",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_BaseColor.png",
+            "target_hash": "80a2e91b407aeca8b95bbf0a64ca5fdc0fa54a44"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_Metal.jpg",
+            "source_hash": "330cc51dea031d8a3734d91e8662251b8e846705",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_Metal.jpg",
+            "target_hash": "a9d34a79cdc3182c85a3e100b7619c175d273591"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_Normal.png",
+            "source_hash": "1d3d2716a9d8a9d809643afc5339a66cfb7e6baf",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_Normal.png",
+            "target_hash": "762d9a2d101133ce2a331bfb3b14874076fc3c50"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_Rough.jpg",
+            "source_hash": "359b3c39f1104c49df1cd833e951da4eb428c0b3",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Lower_Teeth/Std_Lower_Teeth_Rough.jpg",
+            "target_hash": "002377d56d8f24ca898e543e6373555f4169222f"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_AO.jpg",
+            "source_hash": "2a990b2ff6c4289396751b65c7f7949287e9586a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_AO.jpg",
+            "target_hash": "37ce2a31ec08ef99f8f7b7c7bbeb8b6a97da676b"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_BaseColor.png",
+            "source_hash": "ecd880c28ad53beb72b7484380c1adde1a847f0f",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_BaseColor.png",
+            "target_hash": "d9f0914f6636cc42dc5034c8c885781630f4cb1d"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_Metal.jpg",
+            "source_hash": "3cdd8730882834bd61e13746ca70e4d189dede63",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_Metal.jpg",
+            "target_hash": "309bec9446d45c9a0bc5c424de405be913eea14d"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_Normal.png",
+            "source_hash": "d9821b91a406e0dd50c04395ba7035461ce6eee6",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_Normal.png",
+            "target_hash": "2f87d51740e44fc4f1d451a89fa512dd843620b4"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_Rough.jpg",
+            "source_hash": "2d45ddcbd956c0ecbb7044cac8c30fe9efa9d908",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Upper_Teeth/Std_Upper_Teeth_Rough.jpg",
+            "target_hash": "828c64ae51e2993d9914ac6cc41d92c348b7cf98"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_BaseColor.jpg",
+            "source_hash": "88087d90ecdbbe756adfafbcea91be639b686e99",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_BaseColor.jpg",
+            "target_hash": "ab39e4d54b37f18585b597744853cdd611539bf1"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_Metal.png",
+            "source_hash": "2f5695e8d7fec7222884ce86fcdae372ede42180",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_Metal.png",
+            "target_hash": "1c9444ca54cfb5dc19d5d6e5ff663845f9c9da4c"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_Normal.png",
+            "source_hash": "08ec5019606e26bfbacbaedcb9f5d6b930fd4d6b",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_Normal.png",
+            "target_hash": "36160b3671dcd54bb7b9dcd0909fe7bd2d99012d"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_Rough.png",
+            "source_hash": "03621df9c5dabe79f3095ed0e97a53418dc0914d",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Field_Jacket/Field_Jacket_Rough.png",
+            "target_hash": "4513805fec718fce3dd32a069b8e3efbfab57756"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_BaseColor.jpg",
+            "source_hash": "9e93bf6916c7e84e682b0c5c0c3d486c9a7ea7e8",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_BaseColor.jpg",
+            "target_hash": "5bd5347685ba114fe88840e47f87e457bdb4b78a"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_Metal.jpg",
+            "source_hash": "b322bd23ddda9abd3395502660d245661cc2aa2a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_Metal.jpg",
+            "target_hash": "37077b3946159aa69f534d7d10357d3c0daa9eb5"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_Normal.jpg",
+            "source_hash": "f7f26ab50aa3e2f2308b3535618c1ee770066d1f",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_Normal.jpg",
+            "target_hash": "b08d854498ff996191edb6f8412bc7ad24b167fc"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_Rough.jpg",
+            "source_hash": "b322bd23ddda9abd3395502660d245661cc2aa2a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_L/Std_Eye_L_Rough.jpg",
+            "target_hash": "f865e31a8e269ccdbe3f3dc868ef7476b48a9f6e"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_BaseColor.jpg",
+            "source_hash": "3911e7469f796588cf86f09f712f92f3fb247d58",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_BaseColor.jpg",
+            "target_hash": "57d629bc2a08db6469021eca5b276fdab28cc1bb"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_Metal.jpg",
+            "source_hash": "d0f80fb2698284a0125111426f289ffebe3e56a4",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_Metal.jpg",
+            "target_hash": "0648930613a1361ce5909bb94674e40ed8cd2395"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_Opacity.jpg",
+            "source_hash": "d0f80fb2698284a0125111426f289ffebe3e56a4",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_Opacity.jpg",
+            "target_hash": "9ff8074d18bc5b48beb8e87ec8bca3f4a6c8d959"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_Rough.jpg",
+            "source_hash": "3911e7469f796588cf86f09f712f92f3fb247d58",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_L/Std_Eye_Occlusion_L_Rough.jpg",
+            "target_hash": "0125818af7699cc5f5c21922352142ff0be0f4d2"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_BaseColor.jpg",
+            "source_hash": "098cf152c8334112a5e2aefe7851d39b59067e6c",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_BaseColor.jpg",
+            "target_hash": "256ebf8faa71a2f588e427578a4dcd6e7d8b5a58"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_Metal.jpg",
+            "source_hash": "098cf152c8334112a5e2aefe7851d39b59067e6c",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_Metal.jpg",
+            "target_hash": "bb992e4a5b41c97509aa0267b7186f55e1ba00a6"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_Opacity.jpg",
+            "source_hash": "098cf152c8334112a5e2aefe7851d39b59067e6c",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_Opacity.jpg",
+            "target_hash": "7b88ebe849b4c06da5a21f4f021322bf6128c8fc"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_Rough.jpg",
+            "source_hash": "637d5acb8caae302deb3a23b4eff5dbc3617bba2",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_L/Std_Tearline_L_Rough.jpg",
+            "target_hash": "9ff8074d18bc5b48beb8e87ec8bca3f4a6c8d959"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_BaseColor.jpg",
+            "source_hash": "b9691a9e047e6b0395e93949908782a6975a239e",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_BaseColor.jpg",
+            "target_hash": "6bc9f01bf844e2fc4050b0817f94400af8bfe9b2"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_Metal.png",
+            "source_hash": "2f5695e8d7fec7222884ce86fcdae372ede42180",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_Metal.png",
+            "target_hash": "838ced2be6efc65388af82b83b92a276c4d31ba8"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_Normal.png",
+            "source_hash": "3d73edd7c2e3e316982c569c6c79463044399205",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_Normal.png",
+            "target_hash": "b9e0319c4b411ffe816d8ab344445022d826767a"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_Rough.png",
+            "source_hash": "3de6bdcb2d29a5133773f28443873852b3148c81",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Basketball_Shoes/Basketball_Shoes_Rough.png",
+            "target_hash": "fe3eb5faa49da67d2c0aff44177e0f2b41b10bc2"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_AO.jpg",
+            "source_hash": "96cdfce4ece76accea7dff0a466ff111dc59233f",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_AO.jpg",
+            "target_hash": "a88172ce31be0fb58b0782d03667ec801fbaa334"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_BaseColor.jpg",
+            "source_hash": "bfa45f3cfe721c46827c957482e34dba4fa7f00b",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_BaseColor.jpg",
+            "target_hash": "2b99967a008baf27de6230173315bcc8df14ccc7"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_Metal.jpg",
+            "source_hash": "ba926b351744a709f83ddceb9eb50e336e4cbb76",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_Metal.jpg",
+            "target_hash": "5ed40797f3ecefee32e822e38b9f0fba04d58ef3"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_Normal.png",
+            "source_hash": "d4ac6e042f002188d14fced510c6ef3b22c88a46",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_Normal.png",
+            "target_hash": "bf2e047a72666524b7fceae24541c3fc9eb3bac8"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_Rough.jpg",
+            "source_hash": "ec8dd9775e4c55b3935146d902003d1969872144",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Leg/Std_Skin_Leg_Rough.jpg",
+            "target_hash": "3d64eff9ec59ebfafdbcf854b517b515e043ded4"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_BaseColor.jpg",
+            "source_hash": "098cf152c8334112a5e2aefe7851d39b59067e6c",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_BaseColor.jpg",
+            "target_hash": "c2fc69f64b47c8ce3305c2e3055826f155f52b5a"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_Metal.jpg",
+            "source_hash": "098cf152c8334112a5e2aefe7851d39b59067e6c",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_Metal.jpg",
+            "target_hash": "474052f929e1fbf91152addd5c62404faa960d33"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_Opacity.jpg",
+            "source_hash": "098cf152c8334112a5e2aefe7851d39b59067e6c",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_Opacity.jpg",
+            "target_hash": "8b3e29b194ae1a717aaa9838e0aec1eb3b0ffbc2"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_Rough.jpg",
+            "source_hash": "637d5acb8caae302deb3a23b4eff5dbc3617bba2",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tearline_R/Std_Tearline_R_Rough.jpg",
+            "target_hash": "502f6407d64389f4fa2ec8603d9723af22963c4d"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_BaseColor.jpg",
+            "source_hash": "9e93bf6916c7e84e682b0c5c0c3d486c9a7ea7e8",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_BaseColor.jpg",
+            "target_hash": "2b578a3518ce0b860fa46d1277e25e67b199c721"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_Metal.jpg",
+            "source_hash": "330cc51dea031d8a3734d91e8662251b8e846705",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_Metal.jpg",
+            "target_hash": "309bec9446d45c9a0bc5c424de405be913eea14d"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_Normal.jpg",
+            "source_hash": "435cde440d4ac514524a8c855fea7eaaacd38e87",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_Normal.jpg",
+            "target_hash": "d343cc824f085873c4b54fba1c5e8f51babf88a0"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_Rough.jpg",
+            "source_hash": "330cc51dea031d8a3734d91e8662251b8e846705",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_R/Std_Eye_R_Rough.jpg",
+            "target_hash": "96dd3c5a786a3366a8ad4073b3579293fc6e9cc0"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_BaseColor.jpg",
+            "source_hash": "3911e7469f796588cf86f09f712f92f3fb247d58",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_BaseColor.jpg",
+            "target_hash": "474052f929e1fbf91152addd5c62404faa960d33"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_Metal.jpg",
+            "source_hash": "d0f80fb2698284a0125111426f289ffebe3e56a4",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_Metal.jpg",
+            "target_hash": "388f60fed8b6d8edfa4e712c51d32578cb322179"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_Opacity.jpg",
+            "source_hash": "d0f80fb2698284a0125111426f289ffebe3e56a4",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_Opacity.jpg",
+            "target_hash": "26aefe11032886e5580a8296855936fbd496ed61"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_Rough.jpg",
+            "source_hash": "3911e7469f796588cf86f09f712f92f3fb247d58",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eye_Occlusion_R/Std_Eye_Occlusion_R_Rough.jpg",
+            "target_hash": "55f72c7b9f29b8de6c227a140af029aef6ced356"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_AO.jpg",
+            "source_hash": "d623623a5defb920f9f610c0da60aad2d01f164c",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_AO.jpg",
+            "target_hash": "ffc677d5724e9fc89427104532b5c6bd909b4ebe"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_BaseColor.jpg",
+            "source_hash": "390c6a902ea33e9d410c3699120a10ed7f083016",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_BaseColor.jpg",
+            "target_hash": "a1729c0a4af7b4469d03203c64151e6ea2688192"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_Normal.png",
+            "source_hash": "e1e48251103f8ba2ac216d081badd2c53ce02076",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_Normal.png",
+            "target_hash": "d91652e5aabc9ffbdea5dcd6b640676c2a9e86bf"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_Rough.jpg",
+            "source_hash": "2d7cee0b19c64c563b3eee8468cbc8cf2913843a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Nails/Std_Nails_Rough.jpg",
+            "target_hash": "5ae1e70e298138bda1deb34dab65f64bdb9213da"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_AO.jpg",
+            "source_hash": "5211a7769542f80e106d8541c3a11193342af152",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_AO.jpg",
+            "target_hash": "4499ae2e95d639ec38f2ee06609056f409192526"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_BaseColor.jpg",
+            "source_hash": "efe18675ed8f6b3db92cfc37d9fddb34f21f8e13",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_BaseColor.jpg",
+            "target_hash": "3ff9b9efc2b8c80063dc04b8da32bc000de08909"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_Normal.png",
+            "source_hash": "565c3186df491f9fd656dceb7fd44a227ee8a9ca",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_Normal.png",
+            "target_hash": "54175498b16b50d319be332aca71fd95d2215358"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_Opacity.jpg",
+            "source_hash": "5f4569f87aafd6cf5882cd461aa3af7112dcc7d8",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_Opacity.jpg",
+            "target_hash": "cabd51f60695efbbe60391f41e8a828547aa8d2f"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_Rough.jpg",
+            "source_hash": "5211a7769542f80e106d8541c3a11193342af152",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Eyelash/Std_Eyelash_Rough.jpg",
+            "target_hash": "1e3d0f49da3405024e22e0f03fe7d196eafdcf86"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_AO.jpg",
+            "source_hash": "1a5fe909f58cdb4e4bc885c05f4f4e570d8bbe91",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_AO.jpg",
+            "target_hash": "89996845c9872c13e8f139a80ad7bea0eddc9ead"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_BaseColor.jpg",
+            "source_hash": "c0792aa215aefee354dc1887686234a2c9bf2c37",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_BaseColor.jpg",
+            "target_hash": "1b00e06f1156544c3c8f7d600e47fad8f45557e1"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_Metal.jpg",
+            "source_hash": "be4c3d834a6966de45ebbb7565b9f66201659c77",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_Metal.jpg",
+            "target_hash": "6ccf6054c55236bfa4fc88f3d8d0bd15e111d457"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_Normal.png",
+            "source_hash": "9cf2ac84d83605d6c5123f328718e4b124cf7367",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_Normal.png",
+            "target_hash": "fc70d462961126bfb59be2cdb1c2a0d65a1a39d8"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_Rough.jpg",
+            "source_hash": "e13d91e43e00dbb766d4dc38c59394507755e37a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Head/Std_Skin_Head_Rough.jpg",
+            "target_hash": "f5b1b558948beba2ec48a46ccdefe074f5e76801"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_AO.jpg",
+            "source_hash": "837d62f47b2c0fb34b18718c87cf11c4097c0247",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_AO.jpg",
+            "target_hash": "5b9ddbc43de9fa421331e8f3d90b464763e96734"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_BaseColor.jpg",
+            "source_hash": "9a9961fc76b0b918b004e713904d73a995d5b861",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_BaseColor.jpg",
+            "target_hash": "ffc321c3aa58f00c6b5c91c88eb8edc151f9a3d5"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_Metal.jpg",
+            "source_hash": "b322bd23ddda9abd3395502660d245661cc2aa2a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_Metal.jpg",
+            "target_hash": "f90c9498349fd5fe2fd7196183e4a3e288cce4de"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_Rough.jpg",
+            "source_hash": "b322bd23ddda9abd3395502660d245661cc2aa2a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Cornea_L/Std_Cornea_L_Rough.jpg",
+            "target_hash": "0cc5bb4fb74a4fdc6cb374a98bf632ec4e402234"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_AO.png",
+            "source_hash": "f2e211ae7686771d25815ec295aabb16a488ee24",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_AO.png",
+            "target_hash": "9409a5dd07c021f447dae758177b67cd729f4a8f"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_BaseColor.png",
+            "source_hash": "10c1b1af0a24dc5723895b9c44a57c7827602519",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_BaseColor.png",
+            "target_hash": "34999748c580ef0caeeb118ee798a177997fae89"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_Metal.png",
+            "source_hash": "c8f6cef2d2e6ff213e35984513e745ce34bd9cea",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_Metal.png",
+            "target_hash": "8390e77a7e1254842f7805027f540a1b077d024e"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_Normal.png",
+            "source_hash": "f90c5e84cfb2c8a026acaa322d2745d5c86c530e",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_Normal.png",
+            "target_hash": "0458c2606737ee22b6eb3ef35ebb669e01fca393"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_Rough.png",
+            "source_hash": "f9c1efcdda108aee730a0d7caf16c4962e114884",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Tongue/Std_Tongue_Rough.png",
+            "target_hash": "066d458d147a457f5e88b3a834f6db44e2f07932"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_BaseColor.jpg",
+            "source_hash": "8058e922ebcc1fc9e24e19c5f09b461c5eb9d6e1",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_BaseColor.jpg",
+            "target_hash": "cdb3fb9d61d9f9937d1d02d4c02b50649930e74d"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_Normal.jpg",
+            "source_hash": "658673da93954603798aa8939c1e193d28c28b94",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_Normal.jpg",
+            "target_hash": "39fe472096a2abdbe0a5bfd350f2e25928a87f16"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_Opacity.jpg",
+            "source_hash": "645a75f017455cf614f43b4b65b6b6a0ee04777d",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_Opacity.jpg",
+            "target_hash": "c8af94247cfd9853b395c61a6af4ce5cb97476d6"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_Rough.png",
+            "source_hash": "56027a8b8c656cd1e55bc8de361ff31b359e907e",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Cargo_pant/Cargo_pant_Rough.png",
+            "target_hash": "035141f205e5c87d998006e8514a0c50d4e5a983"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_AO.jpg",
+            "source_hash": "3e5d9833679d6058024e2d07c5b2219daba07896",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_AO.jpg",
+            "target_hash": "45b8378731f023743fa94c95cef710954416cea5"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_BaseColor.jpg",
+            "source_hash": "9a69bc5a36fd9d863415dcbe88e7c83291a4d451",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_BaseColor.jpg",
+            "target_hash": "cb95e464e005f79e44755c3d73f0de344187e1f8"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_Normal.png",
+            "source_hash": "6f27d107b111b1a98ca48dcd20998b637c178a5d",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_Normal.png",
+            "target_hash": "17be1c3a35d9b35074b7d5601795334759d3880e"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_Rough.jpg",
+            "source_hash": "6a6b2c1ac0d94205853807f2920f72f4df1a7516",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/Textures/Std_Skin_Arm/Std_Skin_Arm_Rough.jpg",
+            "target_hash": "465aaec08fa879c1f3de2ba95053e4622d0da069"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/OmniRL_PBR.mdl",
+            "source_hash": "3072be18b53a4ab776593113c3801928f63a1f2a",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/OmniRL_PBR.mdl",
+            "target_hash": "8adc4de756512657cc728415121353e54fd51cd6"
+        },
+        {
+            "source_url": "/home/yihao/Downloads/Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/OmniRLBase.mdl",
+            "source_hash": "6952b004b6c80311e74f7fdd81a88347f15a5661",
+            "target_url": "./Characters_NVD@10012/Assets/Characters/Reallusion/Worker/Materials/OmniRLBase.mdl",
+            "target_hash": "d0880a351bd672f0fe1aa5e49a34cc6df4beac63"
+        }
+    ]
+}
