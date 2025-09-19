@@ -111,6 +111,9 @@ class EnvComponentReward:
             neginf=0.0,
         )
 
+        print("Episode_Reward/goal_reached_reward:", goal_reached_reward)
+        print("Episode_Reward/avoid_penalty:", avoid_penalty)
+
         return {
             "Episode_Reward/goal_reached_reward": goal_reached_reward,
             "Episode_Reward/linear_speed_reward": linear_speed_reward,
