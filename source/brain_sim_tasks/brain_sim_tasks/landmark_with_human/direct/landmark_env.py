@@ -164,35 +164,21 @@ class LandmarkEnv(DirectRLEnv):
         if self.cfg.action_noise_model:
             action = self._action_noise_model.apply(action)
 
-        # Store high-level action (vision -> velocity command) once per env.step
         self._pre_physics_step(action)
 
         is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors()
 
-        # Hierarchical control with proper decimation
-        # Frequency breakdown:
-        # - Physics: 200Hz (dt = 1/200)
-        # - Low-level policy: 50Hz (every 4 physics steps)
-        # - High-level policy: 10Hz (every 20 physics steps)
-
-        # The high-level action (velocity command) is held constant for entire step
-        # Low-level policy updates every 4 physics steps to convert velocity to joint positions
-        for high_level_step in range(self.cfg.high_level_decimation):  # 5 iterations
-            # Update low-level policy ONCE per high-level step (50Hz)
-            self._apply_action()  # Convert velocity command to joint positions
-
-            # Run physics simulation for low_level_decimation steps
-            for low_level_step in range(self.cfg.low_level_decimation):  # 4 iterations
-                self._sim_step_counter += 1
-                self.scene.write_data_to_sim()
-                self.sim.step(render=False)
-                if (
-                    self._sim_step_counter % self.cfg.sim.render_interval == 0
-                    and is_rendering
-                ):
-                    self.sim.render()
-                self.scene.update(dt=self.physics_dt)
-
+        for _ in range(self.cfg.decimation):
+            self._sim_step_counter += 1
+            self._apply_action()
+            self.scene.write_data_to_sim()
+            self.sim.step(render=False)
+            if (
+                self._sim_step_counter % self.cfg.sim.render_interval == 0
+                and is_rendering
+            ):
+                self.sim.render()
+            self.scene.update(dt=self.physics_dt)
         # Update character positions with random movement
         self.env_component_character.step(dt=self.step_dt)
         self.env_component_robot.update_camera(dt=self.step_dt)
