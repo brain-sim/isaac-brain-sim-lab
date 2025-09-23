@@ -44,8 +44,9 @@ class DerivedLandmarkEnvCfg(LandmarkEnvCfg):
     # scene
     scene: NavSceneCfg = NavSceneCfg(env_spacing=room_size)
     env_spacing = scene.env_spacing
+    # marker0: obstacle, marker1: target, marker2: finished goal (not used here)
     waypoint_cfg = bsWaypointGenerator.get_waypoint_object(
-        marker0_radius=1.0, marker1_radius=0.0, marker2_radius=0.0
+        marker0_radius=1.5, marker1_radius=1.0, marker2_radius=0.0
     )
     character_cfg = bsCharacterGenerator.get_character_object()
 

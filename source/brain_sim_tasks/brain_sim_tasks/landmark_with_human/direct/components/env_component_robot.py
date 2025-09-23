@@ -117,37 +117,41 @@ class EnvComponentRobot:
         self._actions[:, 1:] = torch.clamp(
             self._actions[:, 1:], min=-self.steering_max, max=self.steering_max
         )
+        self._physics_step_counter = 0
 
     def apply_action(self) -> None:
-        """Apply low-level policy actions to robot."""
-        # Gather all required robot state as torch tensors
-        default_pos = self._default_pos.clone()  # [num_envs, 12]
-        lin_vel_I = self.robot.data.root_lin_vel_w  # [num_envs, 3]
-        ang_vel_I = self.robot.data.root_ang_vel_w  # [num_envs, 3]
-        q_IB = self.robot.data.root_quat_w  # [num_envs, 4]
-        joint_pos = self.robot.data.joint_pos  # [num_envs, 12]
-        joint_vel = self.robot.data.joint_vel  # [num_envs, 12]
-
-        # Compute actions for all environments
-        actions = self.policy.get_action(
-            lin_vel_I,
-            ang_vel_I,
-            q_IB,
-            self._actions,
-            self._low_level_previous_action,
-            default_pos,
-            joint_pos,
-            joint_vel,
-        )
-
-        # Update previous action buffer
-        self._low_level_previous_action = actions.detach()
-
-        # Scale and offset actions as in Spot reference policy
-        joint_positions = self._default_pos + actions * self.env.ACTION_SCALE
-
-        # Apply joint position targets directly
-        self.robot.set_joint_position_target(joint_positions)
+        # print(self.env.cfg.low_level_decimation)
+        # Only compute new low-level actions every low_level_decimation steps
+        if self._physics_step_counter % self.env.cfg.low_level_decimation == 0:
+            # --- Vectorized low-level Spot policy call for all environments ---
+            # Gather all required robot state as torch tensors
+            default_pos = self._default_pos.clone()  # [num_envs, 12]
+            # The following assumes your robot exposes these as torch tensors of shape [num_envs, ...]
+            lin_vel_I = self.robot.data.root_lin_vel_w  # [num_envs, 3]
+            ang_vel_I = self.robot.data.root_ang_vel_w  # [num_envs, 3]
+            q_IB = self.robot.data.root_quat_w  # [num_envs, 4]
+            joint_pos = self.robot.data.joint_pos  # [num_envs, 12]
+            joint_vel = self.robot.data.joint_vel  # [num_envs, 12]
+            # Compute actions for all environments
+            actions = self.policy.get_action(
+                lin_vel_I,
+                ang_vel_I,
+                q_IB,
+                self._actions,
+                self._low_level_previous_action,
+                default_pos,
+                joint_pos,
+                joint_vel,
+            )
+            # Update previous action buffer
+            self._low_level_previous_action = actions.detach()
+            # Scale and offset actions as in Spot reference policy
+            self._current_joint_targets = self._default_pos + actions * self.env.ACTION_SCALE
+        
+        # Apply the current joint position targets (reuse from previous calculation if within decimation)
+        self.robot.set_joint_position_target(self._current_joint_targets)
+        # Increment physics step counter
+        self._physics_step_counter += 1
 
     def reset(self, env_ids):
         """Reset robot for specified environments."""
@@ -186,6 +190,7 @@ class EnvComponentRobot:
         self.robot.write_joint_state_to_sim(
             joint_positions, joint_velocities, None, env_ids
         )
+        self._physics_step_counter = 0
 
         return robot_pose
 
