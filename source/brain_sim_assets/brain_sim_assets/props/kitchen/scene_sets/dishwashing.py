@@ -32,16 +32,16 @@ class bsDishwashingEntitiesGenerator:
         background_scale: tuple = (1.0, 1.0, 1.0),
         table_name: str = "prep_table",
         table_prim_path: str = "{ENV_REGEX_NS}/PrepTable",
-        table_pos: tuple = (1.6, 0.0, 0.0),
+        table_pos: tuple = (1.17352, -1.58922, 0.0),
         table_rot: tuple = (1.0, 0.0, 0.0, 0.0),
         bottle_name: str = "detergent_bottle",
-        bottle_pos: tuple = (1.55, 0.25, 0.95),
+        bottle_pos: tuple = (0.27634, -0.06814, 0.90886),
         fruit_name: str = "rinsed_fruit",
-        fruit_pos: tuple = (1.6, -0.25, 0.95),
+        fruit_pos: tuple = (0.37143, -0.19129, 0.79806),
         plate_name: str = "dirty_plate",
-        plate_pos: tuple = (1.45, 0.05, 0.95),
+        plate_pos: tuple = (0.51002, 0.51002, 0.76827),
         knife_holder_name: str = "knife_block",
-        knife_holder_pos: tuple = (1.7, -0.15, 0.95),
+        knife_holder_pos: tuple = (-0.04662, 0.29401, 0.90415),
         extra_assets: Dict[str, AssetBaseCfg] | None = None,
     ) -> Dict[str, AssetBaseCfg]:
         assets: Dict[str, AssetBaseCfg] = dict(extra_assets or {})
@@ -73,19 +73,19 @@ class bsDishwashingEntitiesGenerator:
         if include_objects:
             assets[plate_name] = bsKitchenPlate.get_plate_asset(
                 prim_path=f"{table_prim_path}/Plate",
-                pos=_offset((plate_pos[0], plate_pos[1], plate_pos[2])),
+                pos=(plate_pos[0], plate_pos[1], plate_pos[2]),
             )
             assets[bottle_name] = bsKitchenBottle.get_bottle_asset(
                 prim_path=f"{table_prim_path}/Bottle",
-                pos=_offset(bottle_pos),
+                pos=(bottle_pos[0], bottle_pos[1], bottle_pos[2]),
             )
             assets[fruit_name] = bsKitchenFruit.get_fruit_asset(
                 prim_path=f"{table_prim_path}/Fruit",
-                pos=_offset(fruit_pos),
+                pos=(fruit_pos[0], fruit_pos[1], fruit_pos[2]),
             )
             assets[knife_holder_name] = bsKnifeHolder.get_knife_holder_asset(
                 prim_path=f"{table_prim_path}/KnifeHolder",
-                pos=_offset(knife_holder_pos),
+                pos=(knife_holder_pos[0], knife_holder_pos[1], knife_holder_pos[2]),
             )
         return assets
 
