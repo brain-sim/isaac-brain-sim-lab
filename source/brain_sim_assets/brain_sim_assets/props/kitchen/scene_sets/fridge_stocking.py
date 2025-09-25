@@ -56,6 +56,7 @@ class bsFridgeStockingEntitiesGenerator:
             prim_path=fridge_prim_path,
             pos=_offset(fridge_pos),
             rot=fridge_rot,
+            scale=(0.01, 0.01, 0.01),
         )
         assets[table_name] = bsKitchenTable.get_table_asset(
             prim_path=table_prim_path,

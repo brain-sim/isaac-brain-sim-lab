@@ -62,6 +62,7 @@ class bsMicrowaveMealPrepEntitiesGenerator:
         assets[fridge_name] = bsRefrigerator.get_fridge_asset(
             prim_path=fridge_prim_path,
             pos=_offset(fridge_pos),
+            scale=(0.01, 0.01, 0.01),
         )
         assets[table_name] = bsKitchenTable.get_table_asset(
             prim_path=table_prim_path,
