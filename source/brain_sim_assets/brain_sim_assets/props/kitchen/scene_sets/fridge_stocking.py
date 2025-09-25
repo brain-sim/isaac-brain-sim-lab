@@ -19,24 +19,24 @@ class bsFridgeStockingEntitiesGenerator:
         include_background: bool = True,
         fridge_name: str = "fridge",
         fridge_prim_path: str = "{ENV_REGEX_NS}/Fridge",
-        fridge_pos: tuple = (0.0, 0.0, 0.0),
+        fridge_pos: tuple = (4.70755, -0.42633, 0.79453),
         fridge_rot: tuple = (1.0, 0.0, 0.0, 0.0),
         background_name: str = "kitchen_background",
         background_prim_path: str = "{ENV_REGEX_NS}/KitchenBackground",
-        background_pos: tuple = (0.0, 0.0, 0.0),
+        background_pos: tuple = (0.0, 0.0, 0.0),    
         background_rot: tuple = (1.0, 0.0, 0.0, 0.0),
         background_scale: tuple = (1.0, 1.0, 1.0),
         table_name: str = "stock_table",
         table_prim_path: str = "{ENV_REGEX_NS}/StockTable",
-        table_pos: tuple = (1.8, 0.4, 0.0),
+        table_pos: tuple = (4.0, -1.5, 0.0),
         bottle_name: str = "juice_bottle",
-        bottle_pos: tuple = (1.7, 0.55, 0.95),
+        bottle_pos: tuple = (0.1, 2.25, 0.9),
         fruit_name: str = "fruit_bundle",
-        fruit_pos: tuple = (1.9, 0.45, 0.95),
+        fruit_pos: tuple = (0.25, 2.5, 0.797),
         plate_name: str = "storage_plate",
-        plate_pos: tuple = (1.75, 0.3, 0.95),
+        plate_pos: tuple = (0.1, 2.3, 0.775),
         knife_holder_name: str = "prep_knives",
-        knife_holder_pos: tuple = (2.0, 0.35, 0.95),
+        knife_holder_pos: tuple = (0.1, 1.9 , 0.92),
         extra_assets: Dict[str, AssetBaseCfg] | None = None,
     ) -> Dict[str, AssetBaseCfg]:
         assets: Dict[str, AssetBaseCfg] = dict(extra_assets or {})
@@ -56,7 +56,7 @@ class bsFridgeStockingEntitiesGenerator:
             prim_path=fridge_prim_path,
             pos=_offset(fridge_pos),
             rot=fridge_rot,
-            scale=(0.01, 0.01, 0.01),
+            scale=(0.0075, 0.0075, 0.0075),
         )
         assets[table_name] = bsKitchenTable.get_table_asset(
             prim_path=table_prim_path,
@@ -73,6 +73,7 @@ class bsFridgeStockingEntitiesGenerator:
         assets[fruit_name] = bsKitchenFruit.get_fruit_asset(
             prim_path=f"{table_prim_path}/Fruit",
             pos=_offset(fruit_pos),
+            scale=(0.8, 0.8, 0.8),
         )
         assets[knife_holder_name] = bsKnifeHolder.get_knife_holder_asset(
             prim_path=f"{table_prim_path}/Knives",
