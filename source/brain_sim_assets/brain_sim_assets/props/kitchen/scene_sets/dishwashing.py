@@ -73,19 +73,19 @@ class bsDishwashingEntitiesGenerator:
         if include_objects:
             assets[plate_name] = bsKitchenPlate.get_plate_asset(
                 prim_path=f"{table_prim_path}/Plate",
-                pos=(plate_pos[0], plate_pos[1], plate_pos[2]),
+                pos=plate_pos,
             )
             assets[bottle_name] = bsKitchenBottle.get_bottle_asset(
                 prim_path=f"{table_prim_path}/Bottle",
-                pos=(bottle_pos[0], bottle_pos[1], bottle_pos[2]),
+                pos=bottle_pos,
             )
             assets[fruit_name] = bsKitchenFruit.get_fruit_asset(
                 prim_path=f"{table_prim_path}/Fruit",
-                pos=(fruit_pos[0], fruit_pos[1], fruit_pos[2]),
+                pos=fruit_pos,
             )
             assets[knife_holder_name] = bsKnifeHolder.get_knife_holder_asset(
                 prim_path=f"{table_prim_path}/KnifeHolder",
-                pos=(knife_holder_pos[0], knife_holder_pos[1], knife_holder_pos[2]),
+                pos=knife_holder_pos,
             )
         return assets
 

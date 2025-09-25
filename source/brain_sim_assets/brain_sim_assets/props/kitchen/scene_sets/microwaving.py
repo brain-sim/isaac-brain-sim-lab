@@ -27,21 +27,21 @@ class bsMicrowavingEntitiesGenerator:
         background_scale: tuple = (1.0, 1.0, 1.0),
         microwave_name: str = "microwave",
         microwave_prim_path: str = "{ENV_REGEX_NS}/Microwave",
-        microwave_pos: tuple = (0.0, 0.0, 0.0),
-        microwave_rot: tuple = (1.0, 0.0, 0.0, 0.0),
+        microwave_pos: tuple = (1.53048, -1.59179, 0.92458),
+        microwave_rot: tuple = (0.48481, 0.0, 0.0, 0.87462),
         microwave_scale: tuple = (1.0, 1.0, 1.0),
         table_name: str = "serving_table",
         table_prim_path: str = "{ENV_REGEX_NS}/ServingTable",
-        table_pos: tuple = (1.4, -0.4, 0.0),
+        table_pos: tuple = (1.17352, -1.58922, 0.0),
         table_rot: tuple = (1.0, 0.0, 0.0, 0.0),
         bottle_name: str = "drink_bottle",
-        bottle_pos: tuple = (1.35, -0.2, 0.95),
+        bottle_pos: tuple = (-0.37634, -0.06814, 0.90886),
         fruit_name: str = "snack_fruit",
-        fruit_pos: tuple = (1.5, -0.45, 0.95),
+        fruit_pos: tuple = (-0.27143, -0.19129, 0.79806),
         plate_name: str = "heating_plate",
-        plate_pos: tuple = (1.45, -0.6, 0.95),
+        plate_pos: tuple = (0.51002, 0.34525, 0.76827),
         knife_holder_name: str = "prep_knives",
-        knife_holder_pos: tuple = (1.55, -0.3, 0.95),
+        knife_holder_pos: tuple = (-0.34662, 0.29401, 0.90415),
         extra_assets: Dict[str, AssetBaseCfg] | None = None,
     ) -> Dict[str, AssetBaseCfg]:
         assets: Dict[str, AssetBaseCfg] = dict(extra_assets or {})
@@ -73,19 +73,19 @@ class bsMicrowavingEntitiesGenerator:
         if include_objects:
             assets[plate_name] = bsKitchenPlate.get_plate_asset(
                 prim_path=f"{table_prim_path}/Plate",
-                pos=_offset(plate_pos),
+                pos=plate_pos,
             )
             assets[bottle_name] = bsKitchenBottle.get_bottle_asset(
                 prim_path=f"{table_prim_path}/Bottle",
-                pos=_offset(bottle_pos),
+                pos=bottle_pos,
             )
             assets[fruit_name] = bsKitchenFruit.get_fruit_asset(
                 prim_path=f"{table_prim_path}/Fruit",
-                pos=_offset(fruit_pos),
+                pos=fruit_pos,
             )
             assets[knife_holder_name] = bsKnifeHolder.get_knife_holder_asset(
                 prim_path=f"{table_prim_path}/KnifeHolder",
-                pos=_offset(knife_holder_pos),
+                pos=knife_holder_pos,
             )
         return assets
 
