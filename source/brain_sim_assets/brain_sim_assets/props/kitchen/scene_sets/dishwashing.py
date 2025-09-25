@@ -22,7 +22,7 @@ class bsDishwashingEntitiesGenerator:
         include_objects: bool = True,
         dishwasher_name: str = "dishwasher",
         dishwasher_prim_path: str = "{ENV_REGEX_NS}/Dishwasher",
-        dishwasher_pos: tuple = (0.0, 0.0, 0.0),
+        dishwasher_pos: tuple = (2.075, -0.3, 0.4),
         dishwasher_rot: tuple = (1.0, 0.0, 0.0, 0.0),
         dishwasher_scale: tuple = (1.0, 1.0, 1.0),
         background_name: str = "kitchen_background",

@@ -17,7 +17,7 @@ class bsKitchenTable:
             prim_path=prim_path,
             init_state=AssetBaseCfg.InitialStateCfg(pos=pos, rot=rot),
             spawn=UsdFileCfg(
-                usd_path=f"{BRAIN_SIM_ASSETS_PROPS_DATA_DIR}/kitchen/Table049/Table049.usd",
+                usd_path=f"{BRAIN_SIM_ASSETS_PROPS_DATA_DIR}/kitchen/table_1.usd",
                 scale=scale,
             ),
         )
