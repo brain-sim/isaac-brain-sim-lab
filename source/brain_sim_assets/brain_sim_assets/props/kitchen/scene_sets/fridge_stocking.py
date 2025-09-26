@@ -32,7 +32,7 @@ class bsFridgeStockingEntitiesGenerator:
         bottle_name: str = "juice_bottle",
         bottle_pos: tuple = (0.1, 2.25, 0.9),
         fruit_name: str = "fruit_bundle",
-        fruit_pos: tuple = (0.25, 2.5, 0.797),
+        fruit_pos: tuple = (0.3, 2.5, 0.747),
         plate_name: str = "storage_plate",
         plate_pos: tuple = (0.1, 2.3, 0.775),
         knife_holder_name: str = "prep_knives",
@@ -73,7 +73,7 @@ class bsFridgeStockingEntitiesGenerator:
         assets[fruit_name] = bsKitchenFruit.get_fruit_asset(
             prim_path=f"{table_prim_path}/Fruit",
             pos=_offset(fruit_pos),
-            scale=(0.8, 0.8, 0.8),
+            scale=(1.0, 1.0, 1.0),
         )
         assets[knife_holder_name] = bsKnifeHolder.get_knife_holder_asset(
             prim_path=f"{table_prim_path}/Knives",
