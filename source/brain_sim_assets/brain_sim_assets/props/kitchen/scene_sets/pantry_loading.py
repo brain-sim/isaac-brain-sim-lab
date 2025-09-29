@@ -15,11 +15,11 @@ class bsPantryLoadingEntitiesGenerator:
 
     @staticmethod
     def get_pantry_loading_entities(
-        base_pos: tuple = (0.0, -11.0, 0.0),
+        base_pos: tuple = (0.0, -1.0, 0.0),
         include_background: bool = True,
         shelf_name: str = "pantry_shelf",
         shelf_prim_path: str = "{ENV_REGEX_NS}/PantryShelf",
-        shelf_pos: tuple = (0.0, 0.0, 0.0),
+        shelf_pos: tuple = (1.55, -1.7, 0.88),
         background_name: str = "kitchen_background",
         background_prim_path: str = "{ENV_REGEX_NS}/KitchenBackground",
         background_pos: tuple = (0.0, 0.0, 0.0),
@@ -27,15 +27,15 @@ class bsPantryLoadingEntitiesGenerator:
         background_scale: tuple = (1.0, 1.0, 1.0),
         table_name: str = "pantry_table",
         table_prim_path: str = "{ENV_REGEX_NS}/PantryTable",
-        table_pos: tuple = (1.8, 0.2, 0.0),
+        table_pos: tuple = (1.5, -1.8, 0.0),
         bottle_name: str = "pantry_bottle",
-        bottle_pos: tuple = (1.7, 0.0, 0.95),
+        bottle_pos: tuple = (-0.31, -0.30, 0.90),
         fruit_name: str = "pantry_fruit",
-        fruit_pos: tuple = (1.9, 0.25, 0.95),
+        fruit_pos: tuple = (-0.16, -0.41, 0.75),
         plate_name: str = "pantry_plate",
-        plate_pos: tuple = (1.75, -0.25, 0.95),
+        plate_pos: tuple = (-0.015, -0.29, 0.76),
         knife_holder_name: str = "pantry_knives",
-        knife_holder_pos: tuple = (0.0, -0.2, 1.1),
+        knife_holder_pos: tuple = (0.18, -0.23, 0.05),
         extra_assets: Dict[str, AssetBaseCfg] | None = None,
     ) -> Dict[str, AssetBaseCfg]:
         assets: Dict[str, AssetBaseCfg] = dict(extra_assets or {})
@@ -61,19 +61,19 @@ class bsPantryLoadingEntitiesGenerator:
         )
         assets[plate_name] = bsKitchenPlate.get_plate_asset(
             prim_path=f"{table_prim_path}/Plate",
-            pos=_offset(plate_pos),
+            pos=plate_pos,
         )
         assets[bottle_name] = bsKitchenBottle.get_bottle_asset(
             prim_path=f"{table_prim_path}/Bottle",
-            pos=_offset(bottle_pos),
+            pos=bottle_pos,
         )
         assets[fruit_name] = bsKitchenFruit.get_fruit_asset(
             prim_path=f"{table_prim_path}/Fruit",
-            pos=_offset(fruit_pos),
+            pos=fruit_pos,
         )
         assets[knife_holder_name] = bsKnifeHolder.get_knife_holder_asset(
             prim_path=f"{shelf_prim_path}/Knives",
-            pos=_offset(knife_holder_pos),
+            pos=knife_holder_pos,
         )
         return assets
 
