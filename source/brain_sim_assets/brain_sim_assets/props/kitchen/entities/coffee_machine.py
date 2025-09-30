@@ -11,7 +11,7 @@ class bsCoffeeMachine:
         prim_path: str = "{ENV_REGEX_NS}/CoffeeMachine",
         pos: tuple = (0.0, 0.0, 0.0),
         rot: tuple = (1.0, 0.0, 0.0, 0.0),
-        scale: tuple = (1.0, 1.0, 1.0),
+        scale: tuple = (0.01, 0.01, 0.01),
     ) -> AssetBaseCfg:
         return AssetBaseCfg(
             prim_path=prim_path,

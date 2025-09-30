@@ -19,7 +19,7 @@ class bsCoffeeServiceEntitiesGenerator:
         include_background: bool = True,
         coffee_machine_name: str = "coffee_machine",
         coffee_machine_prim_path: str = "{ENV_REGEX_NS}/CoffeeMachine",
-        coffee_machine_pos: tuple = (0.0, -25.0, 1.0),
+        coffee_machine_pos: tuple = (1.88086, -0.37422, 1.111),
         background_name: str = "kitchen_background",
         background_prim_path: str = "{ENV_REGEX_NS}/KitchenBackground",
         background_pos: tuple = (0.0, 0.0, 0.0),

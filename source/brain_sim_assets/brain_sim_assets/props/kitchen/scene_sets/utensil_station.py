@@ -34,7 +34,7 @@ class bsUtensilStationEntitiesGenerator:
         knife_holder_name: str = "knife_block",
         knife_holder_pos: tuple = (-0.31, -0.17, 0.91),
         pot_name: str = "prep_pot",
-        pot_pos: tuple = (-0.35, 0.0, 0.95),
+        pot_pos: tuple = (0.4, 0.085, 0.8),
         extra_assets: Dict[str, AssetBaseCfg] | None = None,
     ) -> Dict[str, AssetBaseCfg]:
         assets: Dict[str, AssetBaseCfg] = dict(extra_assets or {})
