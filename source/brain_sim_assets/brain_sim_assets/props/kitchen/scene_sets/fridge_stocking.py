@@ -15,7 +15,7 @@ class bsFridgeStockingEntitiesGenerator:
 
     @staticmethod
     def get_fridge_stocking_entities(
-        base_pos: tuple = (0.0, -2.0, 0.0),
+        base_pos: tuple = (0.0, 0.0, 0.0),
         include_background: bool = True,
         fridge_name: str = "fridge",
         fridge_prim_path: str = "{ENV_REGEX_NS}/Fridge",
@@ -30,13 +30,13 @@ class bsFridgeStockingEntitiesGenerator:
         table_prim_path: str = "{ENV_REGEX_NS}/StockTable",
         table_pos: tuple = (4.0, -1.5, 0.0),
         bottle_name: str = "juice_bottle",
-        bottle_pos: tuple = (0.1, 2.25, 0.9),
+        bottle_pos: tuple = (0.1, 0.25, 0.9),
         fruit_name: str = "fruit_bundle",
-        fruit_pos: tuple = (0.3, 2.5, 0.747),
+        fruit_pos: tuple = (0.3, 0.5, 0.747),
         plate_name: str = "storage_plate",
-        plate_pos: tuple = (0.1, 2.3, 0.775),
+        plate_pos: tuple = (0.1, 0.3, 0.775),
         knife_holder_name: str = "prep_knives",
-        knife_holder_pos: tuple = (0.1, 1.9 , 0.92),
+        knife_holder_pos: tuple = (0.1, 0.9 , 0.92),
         extra_assets: Dict[str, AssetBaseCfg] | None = None,
     ) -> Dict[str, AssetBaseCfg]:
         assets: Dict[str, AssetBaseCfg] = dict(extra_assets or {})
@@ -64,20 +64,20 @@ class bsFridgeStockingEntitiesGenerator:
         )
         assets[plate_name] = bsKitchenPlate.get_plate_asset(
             prim_path=f"{table_prim_path}/Plate",
-            pos=_offset(plate_pos),
+            pos=plate_pos,
         )
         assets[bottle_name] = bsKitchenBottle.get_bottle_asset(
             prim_path=f"{table_prim_path}/Bottle",
-            pos=_offset(bottle_pos),
+            pos=bottle_pos,
         )
         assets[fruit_name] = bsKitchenFruit.get_fruit_asset(
             prim_path=f"{table_prim_path}/Fruit",
-            pos=_offset(fruit_pos),
+            pos=fruit_pos,
             scale=(1.0, 1.0, 1.0),
         )
         assets[knife_holder_name] = bsKnifeHolder.get_knife_holder_asset(
             prim_path=f"{table_prim_path}/Knives",
-            pos=_offset(knife_holder_pos),
+            pos=knife_holder_pos,
         )
         return assets
 

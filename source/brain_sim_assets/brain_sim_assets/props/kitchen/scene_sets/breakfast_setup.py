@@ -15,7 +15,7 @@ class bsBreakfastSetupEntitiesGenerator:
 
     @staticmethod
     def get_breakfast_setup_entities(
-        base_pos: tuple = (0.0, -1.0, 0.0),
+        base_pos: tuple = (0.0, 0.0, 0.0),
         include_background: bool = True,
         toaster_name: str = "toaster",
         toaster_prim_path: str = "{ENV_REGEX_NS}/Toaster",
